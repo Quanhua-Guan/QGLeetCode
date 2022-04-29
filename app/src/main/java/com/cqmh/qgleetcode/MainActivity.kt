@@ -148,3 +148,29 @@ class Solution9 {
         return x == invertX
     }
 }
+
+class Solution3 {
+    fun lengthOfLongestSubstring(s: String): Int {
+        // 3个关键词
+        // 最长, 记录 max
+        // 无重复, 用字典记录是否已存在
+        // 子串, 自测必然有 start 和 end 两个下标
+        var charIndexMap = mutableMapOf<Char, Int>()
+        var maxLength = 0
+        var start = 0
+        var current = 0
+
+        while (current < s.length) {
+            val char = s[current]
+            if (charIndexMap.containsKey(char) && charIndexMap[char]!! >= start) {
+                start = charIndexMap[char]!! + 1
+            } else {
+                maxLength = maxOf(maxLength, current - start + 1)
+            }
+            charIndexMap[char] = current
+            current++
+        }
+
+        return maxLength
+    }
+}
