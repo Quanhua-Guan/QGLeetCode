@@ -7,9 +7,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        Solution647().countSubstrings("abc");
     }
 }
 
+// 两数之和
 class Solution1 {
     fun twoSum(nums: IntArray, target: Int): IntArray {
         var numMap = mutableMapOf<Int, Int>()
@@ -71,6 +73,7 @@ class ListNode(var `val`: Int) {
     var next: ListNode? = null
 }
 
+// 两数相加
 class Solution2 {
     fun addTwoNumbers(l1: ListNode?, l2: ListNode?): ListNode? {
         var l1 = l1
@@ -174,3 +177,94 @@ class Solution3 {
         return maxLength
     }
 }
+
+class Solution647 {
+    // 回文子串数
+    /**
+    给你一个字符串 s ，请你统计并返回这个字符串中 回文子串 的数目。
+    回文字符串 是正着读和倒过来读一样的字符串。
+    子字符串 是字符串中的由连续字符组成的一个序列。
+    具有不同开始位置或结束位置的子串，即使是由相同的字符组成，也会被视作不同的子串。
+     */
+
+    ///// 暴力解法
+    fun countSubstrings(s: String): Int {
+        var count = 0
+        for (i in s.indices) {
+            for (j in i + 1 until s.length) {
+                val substring = s.substring(i, j)
+                if (isPalindrome(substring)) {
+                    count += 1
+                }
+            }
+        }
+        return count
+    }
+
+    fun isPalindrome(s: String): Boolean {
+        var l = 0
+        var r = s.length - 1
+        while (l < r) {
+            if (s[l] != s[r]) {
+                return false
+            }
+            l++
+            r--
+        }
+        return true
+    }
+
+    ///// 中心扩散法
+
+    fun countSubstrings1(s: String): Int {
+        var count = 0
+        for (i in s.indices) {
+            count += palindromeSubstringAtCenter(s, i)
+        }
+        return count
+    }
+
+    fun palindromeSubstringAtCenter(s: String, index: Int): Int {
+        var count = 0
+
+        // 以当前下标为中心的子串 (基数长度)
+        var l = index
+        var r = index
+        while (l >= 0 && r < s.length && s[l] == s[r]) {
+            count++
+            l--
+            r++
+        }
+
+        // 以当前下标为中左的子串 (偶数长度)
+        l = index
+        r = index + 1
+        while (l >= 0 && r < s.length && s[l] == s[r]) {
+            count++
+            l--
+            r++
+        }
+
+        return count
+    }
+}
+
+/// 908. 最小差值 I
+class Solution908 {
+    // 思考: 读懂题意很重要, 是重要的第一步.
+    // 计算两个数之间差值的最小值
+    fun smallestRangeI(nums: IntArray, k: Int): Int {
+        var min = Int.MAX_VALUE
+        var max = Int.MIN_VALUE
+        for (i in nums.indices) {
+            min = minOf(min, nums[i])
+            max = maxOf(max, nums[i])
+        }
+
+        if (max - min <= 2 * k) {
+            return 0
+        }
+        return max - min - 2 * k
+    }
+}
+
