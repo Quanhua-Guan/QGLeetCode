@@ -2,12 +2,13 @@ package com.cqmh.qgleetcode
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        Solution647().countSubstrings("abc");
+        Solution8().myAtoi("2147483648");
     }
 }
 
@@ -268,3 +269,192 @@ class Solution908 {
     }
 }
 
+/// 最长回文子串
+class Solution5 {
+
+    ///// 中心扩散法
+
+    fun longestPalindrome(s: String): String {
+        var longestLength = 0
+        var center = -1
+        for (i in s.indices) {
+            val length = longestPalindromeLengthWithCenter(s, i)
+            if (length > longestLength) {
+                longestLength = length
+                center = i
+            }
+        }
+
+        val step = longestLength / 2
+        if (longestLength % 2 == 1) {
+            return s.substring(center - step, center + step + 1)
+        }
+        return s.substring(center - step + 1, center + step + 1)
+    }
+
+    fun longestPalindromeLengthWithCenter(s: String, center: Int): Int {
+        if (s.isEmpty()) return 0
+
+        var max = 0
+        var l = center
+        var r = center
+        while (l >= 0 && r < s.length && s[l] == s[r]) {
+            max = maxOf(max, r - l + 1)
+            l--
+            r++
+        }
+
+        l = center
+        r = center + 1
+        while (l >= 0 && r < s.length && s[l] == s[r]) {
+            max = maxOf(max, r - l + 1)
+            l--
+            r++
+        }
+
+        return max
+    }
+
+    ///// 动态规划
+
+    // dp[i][j] = s[i] == s[j] && ((j - 1) - (i + 1) < 1 || dp[i+1][j-1])
+    // dp[i][j] = s[i] == s[j] && (j - i < 3 || dp[i+1][j-1])
+    // i < j
+    fun longestPalindrome_dp(s: String): String {
+        if (s.isEmpty()) return ""
+
+        val dp = Array(s.length) { BooleanArray(s.length) }
+
+        var maxLength = 0
+        var start = 0
+
+        for (j in 1 until s.length) {
+            for (i in 0 until j) {
+                if (s[i] != s[j]) {
+                    dp[i][j] = false
+                } else {
+                    if (j - i < 3) {
+                        dp[i][j] = true
+                    } else {
+                        dp[i][j] = dp[i + 1][j - 1]
+                    }
+                }
+
+                if (dp[i][j] && j - i + 1 > maxLength) {
+                    maxLength = j - i + 1
+                    start = i
+                }
+            }
+        }
+
+        return s.substring(start, start + maxLength)
+    }
+}
+
+// 整数反转
+class Solution7 {
+    fun reverse(x: Int): Int {
+        if (x == Int.MIN_VALUE) return 0
+
+        val isNagtive = x < 0
+        var x = if (isNagtive) -x else x
+        var result = 0
+        while (x != 0) {
+            if ((result * 10 + (x % 10) - (x % 10)) / 10 != result) {
+                return 0 // 注意溢出问题
+            }
+            result = result * 10 + (x % 10)
+            x /= 10
+        }
+
+        return if (isNagtive) -result else result
+    }
+}
+
+// 8. 字符串转换整数 (atoi)
+class Solution8 {
+    fun myAtoi(s: String): Int {
+        var i = 0
+        while (i < s.length && s[i] == ' ') {
+            i++
+        }
+
+        var sign = 1
+        if (i < s.length) {
+            if (s[i] == '+') {
+                i++
+            } else if (s[i] == '-') {
+                sign = -1
+                i++
+            }
+        }
+
+        var result = 0
+        if (i < s.length && (s[i] in '0'..'9')) {
+            result = (s[i] - '0') * sign
+            i++
+        }
+
+        while (i < s.length && (s[i] in '0'..'9')) {
+            val digit = (s[i] - '0') * sign
+            if (result * 10 / 10 != result || (result < 0 && result * 10 + digit > 0) || (result > 0 && result * 10 + digit < 0)) {
+                // 越界了
+                return if (sign == 1) MAX_VALUE else MIN_VALUE
+            }
+            result = result * 10 + digit
+
+            i++
+        }
+
+        return result
+    }
+
+    companion object {
+        public const val MIN_VALUE: Int = -2147483648
+        public const val MAX_VALUE: Int = 2147483647
+    }
+}
+
+// Z 字形变换
+class Solution6 {
+    fun convert(s: String, numRows: Int): String {
+        if (s.length <= 1 || numRows == 1) return s
+
+        var charLists = List(numRows){LinkedList<Char>()}
+
+        // if numRows == 4
+        // 0, 1, 2, 3, 2, 1
+        var index = 0
+        var ascend = true
+        var i = 0
+        while (i < s.length) {
+            val char = s[i]
+            charLists[index].add(char)
+
+            if (ascend) {
+                if (index == numRows - 1) {
+                    ascend = false
+                    index--
+                } else {
+                    index++
+                }
+            } else {
+                if (index == 0)  {
+                    ascend = true
+                    index++
+                } else {
+                    index--
+                }
+            }
+
+            i++
+        }
+
+        var s = StringBuffer()
+        for (charList in charLists) {
+            charList.forEach { s.append(it) }
+        }
+
+        return s.toString()
+    }
+}
