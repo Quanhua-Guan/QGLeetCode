@@ -420,7 +420,7 @@ class Solution6 {
     fun convert(s: String, numRows: Int): String {
         if (s.length <= 1 || numRows == 1) return s
 
-        var charLists = List(numRows){LinkedList<Char>()}
+        var charLists = List(numRows) { LinkedList<Char>() }
 
         // if numRows == 4
         // 0, 1, 2, 3, 2, 1
@@ -439,7 +439,7 @@ class Solution6 {
                     index++
                 }
             } else {
-                if (index == 0)  {
+                if (index == 0) {
                     ascend = true
                     index++
                 } else {
@@ -456,5 +456,55 @@ class Solution6 {
         }
 
         return s.toString()
+    }
+}
+
+/// 4. 寻找两个正序数组的中位数
+class Solution4 {
+    fun findMedianSortedArrays(nums1: IntArray, nums2: IntArray): Double {
+        val totalSize = nums1.size + nums2.size
+        if (totalSize % 2 == 1) { // 总共 3 个数, 则 3 / 2 = 1, 应取第 3 / 2 + 1 个数
+            return findNth(nums1, nums2, totalSize / 2 + 1)
+        }
+        // 总共 4 个数, 则 4 / 2 = 2, 应取第 2 和第 3 个数求平均值
+        return (findNth(nums1, nums2, totalSize / 2) + findNth(nums1, nums2, totalSize / 2 + 1)) / 2
+    }
+
+    /// 查找两个有序数组的第 N 小的数
+    fun findNth(nums1: IntArray, nums2: IntArray, n: Int): Double {
+        var start1 = 0
+        var start2 = 0
+        /// 每次从 nums1 和 nums2 中, 以 start0 和 start1 为起点, 分别最多选出前 n/2 个数字构成 tmpNums1, tmpNums2, 则总共 选出了 n 个数字, 从 tmpNums1 和 tmpNums2 中取最大数字v1, v2(即最后一个数),
+        /// 比较 v1, v2
+        /// - 如果 v1 == v2, 返回 v1
+        /// - 如果 v1 < v2, 则 v2 在所有数字中最高排名为 n, v2 在所有数字钟最高排名为 n - 1, 说明 tmpNums1 中的所有数字必然不可能为第 n 个数, 所以可以排除. 然后更新 start1, n.
+        /// - 如果 v1 > v2, 同理, 可以将 tmpNums2 中的所有数字排除. 然后更新 start1, n.
+        var n = n
+
+        while (n > 1) {
+            // 取值前先算下标, 不能越界
+            // nums1, 从 start1 开始(包括 start1)依次选择最多 n/2 个数字 (最少可能选择 0 个数)
+            val i1 = if (start1 >= nums1.size) start1 else minOf(start1 + n / 2 - 1, nums1.size - 1)
+            // nums2, 同理
+            val i2 = if (start2 >= nums2.size) start2 else minOf(start2 + n / 2 - 1, nums2.size - 1)
+
+            // 取值
+            val v1 = nums1.getOrElse(i1) { Int.MAX_VALUE }
+            val v2 = nums2.getOrElse(i2) { Int.MAX_VALUE }
+
+            // 判断
+            if (v1 < v2) {
+                n -= i1 - start1 + 1
+                start1 = i1 + 1
+            } else {
+                n -= i2 - start2 + 1
+                start2 = i2 + 1
+            }
+        }
+
+        // 此时 n == 1
+        val v1 = nums1.getOrElse(start1) { Int.MAX_VALUE }
+        val v2 = nums2.getOrElse(start2) { Int.MAX_VALUE }
+        return minOf(v1, v2).toDouble()
     }
 }
