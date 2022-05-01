@@ -508,3 +508,35 @@ class Solution4 {
         return minOf(v1, v2).toDouble()
     }
 }
+
+/// 392. 判断子序列
+class Solution392 {
+    // 判断字符串 s 是否是字符串 t 的子序列
+    fun isSubsequence(s: String, t: String): Boolean {
+        if (s.length > t.length) return false
+        if (s.isEmpty()) return true
+
+        var iS = 0
+        var iT = 0
+        while (iS < s.length && iT < t.length) {
+            var valS = s[iS]
+            var valT = valS - 1
+            while (iT < t.length) {
+                valT = t[iT]
+                if (valS == valT) {
+                    break
+                }
+                iT++
+            }
+
+            if (valS != valT) {
+                return false
+            }
+
+            iS++
+            iT++
+        }
+
+        return iS == s.length
+    }
+}
