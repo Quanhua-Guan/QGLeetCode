@@ -2,15 +2,9 @@ package com.cqmh.qgleetcode
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import java.lang.Exception
 import java.util.*
-
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        Solution8().myAtoi("2147483648");
-    }
-}
 
 // 两数之和
 class Solution1 {
@@ -540,3 +534,349 @@ class Solution392 {
         return iS == s.length
     }
 }
+
+//  188. 买卖股票的最佳时机 IV
+class Solution188 {
+    fun maxProfit(k: Int, prices: IntArray): Int {
+        if (prices.isEmpty()) return 0
+
+        // dp[j][i] 在第 i 天最多操作 j 次的最大利润
+        // k + 1 记录操作 0, 1, 2, ...k 次 (共 k+1种情况)
+        // prices.size 天, 第 0, 1, 2, ...prices.size-1 天
+        var dp = Array(k + 1) { IntArray(prices.size) }
+
+        for (j in 1 until k + 1) { // 操作 j 次, j == 0时, 默认 dp[j][i] == 0, 所以从 j=1开始
+            // 表示手上持有股票的前提下，i-1 天的总收益最大值
+            // 第 0 天第一次操作后的收益（第一次操作一定是买入）
+            var yestodayMaxWhenHold = -prices[0]
+            for (i in 1 until prices.size) {
+                // 第 i 天，第一天(i==0)只可能 1）什么都不做， 2）买入， 第二天开始出了以上两项， 增加操作 3）卖出
+                //  所以第一天 dp[j][0] 最优质都为0， 所以 i 从 1 开始遍历（即从第二天开始）。
+                dp[j][i] = maxOf(
+                        //  第 i 天躺平，什么都不做
+                        dp[j][i - 1],
+                        //  第 i 天卖出，能卖出则说明已买入，max记录第 i-1 天及之前的最大收益，在此基础上收益 prices[i]。
+                        // 比如：第二天卖出， 则第一天必然买入（参考 max 的初始值设置）
+                        prices[i] + yestodayMaxWhenHold
+                )
+                // dp[j][i]为最大利润时，必然已经将股票卖出了或第i 天股票价格为0（因为股票价格总是为非负数）
+                //
+                // 相隔的两天的操作一定不可能为『买入买入』或『卖出卖出』，两次『买入』之间必须间隔至少一次『卖出』
+                //
+                // 为下次迭代准备（为下次卖出场景准备），更新 yestodayMaxWhenHold 为表示手上持有股票的前提下，i 天的总收益最大值，可能情况：
+                // 1）第 i 天不买入，则必须要求i-1天或之前已买买入，即 yestodayMaxWhenHold
+                // 2）第 i 天买入， 则在第i-1天的最大利润基础上，买入股票，即减去第 i 天的股票价格（prices[i]）
+                // 比较取更大的值
+                yestodayMaxWhenHold = maxOf(yestodayMaxWhenHold, dp[j - 1][i - 1] - prices[i])
+            }
+        }
+
+        return dp[k][prices.size - 1]
+    }
+
+    fun maxProfit1(k: Int, prices: IntArray): Int {
+        // 从题目示例可以得出：连续的一次买入和一次卖出为一次交易
+        if (k < 1) {
+            return 0 // 不能买不能卖，最好的策略不买，利润最高0
+        }
+
+        // 因为当天买入候随即卖出不会改变当天的利润，所以不考虑这种操作
+
+        // dayCount 天数，等于 prices.size
+        val dayCount = prices.size
+        if (dayCount <= 1) {
+            return 0 // 最好的策略是不买，或者买入当天卖出，利润最高0
+        }
+
+        // trasactionCount 交易次数：0，1，2...k+1
+        // day 日期：0，1，2...dayCount-1
+        // maxProfit[transactionCount][day] 第 day 天最多交易 transactionCount 次的最大利润
+        var maxProfit = Array(k + 1) { IntArray(dayCount) }
+
+        // 在买入的情况下第最大的利润
+        var maxProfitWhenHold = 0
+
+        // 交易0次，最大利润为0。进行最多1次交易，最大利润为0，已买入的情况下最大利润为 -prices[0]
+        // 所以，交易次数从1开始
+        for (transactionCount in 1 until k + 1) {
+            maxProfitWhenHold = -prices[0]
+            // 第0天最大利润为0，所以从第1天开始
+            // 每天能执行的操作只有3种：
+            // 1）买入
+            // 2）卖出
+            // 3）不买不卖（或买入即卖出）
+            for (day in 1 until dayCount) {
+                maxProfit[transactionCount][day] = maxOf(maxProfit[transactionCount][day - 1], prices[day] + maxProfitWhenHold)
+                maxProfitWhenHold = maxOf(maxProfitWhenHold, maxProfit[transactionCount - 1][day - 1] - prices[day])
+            }
+        }
+
+        return maxProfit[k][dayCount - 1]
+    }
+}
+
+/// 70. 爬楼梯
+class Solution70 {
+    fun numWays(n: Int): Int {
+        // 跳法 ways[n]=ways[n-1]+ways[n-2]
+        // 台阶编号 0（代表地面），1，2，3...，n，显然 ways[0]=0, ways[1]=1
+        var ways = IntArray(n + 1)
+        if (n == 0) return 0
+        if (n == 1) return 1
+        if (n == 2) return 2
+        ways[1] = 1
+        ways[2] = 2
+        for (i in 3 until n + 1) {
+            ways[i] = ways[i - 1] + ways[i - 2]
+        }
+        return ways[n]
+    }
+}
+
+// 62. 不同路径
+class Solution62 {
+    fun uniquePaths(m: Int, n: Int): Int {
+        // 到达坐标点点总路径数
+        // paths[i][j] = paths[i-1][j] + paths[i][j-1]
+        var paths = Array(m) { IntArray(n) }
+        for (i in 0 until m) {
+            for (j in 0 until n) {
+                if (i == 0 || j == 0) {
+                    paths[i][j] = 1
+                } else {
+                    paths[i][j] = paths[i - 1][j] + paths[i][j - 1]
+                }
+            }
+        }
+
+        return paths[m - 1][n - 1]
+    }
+}
+
+/// 64. 最小路径和
+class Solution {
+    fun minPathSum(grid: Array<IntArray>): Int {
+        // m 行，n 列，grid[i][j]为非负整数（0<=i<m, 0<=j<n）
+        val m = grid.size
+        val n = grid.getOrElse(0) { IntArray(0) }.size
+
+        if (m == 0 || n == 0) return 0
+
+        // 路径总和最小值
+        // cost[i][j] = maxOf(coast[i-1][j], coast[i][j-1]) + grid[i][j])
+        var cost = Array(m) { IntArray(n) }
+
+        // 初始化第一行第一列为 grid[0][0]
+        cost[0][0] = grid[0][0]
+        // 第一列 从第二行开始，从上往下
+        for (i in 1 until m) {
+            cost[i][0] = cost[i - 1][0] + grid[i][0]
+        }
+        // 第一行 从第二列开始，从左往右
+        for (j in 1 until n) {
+            cost[0][j] = cost[0][j - 1] + grid[0][j]
+        }
+        // 从第二行第二列开始遍历
+        for (i in 1 until m) {
+            for (j in 1 until n) {
+                cost[i][j] = minOf(cost[i - 1][j], cost[i][j - 1]) + grid[i][j]
+            }
+        }
+        return cost[m - 1][n - 1]
+    }
+}
+
+/// 72. 编辑距离
+class Solution72 {
+    fun minDistance(word1: String, word2: String): Int {
+        val l1 = word1.length + 1
+        val l2 = word2.length + 1
+
+        /// 例子： house => ros
+        ///       j
+        ///       0 1 2 3
+        ///       # r o s
+        /// i 0 # 0 1 2 3 => 从空字符串 a 转化到非空字符串 b，编辑距离为 b.length
+        ///   1 h 1
+        ///   2 o 2
+        ///   3 u 3
+        ///   4 s 4
+        ///   5 e 5
+        ///       从非空字符串 b 转化到空字符串 a，编辑距离为 b.length
+
+        /// op[i][j] 代表 word1[0..<i] 转化到 word2[0..<j] 所使用的最少操作次数
+        /// word1[0..<i] 代表 word1 中从第 1 个字符开始到第 i 个字符结束（包含第 i 个字符）构成的子字符串, 例如：word1[0..<word1.length] 即为 word1.
+        val op = Array(l1) { IntArray(l2) }
+
+        /// 可能操作有3种，插入，删除，替换。一次操作包括操作类型和操作位置。同一组操作按不同顺序执行，得到的结果是一样的。
+        /// 所以将问题简化，从 word1 和 word2 的最后一个字符往前推导并进行操作：
+        /// 设 i 指向 word1 的最后一个字符，设 j 指向 word2 的最后一个字符。
+        ///（1）如果 word1[i] == word2[j]，则 op[i][j] = op[i-1][j-1] (相当于直接将 word1 和 word2 的最后一个字符删除，因为相同所以不需要转化，可以不考虑)
+        ///（2）如果 word1[i] ！= word2[j]，则对 word1[0..<i] 可以进行 3 种操作，以保证 word1[0..<i] 转化为 word2[0..<j]，如下：
+        ///     1）将字符 word2[j-1] 插入 word1[0..<i] 末尾。相当于先将 word1[0..<i] 转化为 word2[0..<j-1]，所需步数为 op[i][j-1], 然后在末尾插入字符 word2[j-1]，转化为 word2[0..<j]，所需步数为 1。总结一下：
+        ///        op[i][j]=op[i][j-1]+1
+        ///     2）将字符 word1[i-1] 删除，即 word1[0..<i] 转化为 word1[0..<i-1]，所需步数 1，然后将 word1[0..<i-1] 转化为 word2[0..<j], 所需步数为 op[i-1][j]。总结一下：
+        ///        op[i][j]=1+op[i-1][j]
+        ///     3）将字符 word1[i-1] 替换成 word2[j-1]，相当于先做字符替换，步数为1，替换后 word1[i-1] 和 word2[j-1] 相等，所以直接忽略，然后将 word1[0..<i-1] 转化为 word2[0..<j-1]，所需步数为 op[i-1][j-1]。总结一下：
+        ///        op[i][j]=1+op[i-1][j-1]
+        ///     从以上3种情况种选出最小值即为 op[i][j]（最少操作步数）
+
+        for (i in 1 until l1) { // i 代表 word1 的长度，例如：i为1则对应 word1[0..<1], i为2则对应 word2[0..<2]
+            op[i][0] = op[i - 1][0] + 1
+        }
+
+        for (j in 1 until l2) {
+            op[0][j] = op[0][j - 1] + 1
+        }
+
+        for (i in 1 until l1) {
+            for (j in 1 until l2) {
+                if (word1[i - 1] == word2[j - 1]) {
+                    op[i][j] = op[i - 1][j - 1]
+                } else {
+                    op[i][j] = minOf(
+                            op[i][j - 1] + 1,
+                            op[i - 1][j] + 1,
+                            op[i - 1][j - 1] + 1
+                    )
+                }
+            }
+        }
+
+        return op[l1 - 1][l2 - 1]
+    }
+
+    //// 递归解法 （超时了）
+
+    fun minDistance1(word1: String, word2: String): Int {
+        val mem = Array(word1.length + 1) { IntArray(word2.length + 1) { -1 } }
+        return minDistance_(word1, word1.length, word2, word2.length, mem)
+    }
+
+    fun minDistance_(word1: String, len1: Int, word2: String, len2: Int, mem: Array<IntArray>): Int {
+        if (len1 == 0 || len2 == 0) return maxOf(len1, len2).also { mem[len1][len2] = it }
+
+        val c1 = word1[len1 - 1]
+        val c2 = word2[len2 - 1]
+
+        fun getMemOrElseCalculate(l1: Int, l2: Int): Int {
+            var r = mem[l1][l2]
+            if (r == -1) {
+                r = minDistance_(word1, l1, word2, l2, mem)
+            }
+            return r
+        }
+
+        if (c1 == c2) {
+            return getMemOrElseCalculate(len1 - 1, len2 - 1)
+        }
+
+        // 目标：将 word1 通过编辑转化为 word2，可能操作有插入，删除，替换
+        return minOf(
+                getMemOrElseCalculate(len1 - 1, len2),
+                getMemOrElseCalculate(len1, len2 - 1),
+                getMemOrElseCalculate(len1 - 1, len2 - 1)
+        ) + 1
+
+    }
+}
+
+// 10. 正则表达式匹配
+class Solution10 {
+    ///  匹配 "*"  和 "."
+    fun isMatch(s: String, p: String): Boolean {
+        // 给 p 分词，从后往前扫描，
+        // 1）如果遇到"*"则将"*"和它的前一个字符打包作为一个匹配项。
+        // 2）否则必然遇到的是"a-z"或"."
+        // 匹配项数组
+        var patterns = ArrayList<String>()
+        var i = 0
+        while (i < p.length) {
+            val hasNext = i + 1 < p.length
+            if (hasNext && p[i + 1] == '*') {
+                patterns.add("" + p[i] + p[i + 1])
+                i++
+            } else {
+                patterns.add(p[i].toString())
+            }
+            i++
+        }
+
+        // 原字符串前 i 个字符构成的子串是否和匹配项数组前 j 个匹配项组成的匹配字符串匹配
+        // +1是因为需要预留一个空字符和空匹配项
+        val matches = Array(s.length + 1) { BooleanArray(patterns.size + 1) }
+
+        // 默认空串和空串匹配项匹配
+        matches[0][0] = true
+        /* // 默认为 false, 可不处理
+        for (i in 1 until s.length + 1) {
+            matchs[i][0] = false
+        }
+         */
+        // 空字符串和匹配项进行匹配
+        for (j in 1 until patterns.size + 1) {
+            matches[0][j] = patterns[j - 1].last() == '*' && matches[0][j - 1]
+        }
+
+        for (i in 1 until s.length + 1) {
+            for (j in 1 until patterns.size + 1) {
+                matches[i][j] =
+                        //  字符串 s[0..<i-1] 和 patterns[0..<j] 匹配，且当前字符和当前匹配项匹配，并且匹配项时通配符
+                        (matches[i - 1][j] && isMatchEmpty(patterns[j - 1]) && isCharMatch(s[i - 1], patterns[j - 1])) ||
+                                // 字符串 s[0..<i-1] 和 patterns[0..<j-1] 匹配，且且当前字符和当前匹配项匹配
+                                (matches[i - 1][j - 1] && isCharMatch(s[i - 1], patterns[j - 1])) ||
+                                // 字符串 s[0..<i] 和 patterns[0..<j-1] 匹配， 且当前匹配项时通配符（可以匹配空字符串）
+                                (matches[i][j - 1] && isMatchEmpty(patterns[j - 1]))
+            }
+        }
+
+        return matches[s.length][patterns.size]
+    }
+
+    // 字符是否和匹配项匹配，匹配项可能是 a-z 或 . 中的一个字符，或者是 a-z 或 . 中的一个字符加一个*, 例如："a*", ".*"
+    private fun isCharMatch(c: Char, p: String): Boolean {
+        return (p.length == 1 && (c == p[0] || p[0] == '.')) ||
+                (p.length == 2 && p[1] == '*' && (c == p[0] || p[0] == '.'))
+    }
+
+    private fun isMatchEmpty(p: String): Boolean {
+        return p.length == 2 && p[1] == '*'
+    }
+}
+
+/////////////////////////////////////////////////////////////////////
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        try {
+            Log.i(
+                    "", "leetcode: false ->" + Solution10().isMatch("aa", "a"),
+            )
+            Log.i(
+                    "", "leetcode: true ->" + Solution10().isMatch("aa", "a*"),
+            )
+            Log.i(
+                    "", "leetcode: true ->" + Solution10().isMatch("abb", ".*"),
+            )
+            Log.i(
+                    "", "leetcode: true ->" + Solution10().isMatch("", ""),
+            )
+            Log.i(
+                    "", "leetcode: true ->" + Solution10().isMatch("", "a*"),
+            )
+            Log.i(
+                    "", "leetcode: true ->" + Solution10().isMatch("", ".*"),
+            )
+            Log.i(
+                    "", "leetcode: true ->" + Solution10().isMatch("z", "."),
+            )
+            Log.i(
+                    "", "leetcode: false ->" + Solution10().isMatch("aada", "a.*a*d"),
+            )
+        } catch (e: Exception) {
+            print(e)
+        }
+    }
+}
+/////////////////////////////////////////////////////////////////////
