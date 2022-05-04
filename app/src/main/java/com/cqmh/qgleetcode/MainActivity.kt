@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import java.lang.Exception
 import java.util.*
+import kotlin.collections.ArrayList
 
 // 两数之和
 class Solution1 {
@@ -553,11 +554,11 @@ class Solution188 {
                 // 第 i 天，第一天(i==0)只可能 1）什么都不做， 2）买入， 第二天开始出了以上两项， 增加操作 3）卖出
                 //  所以第一天 dp[j][0] 最优质都为0， 所以 i 从 1 开始遍历（即从第二天开始）。
                 dp[j][i] = maxOf(
-                        //  第 i 天躺平，什么都不做
-                        dp[j][i - 1],
-                        //  第 i 天卖出，能卖出则说明已买入，max记录第 i-1 天及之前的最大收益，在此基础上收益 prices[i]。
-                        // 比如：第二天卖出， 则第一天必然买入（参考 max 的初始值设置）
-                        prices[i] + yestodayMaxWhenHold
+                    //  第 i 天躺平，什么都不做
+                    dp[j][i - 1],
+                    //  第 i 天卖出，能卖出则说明已买入，max记录第 i-1 天及之前的最大收益，在此基础上收益 prices[i]。
+                    // 比如：第二天卖出， 则第一天必然买入（参考 max 的初始值设置）
+                    prices[i] + yestodayMaxWhenHold
                 )
                 // dp[j][i]为最大利润时，必然已经将股票卖出了或第i 天股票价格为0（因为股票价格总是为非负数）
                 //
@@ -606,8 +607,10 @@ class Solution188 {
             // 2）卖出
             // 3）不买不卖（或买入即卖出）
             for (day in 1 until dayCount) {
-                maxProfit[transactionCount][day] = maxOf(maxProfit[transactionCount][day - 1], prices[day] + maxProfitWhenHold)
-                maxProfitWhenHold = maxOf(maxProfitWhenHold, maxProfit[transactionCount - 1][day - 1] - prices[day])
+                maxProfit[transactionCount][day] =
+                    maxOf(maxProfit[transactionCount][day - 1], prices[day] + maxProfitWhenHold)
+                maxProfitWhenHold =
+                    maxOf(maxProfitWhenHold, maxProfit[transactionCount - 1][day - 1] - prices[day])
             }
         }
 
@@ -735,9 +738,9 @@ class Solution72 {
                     op[i][j] = op[i - 1][j - 1]
                 } else {
                     op[i][j] = minOf(
-                            op[i][j - 1] + 1,
-                            op[i - 1][j] + 1,
-                            op[i - 1][j - 1] + 1
+                        op[i][j - 1] + 1,
+                        op[i - 1][j] + 1,
+                        op[i - 1][j - 1] + 1
                     )
                 }
             }
@@ -753,7 +756,13 @@ class Solution72 {
         return minDistance_(word1, word1.length, word2, word2.length, mem)
     }
 
-    fun minDistance_(word1: String, len1: Int, word2: String, len2: Int, mem: Array<IntArray>): Int {
+    fun minDistance_(
+        word1: String,
+        len1: Int,
+        word2: String,
+        len2: Int,
+        mem: Array<IntArray>
+    ): Int {
         if (len1 == 0 || len2 == 0) return maxOf(len1, len2).also { mem[len1][len2] = it }
 
         val c1 = word1[len1 - 1]
@@ -773,9 +782,9 @@ class Solution72 {
 
         // 目标：将 word1 通过编辑转化为 word2，可能操作有插入，删除，替换
         return minOf(
-                getMemOrElseCalculate(len1 - 1, len2),
-                getMemOrElseCalculate(len1, len2 - 1),
-                getMemOrElseCalculate(len1 - 1, len2 - 1)
+            getMemOrElseCalculate(len1 - 1, len2),
+            getMemOrElseCalculate(len1, len2 - 1),
+            getMemOrElseCalculate(len1 - 1, len2 - 1)
         ) + 1
 
     }
@@ -822,11 +831,14 @@ class Solution10 {
             for (j in 1 until patterns.size + 1) {
                 matches[i][j] =
                         //  字符串 s[0..<i-1] 和 patterns[0..<j] 匹配，且当前字符和当前匹配项匹配，并且匹配项时通配符
-                        (matches[i - 1][j] && isMatchEmpty(patterns[j - 1]) && isCharMatch(s[i - 1], patterns[j - 1])) ||
-                                // 字符串 s[0..<i-1] 和 patterns[0..<j-1] 匹配，且且当前字符和当前匹配项匹配
-                                (matches[i - 1][j - 1] && isCharMatch(s[i - 1], patterns[j - 1])) ||
-                                // 字符串 s[0..<i] 和 patterns[0..<j-1] 匹配， 且当前匹配项时通配符（可以匹配空字符串）
-                                (matches[i][j - 1] && isMatchEmpty(patterns[j - 1]))
+                    (matches[i - 1][j] && isMatchEmpty(patterns[j - 1]) && isCharMatch(
+                        s[i - 1],
+                        patterns[j - 1]
+                    )) ||
+                            // 字符串 s[0..<i-1] 和 patterns[0..<j-1] 匹配，且且当前字符和当前匹配项匹配
+                            (matches[i - 1][j - 1] && isCharMatch(s[i - 1], patterns[j - 1])) ||
+                            // 字符串 s[0..<i] 和 patterns[0..<j-1] 匹配， 且当前匹配项时通配符（可以匹配空字符串）
+                            (matches[i][j - 1] && isMatchEmpty(patterns[j - 1]))
             }
         }
 
@@ -844,36 +856,82 @@ class Solution10 {
     }
 }
 
+/// 96. 不同的二叉搜索树
+/// 给你一个整数 n ，求恰由 n 个节点组成且节点值从 1 到 n 互不相同的 二叉搜索树 有多少种？返回满足题意的二叉搜索树（BST）的种数。
+class Solution96 {
+    fun numTrees(n: Int): Int {
+        /*
+        思路：
+        （1）1 到 n 组成的 n 个数顺序数组，从中任选一个数 i 为根，其左边的数为左子树（有 i-1 个数，假设有 a 种），右边的数为右子树（有 n-i 个数，假设有 b 种）。依次类推对左子树和右子树做同样的操作。
+            1）所以，以 i 为根的 BST 一共有 a*b 种。
+            2）i 的选择可能有 n 种。
+        （2）设 counts[i] (1 <= i <= n) 为 i 个数顺序数组构成的二叉搜索树的种数。 count[n] 即为我们所求的结果。
+        （3）设 countOfRoot[i, n] 为以数字 i 为根，节点个数为 n 的 BST 的种数，则 countOfRoot[i, n] = counts[i-1] * counts[n-i]
+        （4）i 分别取 1 到 n，计算 countOfRoot[i, n]，然后将所有 countOfRoot[i, n] 加和即为 counts[n]，根据（3）可以得出，
+            i 分别取 1 到 n，计算 counts[i-1] * counts[n-i]，所有加和得到结果 counts[n]
+        （5）counts[0] = 1, counts[1] = 1
+        */
+        var counts = IntArray(n + 1)
+        counts[0] = 1
+        counts[1] = 1
+        for (c in 2 until n + 1) {// 计算 c 从 2 到 n，c 为 count 缩写。
+            for (r in 1 until c + 1) {// 选 BST 的根，r 为 root 缩写。
+                counts[c] += counts[r - 1] * counts[c - r]
+            }
+        }
+        return counts[n]
+    }
+
+    /// 卡塔兰数
+    fun numTrees1(n: Int): Int {
+        var count = 1
+        return count;// TODO:
+    }
+}
+
+/// 946. 验证栈序列
+/*
+ 给定pushed和popped两个序列，每个序列中的 值都不重复，只有当它们可能是在最初空栈上进行的推入 push 和弹出 pop 操作序列的结果时，返回 true；否则，返回 false。
+ */
+class Solution946 {
+    // 思路：模拟进出栈操作
+    fun validateStackSequences(pushed: IntArray, popped: IntArray): Boolean {
+        var stack = LinkedList<Int>()
+        var pushedIndex = 0
+        var poppedIndex = 0
+        while ((pushedIndex < pushed.size || stack.size > 0) && poppedIndex < popped.size) {
+            val top = stack.lastOrNull()
+            val pus = pushed.getOrNull(pushedIndex)
+            val pop = popped[poppedIndex]
+            if (pop == pus) {
+                pushedIndex++
+                poppedIndex++
+            } else if (pop == top) {
+                stack.removeLast()
+                poppedIndex++
+            } else {
+                // pop != top && pop != pus
+                if (pus != null) {
+                    stack.add(pus)
+                    pushedIndex++
+                } else {
+                    return false
+                }
+            }
+        }
+        return pushedIndex == pushed.size && stack.size == 0 && poppedIndex == popped.size
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         try {
-            Log.i(
-                    "", "leetcode: false ->" + Solution10().isMatch("aa", "a"),
-            )
-            Log.i(
-                    "", "leetcode: true ->" + Solution10().isMatch("aa", "a*"),
-            )
-            Log.i(
-                    "", "leetcode: true ->" + Solution10().isMatch("abb", ".*"),
-            )
-            Log.i(
-                    "", "leetcode: true ->" + Solution10().isMatch("", ""),
-            )
-            Log.i(
-                    "", "leetcode: true ->" + Solution10().isMatch("", "a*"),
-            )
-            Log.i(
-                    "", "leetcode: true ->" + Solution10().isMatch("", ".*"),
-            )
-            Log.i(
-                    "", "leetcode: true ->" + Solution10().isMatch("z", "."),
-            )
-            Log.i(
-                    "", "leetcode: false ->" + Solution10().isMatch("aada", "a.*a*d"),
-            )
+            for (i in 1 until 20) {
+                Log.i("", "leetcode: i -> " + Solution96().numTrees(i))
+            }
         } catch (e: Exception) {
             print(e)
         }
