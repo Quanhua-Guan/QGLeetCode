@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import java.lang.Exception
+import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -1039,6 +1040,52 @@ class Solution957 {
     }
 }
 
+/// 935. 骑士拨号器
+class Solution935 {
+    fun knightDialer(n: Int): Int {
+        val numberCount = 10
+        var numberRelations = listOf<IntArray>(
+            intArrayOf(4, 6),    // 4 -> 0, 6 -> 0，可以从 4 或 6 跳到 0
+            intArrayOf(6, 8),    // 6 -> 1, 8 -> 1
+            intArrayOf(7, 9),    // 7 -> 2, 9 -> 2
+            intArrayOf(4, 8),    // 4 -> 3, 8 -> 3
+            intArrayOf(0, 3, 9), // 0 -> 4, 3 -> 4, 9 -> 4
+            intArrayOf(),        // 无 -> 5
+            intArrayOf(0, 1, 7), // 0 -> 6, 1 -> 6, 7 -> 6
+            intArrayOf(2, 6),    // 2 -> 7, 6 -> 7
+            intArrayOf(1, 3),    // 1 -> 8, 3 -> 8
+            intArrayOf(2, 4)    // 2 -> 9, 4 -> 9
+        )
+
+        // 跳 n 次后落到数字 i 的总共电话号数目
+        // counts[i][n] = counts[numberRelations[i][0]][n - 1] + counts[numberRelations[i][1]][n - 1] + ...
+        var counts = Array(numberCount) { Array<BigInteger>(n + 1) { BigInteger.valueOf(0) } }
+
+        // 初始化
+        for (i in 0 until numberCount) {
+            counts[i][1] = BigInteger.valueOf(1)
+        }
+
+        // 跳 n 次
+        for (jump in 2 until n + 1) {
+            for (number in 0 until numberCount) {
+                var sum = BigInteger.valueOf(0)
+                numberRelations[number].forEach {
+                    sum += counts[it][jump - 1]
+                }
+                counts[number][jump] = sum
+            }
+        }
+
+        var result = BigInteger.valueOf(0)
+        for (i in 0 until numberCount) {
+            result += counts[i][n]
+        }
+
+        return (result.mod(BigInteger.valueOf(1000000007))).toInt()
+    }
+}
+
 
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
@@ -1046,12 +1093,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         try {
-            var rooms = intArrayOf(1, 0, 0, 1, 0, 0, 1, 0)
-            Log.i("lc", rooms.toList().toString())
-            Log.i("lc", Solution957().prisonAfterNDays1(rooms, 1000000000).toList().toString())
+            log(Solution935().knightDialer(1))
+            log(Solution935().knightDialer(2))
+            log(Solution935().knightDialer(3))
+            log(Solution935().knightDialer(4))
+            log(Solution935().knightDialer(3131))
         } catch (e: Exception) {
             print(e)
         }
     }
+
+    fun log(message: Any) {
+        Log.i("lc", message.toString())
+    }
 }
+
 /////////////////////////////////////////////////////////////////////
