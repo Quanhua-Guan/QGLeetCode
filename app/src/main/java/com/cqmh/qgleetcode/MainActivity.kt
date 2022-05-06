@@ -884,8 +884,31 @@ class Solution96 {
 
     /// 卡塔兰数
     fun numTrees1(n: Int): Int {
-        var count = 1
-        return count;// TODO:
+        var c = 1L
+        // c(0) = 1, c(n+1)=c(n)*(2(2n+1)/(n+2))
+        for (k in 0 until n) {
+            c = c * 2 * (2 * k + 1) / (k + 2)
+        }
+        return c.toInt();
+    }
+
+    fun numTrees2(n: Int): Int {
+        // 根据 n 的取值分析结果，观察规律
+        // c(0) = 1
+        // c(1) = 1
+        // c(2) = 2
+        // c(3) = 5
+        // 符合卡特兰数列规律
+        // c(n) = c(n-1)*(4*n-2)/(n+1)
+        var c = 1L // c(0)
+        for (i in 1 until n + 1) {
+            // 求 c(i)
+            c = c * (4 * i - 2) / (i + 1)
+        }
+
+        // 此时 i 等于 n+1，c 承载 c(n) 的结果
+
+        return c.toInt()
     }
 }
 
@@ -923,15 +946,109 @@ class Solution946 {
     }
 }
 
+/// 957. N 天后的牢房
+class Solution957 {
+    /// 方法1：暴力模拟，超时！！！
+    fun prisonAfterNDays(cells: IntArray, n: Int): IntArray {
+        // f(n,i) 代表第 n 天第 i 个房间是否有人, n 代表天数（0,1,2,...N-1）,i代表房间号（0，1，2，3，4，5，6，7）
+        // f(0,i) = cells[i] （初始值）
+
+        // (1) f(n,0) = 0, if n > 0 第一个房间从第2天开始总是空置，第8个房间同理，f(n,7) = 0, if n > 0
+        // (2) f(n,i) = if f(n-1, i-1) == f(n-1, i+1) 1 else 0
+
+        var cells = cells
+        // 需要一个临时空间暂存昨天的房间状态
+        var yestodayCells = cells.clone()
+
+        for (n in 1 until n + 1) {
+            cells[0] = 0
+            cells[cells.size - 1] = 0
+            for (i in 1 until cells.size - 1) {
+                cells[i] = if (yestodayCells[i - 1] == yestodayCells[i + 1]) 1 else 0
+            }
+            yestodayCells = cells.also { cells = yestodayCells }
+        }
+
+        return yestodayCells
+    }
+
+    /// 方法2：将数组换成 Int
+    /// 假设 cells 共 8 位，则对应的 Int 取值总共有 2^8 = 256 种取值
+    fun prisonAfterNDays1(cells: IntArray, n: Int): IntArray {
+        // f(n,i) 代表第 n 天第 i 个房间是否有人, n 代表天数（0,1,2,...N-1）,i代表房间号（0，1，2，3，4，5，6，7）
+        // f(0,i) = cells[i] （初始值）
+
+        // (1) f(n,0) = 0, if n > 0 第一个房间从第2天开始总是空置，第8个房间同理，f(n,7) = 0, if n > 0
+        // (2) f(n,i) = if f(n-1, i-1) == f(n-1, i+1) 1 else 0
+
+        // 返回 1 或 0
+        fun getBit(value: Int, bitIndex: Int): Int {
+            return (value and (1 shl (bitIndex - 1))) shr (bitIndex - 1)
+        }
+
+        // bitValue = 0 or 1
+        fun valueWithNewBit(value: Int, bitIndex: Int, bitValue: Int): Int {
+            return value or (bitValue shl (bitIndex - 1))
+        }
+
+        // 第 0 天的状态
+        var rooms = 0
+        for (i in cells.indices) {
+            rooms = rooms or (cells[i] shl (cells.size - i - 1))
+        }
+
+        // rooms 状态 => 天数
+        var history = mutableMapOf<Int, Int>()
+        var day = 1
+        var didJump = false
+        while (day <= n) {
+            val yestodayRooms = rooms
+
+            if (!didJump) {
+                if (history.containsKey(rooms)) {
+                    val historyDay = history[rooms]!!
+                    val period = day - historyDay
+                    day += (n - day) / period * period // 跨过所有中间循环周期，跳到最后一次循环周期
+                    didJump = true
+                } else {
+                    history[rooms] = day
+                }
+            }
+
+            // 第一位和最后一位清零
+            rooms = 0
+            // 给房间重新编号 (和 Int 二进制位对应)
+            // 只需遍历第 2 到第 7 位，第 1 和第 8 位已经重置为 0
+            // 8 - 7 - 6 - 5 - 4 - 3 - 2 - 1
+            for (i in 2 until cells.size) {
+                val l = getBit(yestodayRooms, i - 1)
+                val r = getBit(yestodayRooms, i + 1)
+                val bitValue = if (l == r) 1 else 0
+                rooms = valueWithNewBit(rooms, i, bitValue)
+            }
+
+            day++
+        }
+
+        for (i in cells.indices) {
+            val shiftCount = cells.size - i - 1
+            cells[i] = (rooms and (1 shl shiftCount)) shr shiftCount
+        }
+
+        return cells
+    }
+}
+
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         try {
-            for (i in 1 until 20) {
-                Log.i("", "leetcode: i -> " + Solution96().numTrees(i))
-            }
+            var rooms = intArrayOf(1, 0, 0, 1, 0, 0, 1, 0)
+            Log.i("lc", rooms.toList().toString())
+            Log.i("lc", Solution957().prisonAfterNDays1(rooms, 1000000000).toList().toString())
         } catch (e: Exception) {
             print(e)
         }
