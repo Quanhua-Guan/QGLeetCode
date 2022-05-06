@@ -8,6 +8,31 @@ import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayList
 
+/// 二分查找
+class BinarySearch {
+    companion object {
+        /// 升序数组，查找最后一个小于或等于目标数的元素下标
+        fun indexOflessThanOrEqual(nums: IntArray, target: Int): Int {
+            var l = 0
+            var r = nums.size - 1
+
+            while (l <= r) {
+                var mid = (l + r) ushr 1
+                if (nums[mid] > target) {
+                    r = mid - 1
+                } else { // nums[mid] <= target
+                    if (mid == nums.size - 1 || nums[mid + 1] > target) {
+                        return mid
+                    } else {
+                        l = mid + 1
+                    }
+                }
+            }
+            return -1
+        }
+    }
+}
+
 // 两数之和
 class Solution1 {
     fun twoSum(nums: IntArray, target: Int): IntArray {
@@ -596,7 +621,7 @@ class Solution188 {
         var maxProfit = Array(k + 1) { IntArray(dayCount) }
 
         // 在买入的情况下第最大的利润
-        var maxProfitWhenHold = 0
+        var maxProfitWhenHold: Int
 
         // 交易0次，最大利润为0。进行最多1次交易，最大利润为0，已买入的情况下最大利润为 -prices[0]
         // 所以，交易次数从1开始
@@ -1086,6 +1111,71 @@ class Solution935 {
     }
 }
 
+/// 902. 最大为 N 的数字组合
+class Solution902 {
+    fun atMostNGivenDigitSet(digitStrings: Array<String>, n: Int): Int {
+        var digits = digitStrings.map { it.first() - '0' }.toIntArray()
+        var nDigitCount = 0
+
+        // 构造目标数的数字数组
+        var nDigits = mutableListOf<Int>()
+        var tmpN = n
+        while (tmpN > 0) {
+            nDigits.add(tmpN % 10)
+            tmpN /= 10
+            nDigitCount++
+        }
+        nDigits.reverse()
+
+        // 分2种情况处理
+
+        // 0 < n < 10 的情况, 即个位数
+        if (nDigitCount == 1) {
+            return digits.count { it <= n }
+        }
+
+        /// n >= 10 的情况
+
+        // 记录 1,2,3,...,nDigitCount-1 位数分别可以构造几个
+        // count[i] 代表使用 digits 数组中的数可以构造 count[i] 个 i 位数
+        var count = IntArray(nDigitCount)
+        count[0] = 1
+        count[1] = digits.size
+        for (i in 2 until nDigitCount) {
+            count[i] = count[i - 1] * digits.size
+        }
+
+        /// 总个数
+        var totalCount = 0
+        for (i in 1 until nDigitCount) totalCount += count[i]
+
+        // 此时 totalCount 代表所有可能的 1 到 nDigitCount - 1 位数的总个数
+
+        // 处理可能构造的 nDigitCount 位数
+        for (i in nDigits.indices) {
+            val nDigit = nDigits[i]
+            val index = BinarySearch.indexOflessThanOrEqual(digits, nDigit)
+            if (index == -1) {
+                break
+            }
+            val digit = digits[index]
+            if (digit == nDigit) {
+                if (i == nDigits.size - 1) {
+                    totalCount += 1
+                }
+                if (index > 0) {
+                    totalCount += index * count[nDigits.size - (i + 1)]
+                }
+            } else {
+                // digits.size - (i + 1) 可能为 0
+                totalCount += (index + 1) * count[nDigits.size - (i + 1)]
+                break
+            }
+        }
+
+        return totalCount
+    }
+}
 
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
@@ -1093,11 +1183,41 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         try {
-            log(Solution935().knightDialer(1))
-            log(Solution935().knightDialer(2))
-            log(Solution935().knightDialer(3))
-            log(Solution935().knightDialer(4))
-            log(Solution935().knightDialer(3131))
+
+            var digits = arrayOf("1", "3", "5", "7")
+//            log(
+//                Solution902().atMostNGivenDigitSet(digits, 100)
+//            )
+//
+//            digits = arrayOf("1", "4", "9")
+//            log(
+//                Solution902().atMostNGivenDigitSet(digits, 1000000000)
+//            )
+//
+//            digits = arrayOf("7")
+//            log(
+//                Solution902().atMostNGivenDigitSet(digits, 8)
+//            )
+//
+//            digits = arrayOf("7")
+//            log(
+//                Solution902().atMostNGivenDigitSet(digits, 6)
+//            )
+//
+//            digits = arrayOf("3","5")
+//            log(
+//                Solution902().atMostNGivenDigitSet(digits, 4)
+//            )
+
+            digits = arrayOf("5","7","8")
+            log(
+                Solution902().atMostNGivenDigitSet(digits, 59)
+            )
+
+//            digits = arrayOf("5","7","8")
+//            log(
+//                Solution902().atMostNGivenDigitSet(digits, 578)
+//            )
         } catch (e: Exception) {
             print(e)
         }
