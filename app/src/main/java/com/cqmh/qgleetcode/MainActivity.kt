@@ -1476,6 +1476,25 @@ class Solution121 {
     }
 }
 
+/// 53. 最大子数组和
+class Solution53 {
+    /*
+     给你一个整数数组 nums ，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。子数组 是数组中的一个连续部分。
+     */
+    fun maxSubArray(nums: IntArray): Int {
+        // s[i] 代表 nums 中以下标 i 元素结尾的连续子数组的最大和
+        // s[i] = max(s[i - 1] + nums[i], nums[i])
+        // 因为以上计算只会用到 s[i - 1] 可以只用一个变量即可承载
+        var s = nums[0]
+        var max = nums[0]
+        for (i in 1 until nums.size) {
+            s = maxOf(s + nums[i], nums[i])
+            max = maxOf(max, s)
+        }
+        return max
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
