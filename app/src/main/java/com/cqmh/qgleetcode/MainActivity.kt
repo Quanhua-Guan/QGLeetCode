@@ -11,8 +11,46 @@ import kotlin.collections.ArrayList
 /// 二分查找
 class BinarySearch {
     companion object {
+        /// 升序数组，查找某个数字下标
+        fun indexOf(nums: IntArray, target: Int): Int {
+            var l = 0
+            var r = nums.size
+
+            while (l <= r) { // 包含相等，考虑 nums 仅包含 target 的情况
+                var mid = (l + r) ushr 1
+                if (nums[mid] > target) {
+                    r = mid - 1
+                } else if (nums[mid] < target) {
+                    l = mid + 1
+                } else {
+                    return mid
+                }
+            }
+            return -1
+        }
+
+        /// 升序数组，查找第一个大于或等于目标数的元素下标
+        fun indexOfGreaterThanOrEqual(nums: IntArray, target: Int): Int {
+            var l = 0
+            var r = nums.size - 1
+
+            while (l <= r) {
+                var mid = (l + r) ushr 1
+                if (nums[mid] < target) {
+                    l = mid + 1
+                } else { // nums[mid] >= target
+                    if (mid == 0 || nums[mid - 1] < target) {
+                        return mid
+                    } else {
+                        r = mid - 1
+                    }
+                }
+            }
+            return -1
+        }
+
         /// 升序数组，查找最后一个小于或等于目标数的元素下标
-        fun indexOflessThanOrEqual(nums: IntArray, target: Int): Int {
+        fun indexOfLessThanOrEqual(nums: IntArray, target: Int): Int {
             var l = 0
             var r = nums.size - 1
 
@@ -1154,7 +1192,7 @@ class Solution902 {
         // 处理可能构造的 nDigitCount 位数
         for (i in nDigits.indices) {
             val nDigit = nDigits[i]
-            val index = BinarySearch.indexOflessThanOrEqual(digits, nDigit)
+            val index = BinarySearch.indexOfLessThanOrEqual(digits, nDigit)
             if (index == -1) {
                 break
             }
@@ -1175,6 +1213,267 @@ class Solution902 {
 
         return totalCount
     }
+
+    /// 官方解法一 动态规划
+    fun atMostNGivenDigitSet1(digitStrings: Array<String>, n: Int): Int {
+        var digits = digitStrings.map { it.first() - '0' }.toIntArray() // 可选数字的升序排列
+        var nDigits = n.toString().map { it - '0' }.toIntArray() // 目标数字的每一位数，从高位到低位顺序的排列
+
+        /**
+        设 SubDigit[i] 为 nDigits 后 i 位构成的数字，假设 n = 52033, 则 nDigits = [5, 2, 0, 3, 3]，而 SubDigit[i]
+        取值如下：
+        - SubDigit[0] 为 空（后续做特殊处理）
+        - SubDigit[1] 为 3
+        - SubDigit[2] 为 33
+        - SubDigit[3] 为 033
+        - SubDigit[4] 为 2033
+        - SubDigit[5] 为 52033
+        显然 SubDigit[nDigits.size] == n，即为目标数
+
+        对 SubDigit[i] 特殊处理一下，变成数组的表达形式，用 SubDigits[i] 表达，则
+        SubDigit[i] 和 SubDigits[i] 一一对应。
+        - SubDigit[0] 为 空(后续做特殊处理) => SubDigits[0] 为 []
+        - SubDigit[1] 为 3               => SubDigits[1] 为 [3]
+        - SubDigit[2] 为 33              => SubDigits[2] 为 [3,3]
+        - SubDigit[3] 为 033             => SubDigits[3] 为 [0,3,3] （注意这种特殊情况）
+        - SubDigit[4] 为 2033            => SubDigits[4] 为 [2,0,3,3]
+        - SubDigit[5] 为 52033           => SubDigits[5] 为 [5,2,0,3,3]
+
+        ^_^=_=毫无意义的分隔线=_=^_^
+
+        c[i] 代表是使用 digits 中的数构成位数为 i 位，且小于或等于 SubDigit[i] 的数的总个数。
+        根据以上，可以得出所求解的值为：
+        c[nDigits.size] + digits.size^1 + digits.size^2 +...+ digits.size^(nDigits.size - 1)
+
+        求解 c 可以从 i 为 0 开始（i代表构造出来的数字的位数）
+        - c[0]，i 为 0，则无对应的实际数字，可以理解为从 digits 种选择 0 个数的选法，即只有 1 种，但实际上无法构成一个数，然而为了后续计算方便主动设置 c[0] = 1
+        - 例如：已经确定个位数的情况下
+        - c[1]，首先找到 SubDigits[1]，取 SubDigits[1].first，设为 target。然后，从 digits 中使用二分查找找到
+        最后一个小于等于 target 的数对应的下标（按惯例，未找到时返回-1），设该下标为 targetIndex：
+        - 如果 targetIndex == -1，则 c[1] = 0，
+        - 说明不可能从 digits 中选出 1 个数来构造出一个小于或等于 SubDigit[1] 的 1 位数。
+        - 也可以这么理解，从 [3,4,5] 中选择一个数且要求这个数小于等于 2，则一共有 0 种选法。
+        - 如果 targetIndex != -1, 则判断 target 和 digits[targetIndex] 是否相等，根据 targetIndex 的获取方式，
+        可以知道，digits[targetIndex] <= target，所以有 2 种情况：
+        - digits[targetIndex] == target，则 digits[0] 到 digits[targetIndex] 都可以用来构造数字，有 targetIndex + 1 种方法。
+        - digits[targetIndex] < target， 则 digits[0] 到 digits[targetIndex] 都可以用来构造数字，有 targetIndex + 1 种方法。
+        总结以上2种情况，c[1] = targetIndex + 1
+        - c[2]，首先找到 SubDigits[2]，取 SubDigits[2].first，设为 target。然后，从 digits 中使用二分查找找到
+        最后一个小于等于 target 的下标，设为 targetIndex：
+        - 如果 targetIndex == -1, 则 c[2] = 0
+        - 说明不可能从 digits 中选出 2 个数来构造出一个小于等于 SubDigit[2] 的 2 位数。
+        - 如果 targetIndex != -1, 则判断 target 和 digits[targetIndex] 是否相等，根据 targetIndex 的获取方式，
+        可以知道，digits[targetIndex] <= target，所以有 2 种情况：
+        - digits[targetIndex] == target，
+        - 当选择 digits[targetIndex] 来作为十位的数，则用于构造个位数的数不能大于 SubDigits[1] (即 c[1]), 所以有 c[1] 种方法。
+        - 当选择 digits 中小于 digits[targetIndex] 的数作为十位数，则一共有 targetIndex 种选法，由于十位数小于目标数的十位数，
+        所以个位数只需要从 digits 中任选一个数即可，所以有 targetIndex * digits.size 种方法。
+        总计：c[1] + targetIndex * digits.size 种方法。
+        - digits[targetIndex] < target，
+        - 一共有 targetIndex + 1 种选法构造十位数，由于十位数小于目标数的十位数，所以个位数只需要从 digits 中任选一个数即可，
+        所以有 (targetIndex + 1) * digits.size 种方法。
+        总计：(targetIndex + 1) * digits.size 种方法。
+        - c[3]，首先找到 SubDigits[3]，取 SubDigits[3].first，设为 target。然后，从 digits 中使用二分查找找到
+        最后一个小于等于 target 的下标，设为 targetIndex：
+        - 如果 targetIndex == -1, 则 c[3] = 0
+        - 说明不可能从 digits 中选出 3 个数来构造出一个小于等于 SubDigit[3] 的 3 位数。
+        - 如果 targetIndex != -1, 则判断 target 和 digits[targetIndex] 是否相等，根据 targetIndex 的获取方式，
+        可以知道，digits[targetIndex] <= target，所以有 2 种情况：
+        - digits[targetIndex] == target，
+        - 当选择 digits[targetIndex] 来作为百位的数，则问题转化为"从 digits 中选择 2 个数来构造小于或等于 SubDigit[2] 的数"，即 c[2]。
+        - 当选择 digits 中小于 digits[targetIndex] 的数作为十位数，则一共有 targetIndex 种选法，由于百位数小于目标数的百位数，
+        所以十位和个位数只需要从 digits 中任选一个数即可，所以有 targetIndex * digits.size * digits.size 种方法。
+        总计：c[2] + targetIndex * digits.size * digits.size 种方法。
+        - digits[targetIndex] < target，
+        - 一共有 targetIndex + 1 种选法构造百位数，由于百位数小于目标数的百位数，所以十位和个位数只需要从 digits 中任选一个数即可，
+        所以有 (targetIndex + 1) * digits.size * digits.size 种方法。
+        总计：(targetIndex + 1) * digits.size * digits.size 种方法。
+
+        - 依次类推...
+
+        - c[i]，首先找到 SubDigits[i]，取 SubDigits[i].first，设为 target。然后，从 digits 中使用二分查找找到
+        最后一个小于等于 target 的下标，设为 targetIndex：
+        - 如果 targetIndex == -1，则 c[i] = 0，说明不可能从 digits 中选出 i 个数来构造一个小于等于 SubDigit[i] 的 i 位数。
+        - 如果 targetIndex != -1，则有2种情况：
+        - digits[targetIndex] == target,
+        - 当选择 digits[targetIndex] 作为最高位的数，则问题转化为"从 digits 中选择 i - 1 个数来构造小于或等于 SubDigit[i - 1] 的数"，即 c[i-1]
+        - 当选择 digits 中小于 digits[targetIndex] 的数作为最高位的数，则一共有 targetIndex 种选法，由于最高位小于目标数的最高位，
+        所以后续i-1位数只需要从 digits 中任选一个数即可，所以有 targetIndex * (digits.size^(i-1))  种方法。
+        总计：c[i] = c[i-1] + targetIndex * (digits.size^(i-1))
+        - digits[targetIndex] < target,
+        - 以供有 target + 1 种选法构造最高位的数，由于最高位数小于目标数的最高位数，所以后续 i-1 位数只需要从 digits 总任选一个数即可，
+        所以有 (targetIndex + 1)*(digits.size^(i-1)) 种方法。
+        总计：c[i] = (targetIndex + 1) * (digits.size^(i-1))
+
+        总结一下，状态转移方程：
+        c[i] = 0, if targetIndex == -1
+        c[i] = c[i-1] + targetIndex * (digits.size^(i-1)), if targetIndex != -1 && digits[targetIndex] == target  (主动设置 c[0] = 1)
+        c[i] = (targetIndex + 1) * (digits.size^(i-1)), if targetIndex != -1 && digits[targetIndex] < target
+
+        讨论：if targetIndex != -1 && digits[targetIndex] == target 的情况，c[1] = c[0] + targetIndex * (digits.size^(i - 1)), 此时 c[0] 实际上代表一种方法，所以主动设置 c[0] = 1
+
+        最后，回到我们求解的值：
+        根据以上，可以得出所求解的值为：
+        c[nDigits.size] + digits.size^1 + digits.size^2 +...+ digits.size^(nDigits.size - 1)
+         */
+
+        // 先计算 digits.size 的 1 次方，2 次方，3 次方，...，(nDigits.size - 1) 次方
+        var totalCount = 0
+        var powers = IntArray(nDigits.size)
+        powers[0] = 1
+        for (i in 1 until nDigits.size) {
+            powers[i] = powers[i - 1] * digits.size
+            totalCount += powers[i] // 计算小于 nDigits.size 位的数的个数
+        }
+
+        var c = IntArray(nDigits.size + 1)
+        c[0] = 1
+        for (i in 1 until nDigits.size + 1) {
+            val target = nDigits[nDigits.size - i]
+            val targetIndex = BinarySearch.indexOfLessThanOrEqual(digits, target)
+            if (targetIndex == -1) {
+                c[i] = 0
+            } else {
+                if (digits[targetIndex] == target) {
+                    c[i] = c[i - 1] + targetIndex * powers[i - 1]
+                } else {
+                    c[i] = (targetIndex + 1) * powers[i - 1]
+                }
+            }
+        }
+
+        totalCount += c[nDigits.size]
+        return totalCount
+    }
+
+    // 官方解法二 数学方法 映射
+    fun atMostNGivenDigitSet2(digitStrings: Array<String>, n: Int): Int {
+        var digits = digitStrings.map { it.first() - '0' }.toIntArray()
+        var nDigits = n.toString().map { it - '0' }.toIntArray()
+        var mappedMaxDigits = IntArray(nDigits.size)
+
+        var useMax = false
+        // 先求出最大的那个数
+        var i = 0
+        while (i < nDigits.size) {
+            if (useMax) {
+                mappedMaxDigits[i] = digits.size
+                i++
+                continue
+            }
+
+            val target = nDigits[i]
+            val targetIndex = BinarySearch.indexOfLessThanOrEqual(digits, target)
+            if (targetIndex == -1) {
+                useMax = true
+                while (i - 1 >= 0) { // 往回遍历
+                    i--
+                    val target = nDigits[i]
+                    val targetIndex = BinarySearch.indexOfLessThanOrEqual(digits, target)
+                    if (targetIndex == 0) {
+                        mappedMaxDigits[i] = 0 // 将之前添的值清0
+                    } else {
+                        mappedMaxDigits[i] = targetIndex
+                        break
+                    }
+                    assert(targetIndex != -1)
+                }
+            } else {
+                mappedMaxDigits[i] = targetIndex + 1
+                if (digits[targetIndex] < target) {
+                    useMax = true
+                }
+            }
+
+            i++
+        }
+
+        // 通过映射，计算出最大的这个数属于第几个数
+        var result = 0
+        for (d in mappedMaxDigits) {
+            result = result * digits.size + d
+        }
+        return result
+    }
+}
+
+/// 121. 买卖股票的最佳时机
+class Solution121 {
+    // 暴力遍历，超时
+    fun maxProfit(prices: IntArray): Int {
+        var max = 0
+        // 第 i 天买入，第 j 天卖出，记录最大利润
+        for (i in prices.indices) {
+            for (j in i + 1 until prices.size) {
+                max = maxOf(max, prices[j] - prices[i])
+            }
+        }
+        return max
+    }
+
+    fun maxProfit1(prices: IntArray): Int {
+        var minPrice = Int.MAX_VALUE
+        var maxProfit = 0
+        for (i in prices.indices) {
+            if (prices[i] < minPrice) {
+                minPrice = prices[i]
+            } else if (maxProfit < prices[i] - minPrice) {
+                maxProfit = prices[i] - minPrice
+            }
+        }
+        return maxProfit
+    }
+
+    // DP
+    fun maxProfitDP(prices: IntArray): Int {
+        var max = 0
+        /*
+         maxProfitWhenHold[i] 代表第 i 天持有股票的情况下最大的利润（可能为负值）
+         maxProfitWhenHold[i] = max(maxProfitWhenHold[i - 1], -prices[i])  => 可以使用一个变量来存储
+
+         profit[i] 代表第 i 天的最大利润
+         profit[i] = max(
+            profit[i - 1], // 今天不操作，利润和昨天一样
+            maxProfitWhenHold[i - 1] + prices[i] // 今天卖出，则今天最大利润为「在今天之前已买入的情况下的最大利润」+ 今天卖出的价格
+         )
+
+         profit[0] = 0 第一天只能买入或不买入，则最大利润为 0
+         */
+        var profit = IntArray(prices.size)
+        profit[0] = 0
+        var maxProfitWhenHold = -prices[0]
+        for (i in 1 until prices.size) {
+            profit[i] = maxOf(profit[i - 1], maxProfitWhenHold + prices[i])
+            maxProfitWhenHold = maxOf(maxProfitWhenHold, -prices[i])
+        }
+        return profit[prices.size - 1]
+    }
+
+    // DP，优化空间复杂度
+    fun maxProfitDPWithOnlyO1Space(prices: IntArray): Int {
+        var max = 0
+        /*
+         maxProfitWhenHold[i] 代表第 i 天持有股票的情况下最大的利润（可能为负值）
+         maxProfitWhenHold[i] = max(maxProfitWhenHold[i - 1], -prices[i])  => 可以使用一个变量来存储
+
+         profit[i] 代表第 i 天的最大利润
+         profit[i] = max(
+            profit[i - 1], // 今天不操作，利润和昨天一样
+            maxProfitWhenHold[i - 1] + prices[i] // 今天卖出，则今天最大利润为「在今天之前已买入的情况下的最大利润」+ 今天卖出的价格
+         )
+
+         profit[0] = 0 第一天只能买入或不买入，则最大利润为 0
+
+         计算 profit[i] 时仅使用到了 profit[i-1] 和 maxProfitWhenHold[i - 1]，profit[i-1]之前 和 maxProfitWhenHold[i - 1]之前的元素不会在被用到，所以可以使用单个变量就可以承载了。
+         */
+        var profit = 0
+        var maxProfitWhenHold = -prices[0]
+        for (i in 1 until prices.size) {
+            profit = maxOf(profit, maxProfitWhenHold + prices[i])
+            maxProfitWhenHold = maxOf(maxProfitWhenHold, -prices[i])
+        }
+        return profit
+    }
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -1185,39 +1484,103 @@ class MainActivity : AppCompatActivity() {
         try {
 
             var digits = arrayOf("1", "3", "5", "7")
-//            log(
-//                Solution902().atMostNGivenDigitSet(digits, 100)
-//            )
-//
-//            digits = arrayOf("1", "4", "9")
-//            log(
-//                Solution902().atMostNGivenDigitSet(digits, 1000000000)
-//            )
-//
-//            digits = arrayOf("7")
-//            log(
-//                Solution902().atMostNGivenDigitSet(digits, 8)
-//            )
-//
-//            digits = arrayOf("7")
-//            log(
-//                Solution902().atMostNGivenDigitSet(digits, 6)
-//            )
-//
-//            digits = arrayOf("3","5")
-//            log(
-//                Solution902().atMostNGivenDigitSet(digits, 4)
-//            )
+            log(
+                Solution902().atMostNGivenDigitSet(digits, 100)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet1(digits, 100)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet2(digits, 100)
+            )
 
-            digits = arrayOf("5","7","8")
+            digits = arrayOf("1", "4", "9")
+            log(
+                Solution902().atMostNGivenDigitSet(digits, 1000000000)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet1(digits, 1000000000)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet2(digits, 1000000000)
+            )
+
+            digits = arrayOf("7")
+            log(
+                Solution902().atMostNGivenDigitSet(digits, 8)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet1(digits, 8)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet2(digits, 8)
+            )
+
+            digits = arrayOf("7")
+            log(
+                Solution902().atMostNGivenDigitSet(digits, 6)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet1(digits, 6)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet2(digits, 6)
+            )
+
+            digits = arrayOf("3", "5")
+            log(
+                Solution902().atMostNGivenDigitSet(digits, 4)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet1(digits, 4)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet2(digits, 4)
+            )
+
+            digits = arrayOf("5", "7", "8")
             log(
                 Solution902().atMostNGivenDigitSet(digits, 59)
             )
+            log(
+                Solution902().atMostNGivenDigitSet1(digits, 59)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet2(digits, 59)
+            )
 
-//            digits = arrayOf("5","7","8")
-//            log(
-//                Solution902().atMostNGivenDigitSet(digits, 578)
-//            )
+            digits = arrayOf("5", "7", "8")
+            log(
+                Solution902().atMostNGivenDigitSet(digits, 578)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet1(digits, 578)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet2(digits, 578)
+            )
+
+            digits = arrayOf("1", "2", "3", "4")
+            log(
+                Solution902().atMostNGivenDigitSet(digits, 44)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet1(digits, 44)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet2(digits, 44)
+            )
+
+            digits = arrayOf("1", "7")
+            log(
+                Solution902().atMostNGivenDigitSet(digits, 231)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet1(digits, 231)
+            )
+            log(
+                Solution902().atMostNGivenDigitSet2(digits, 231)
+            )
         } catch (e: Exception) {
             print(e)
         }
