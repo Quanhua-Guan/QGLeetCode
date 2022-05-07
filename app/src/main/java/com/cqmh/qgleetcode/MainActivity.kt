@@ -1,12 +1,10 @@
 package com.cqmh.qgleetcode
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import java.lang.Exception
+import androidx.appcompat.app.AppCompatActivity
 import java.math.BigInteger
 import java.util.*
-import kotlin.collections.ArrayList
 
 /// 二分查找
 class BinarySearch {
@@ -1495,110 +1493,124 @@ class Solution53 {
     }
 }
 
+/// 122. 买卖股票的最佳时机 II
+class Solution122 {
+    // DP
+    fun maxProfit(prices: IntArray): Int {
+        // 不限制交易次数
+
+        // ph[i] 代表第 i 天持有股票的情况下最大的利润（可能为负值），ph[0] = -prices[0]
+        // ph[i] = max(ph[i-1], p[i-1]-prices[i])
+        // 不限交易次数，所以需要添加 p[i-1]
+        var ph = IntArray(prices.size)
+        ph[0] = -prices[0]
+
+        // p[i] 代表第 i 天能获取的最大利润，
+        // p[i] = max(p[i-1], ph[i-1]+prices[i])
+        // p[0] = 0
+        var p = IntArray(prices.size)
+
+        for (i in 1 until prices.size) {
+            p[i] = maxOf(p[i - 1], ph[i - 1] + prices[i])
+            ph[i] = maxOf(ph[i - 1], p[i] - prices[i])
+        }
+
+        return p[prices.size - 1]
+    }
+
+    // 贪心
+    fun maxProfit1(prices: IntArray): Int {
+        var max = 0
+        for (i in 1 until prices.size) {
+            max += maxOf(0, prices[i] - prices[i - 1])
+        }
+        return max
+    }
+}
+
+/// 剑指 Offer II 062. 实现前缀树
+class SolutionJZOfferII062 {
+    class Trie() {
+        /** Initialize your data structure here. */
+        class TrieNode() {
+            var count: Int = 0
+            val next = MutableList<TrieNode?>(26) { null }
+        }
+
+        val root = MutableList<TrieNode?>(26) { null }
+
+        /** Inserts a word into the trie. */
+        fun insert(word: String) {
+            var entries = root
+            for (i in word.indices) {
+                val c = word[i]
+                val index = c - 'a'
+                var node = entries[index]
+                if (node == null) {
+                    node = TrieNode()
+                    entries[index] = node
+                }
+                if (i == word.length - 1) {
+                    node.count += 1
+                }
+                entries = node!!.next
+            }
+        }
+
+        /** Returns if the word is in the trie. */
+        fun search(word: String): Boolean {
+            var entries = root
+            for (i in word.indices) {
+                val c = word[i]
+                val index = c - 'a'
+                val node = entries[index]
+                if (node != null) {
+                    if (i == word.length - 1 && node.count > 0) {
+                        return true
+                    }
+                    entries = node.next
+                } else {
+                    return false
+                }
+            }
+            return false
+        }
+
+        /** Returns if there is any word in the trie that starts with the given prefix. */
+        fun startsWith(prefix: String): Boolean {
+            var entries = root
+            for (i in prefix.indices) {
+                val c = prefix[i]
+                val index = c - 'a'
+                val node = entries[index]
+                if (node != null) {
+                    entries = node.next
+                } else {
+                    return false
+                }
+            }
+            return true
+        }
+
+    }
+
+    /**
+     * Your Trie object will be instantiated and called as such:
+     * var obj = Trie()
+     * obj.insert(word)
+     * var param_2 = obj.search(word)
+     * var param_3 = obj.startsWith(prefix)
+     */
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         try {
-
-            var digits = arrayOf("1", "3", "5", "7")
             log(
-                Solution902().atMostNGivenDigitSet(digits, 100)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet1(digits, 100)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet2(digits, 100)
-            )
-
-            digits = arrayOf("1", "4", "9")
-            log(
-                Solution902().atMostNGivenDigitSet(digits, 1000000000)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet1(digits, 1000000000)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet2(digits, 1000000000)
-            )
-
-            digits = arrayOf("7")
-            log(
-                Solution902().atMostNGivenDigitSet(digits, 8)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet1(digits, 8)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet2(digits, 8)
-            )
-
-            digits = arrayOf("7")
-            log(
-                Solution902().atMostNGivenDigitSet(digits, 6)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet1(digits, 6)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet2(digits, 6)
-            )
-
-            digits = arrayOf("3", "5")
-            log(
-                Solution902().atMostNGivenDigitSet(digits, 4)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet1(digits, 4)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet2(digits, 4)
-            )
-
-            digits = arrayOf("5", "7", "8")
-            log(
-                Solution902().atMostNGivenDigitSet(digits, 59)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet1(digits, 59)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet2(digits, 59)
-            )
-
-            digits = arrayOf("5", "7", "8")
-            log(
-                Solution902().atMostNGivenDigitSet(digits, 578)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet1(digits, 578)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet2(digits, 578)
-            )
-
-            digits = arrayOf("1", "2", "3", "4")
-            log(
-                Solution902().atMostNGivenDigitSet(digits, 44)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet1(digits, 44)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet2(digits, 44)
-            )
-
-            digits = arrayOf("1", "7")
-            log(
-                Solution902().atMostNGivenDigitSet(digits, 231)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet1(digits, 231)
-            )
-            log(
-                Solution902().atMostNGivenDigitSet2(digits, 231)
+                Solution122().maxProfit(intArrayOf(7, 1, 5, 3, 6, 4))
             )
         } catch (e: Exception) {
             print(e)
