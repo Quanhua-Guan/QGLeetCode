@@ -1603,6 +1603,52 @@ class SolutionJZOfferII062 {
      */
 }
 
+/// 887. 鸡蛋掉落
+class Solution887 {
+    fun superEggDrop(K: Int, N: Int): Int {
+        // d[k][n] 代表有 k 个鸡蛋，n 层楼时，测试出 f 的最小次数
+        // 设置 x 为实际的 f 值，则 x 可能为 1 <= x <= n
+        // dp[k][n] = 1 + min(max(dp[k][n - 1], dp[k-1][n-1]), max(dp[k][], dp[k-1][]), max(dp[k][], dp[k-1][]), ...)
+        var d = Array(K + 1) { IntArray(N + 1) }
+
+        for (n in 1 until N + 1) {
+            d[1][n] = n
+        }
+
+        for (k in 1 until K + 1) {
+            d[k][0] = 0 // 如果仅有0层楼，则不用测试，所以 f == 0
+            d[k][1] = 1
+        }
+
+        for (k in 2 until K + 1) {
+            for (n in 2 until N + 1) {
+                var l = 1
+                var r = n
+                while (l + 1 < r) {
+                    val mid = (l + r) ushr 1
+                    val left = d[k - 1][mid - 1] // left 相对 mid 单调递增
+                    val right = d[k][n - mid]    // right 相对 mid 单调递减
+                    // 所以随着 mid 从 1 到 n 总存在一个点（或2个点）left 和 right 的差值最小
+                    if (left < right) {
+                        l = mid
+                    } else if (left > right) {
+                        r = mid
+                    } else {
+                        l = mid
+                        r = mid
+                    }
+                }
+                d[k][n] = 1 + minOf(
+                    maxOf(d[k - 1][l - 1], d[k][n - l]),
+                    maxOf(d[k - 1][r - 1], d[k][n - r])
+                )
+            }
+        }
+
+        return d[K][N]
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1610,7 +1656,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         try {
             log(
-                Solution122().maxProfit(intArrayOf(7, 1, 5, 3, 6, 4))
+                Solution887().superEggDrop(1, 2)
+            )
+            log(
+                Solution887().superEggDrop(2, 6)
+            )
+            log(
+                Solution887().superEggDrop(3, 14)
             )
         } catch (e: Exception) {
             print(e)
