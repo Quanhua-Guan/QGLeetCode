@@ -1647,6 +1647,67 @@ class Solution887 {
 
         return d[K][N]
     }
+
+    // 默写一遍
+    fun superEggDrop1(K: Int, N: Int): Int {
+        // d[k][n] 有 k 个鸡蛋，n 层楼时，确认 f 最小的操作次数
+        // d[k][n] = 1 + min(
+        //    max(d[k][n - 1], d[k - 1][1 - 1]),
+        //    max(d[k][n - 2], d[k - 1][2 - 1]),
+        //    max(d[k][n - 3], d[k - 1][3 - 1]),
+        //    ...
+        //    max(d[k][n - x], d[k - 1][x - 1]),
+        //    ...
+        //    max(d[k][n - n], d[k - 1][n - 1]),
+        // )
+        //
+        // 当 k 和 n 确定时，
+        //    (1) d[k][n - x] 随着 x 增大而减小，
+        //    (2) 而 d[k - 1][x - 1] 随着 x 增大而增大。 (1 <= x <= n)
+        // 所以必然存在1个或2个x使得 d[k][n - x] 和 d[k - 1][x - 1] 差值最小，只需找到这个 x，然后计算并取得最小值即可
+        // 基于 d[k][n - x] 和 d[k - 1][x - 1] 遂 x 增大而相互逼近的特性，可以通过二分法来快速查找 x 值
+
+        var d = Array(K + 1){IntArray(N + 1)}
+
+        // 1 层楼，k 个鸡蛋，总是只需要 1 次测试
+        for (k in 1 until K + 1) {
+            d[k][1] = 1
+            d[k][0] = 0 // 0 层楼时无需测试
+        }
+
+        // n 层楼，1 个鸡蛋，需要 n 次测试
+        for (n in 1 until N + 1) {
+            d[1][n] = n
+        }
+
+        for (k in 2 until K + 1) {
+            for (n in 2 until N + 1) {
+                // 二分查找 x 值
+                var l = 1
+                var r = n
+                while (l + 1 < r) {
+                    val mid = (l + r) ushr 1
+                    val increase = d[k - 1][mid - 1]
+                    val decrease = d[k][n - mid]
+                    if (decrease > increase) {
+                        l = mid
+                    } else if (decrease < increase) {
+                        r = mid
+                    } else {
+                        l = mid
+                        r = mid // 直接找到了相交的那个点对应的 x 值
+                    }
+                }
+
+                d[k][n] = 1 + minOf(
+                    maxOf(d[k][n - l], d[k - 1][l - 1]),
+                    maxOf(d[k][n - r], d[k - 1][r - 1])
+                )
+            }
+        }
+
+        return d[K][N]
+    }
 }
 
 /////////////////////////////////////////////////////////////////////
