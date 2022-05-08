@@ -71,6 +71,45 @@ class BinarySearch {
 
 // 两数之和
 class Solution1 {
+    class IndexedNumber (val value:Int, val index:Int) {}
+
+    fun twoSum3(nums: IntArray, target: Int): IntArray {
+        var indexedNums = nums.mapIndexed({index, value -> IndexedNumber(value, index)})
+        indexedNums = indexedNums.sortedBy { it.value }
+        var l = 0
+        var r = indexedNums.size - 1
+
+        while (l < r) {
+            val left = indexedNums[l]!!
+            val right = indexedNums[r]!!
+            val sum = left.value + right.value
+            if (sum == target) {
+                return arrayOf(left.index, right.index).toIntArray()
+            }
+            if (sum < target) {
+                l++
+            } else {
+                r--
+            }
+        }
+
+        return intArrayOf()
+    }
+
+    fun twoSum1(nums: IntArray, target: Int): IntArray {
+        // 存储数字和它的下标
+        var numsMap = mutableMapOf<Int, Int>()
+
+        for (i in nums.indices) {
+            if (numsMap.containsKey(target - nums[i])) {
+                return arrayOf(numsMap[target - nums[i]]!!, i).toIntArray()
+            }
+            numsMap[nums[i]] = i
+        }
+
+        return intArrayOf()
+    }
+
     fun twoSum(nums: IntArray, target: Int): IntArray {
         var numMap = mutableMapOf<Int, Int>()
         var index = 0
@@ -1710,6 +1749,53 @@ class Solution887 {
     }
 }
 
+/// 15. 三数之和
+class Solution15 {
+    fun threeSum(nums: IntArray): List<List<Int>> {
+        var result = mutableListOf<List<Int>>()
+        nums.sort()
+        var first: Int? = null
+        for (i in nums.indices) {
+            if (first == nums[i]) {
+                continue
+            }
+            first = nums[i]
+            result.addAll(threeSumWithFirst(nums, i + 1, first))
+        }
+        return result
+    }
+
+    fun threeSumWithFirst(nums: IntArray, start: Int, first: Int): List<List<Int>> {
+        val sum = -first
+        var result = mutableListOf<List<Int>>()
+
+        var l = start
+        var r = nums.size - 1
+        while (l < r) {
+            val second = nums[l]
+            val third = nums[r]
+            if (second + third == sum) {
+                result.add(listOf(first, second, third))
+                l++
+                while (l < r && nums[l] == second ) {
+                   l++
+                }
+            } else if (second + third < sum) {
+                l++
+                while (l < r && nums[l] == second ) {
+                    l++
+                }
+            } else { // second + third > sum
+                r--
+                while (l < r && nums[r] == third) {
+                    r--
+                }
+            }
+        }
+        return result
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1717,13 +1803,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         try {
             log(
-                Solution887().superEggDrop(1, 2)
-            )
-            log(
-                Solution887().superEggDrop(2, 6)
-            )
-            log(
-                Solution887().superEggDrop(3, 14)
+                Solution1().twoSum3(intArrayOf(3,2,4), 0)
             )
         } catch (e: Exception) {
             print(e)
