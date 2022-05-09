@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import java.math.BigInteger
 import java.util.*
+import kotlin.math.max
 
 /// 二分查找
 class BinarySearch {
@@ -71,17 +72,17 @@ class BinarySearch {
 
 // 两数之和
 class Solution1 {
-    class IndexedNumber (val value:Int, val index:Int) {}
+    class IndexedNumber(val value: Int, val index: Int) {}
 
     fun twoSum3(nums: IntArray, target: Int): IntArray {
-        var indexedNums = nums.mapIndexed({index, value -> IndexedNumber(value, index)})
+        var indexedNums = nums.mapIndexed({ index, value -> IndexedNumber(value, index) })
         indexedNums = indexedNums.sortedBy { it.value }
         var l = 0
         var r = indexedNums.size - 1
 
         while (l < r) {
-            val left = indexedNums[l]!!
-            val right = indexedNums[r]!!
+            val left = indexedNums[l]
+            val right = indexedNums[r]
             val sum = left.value + right.value
             if (sum == target) {
                 return arrayOf(left.index, right.index).toIntArray()
@@ -1463,7 +1464,6 @@ class Solution121 {
 
     // DP
     fun maxProfitDP(prices: IntArray): Int {
-        var max = 0
         /*
          maxProfitWhenHold[i] 代表第 i 天持有股票的情况下最大的利润（可能为负值）
          maxProfitWhenHold[i] = max(maxProfitWhenHold[i - 1], -prices[i])  => 可以使用一个变量来存储
@@ -1488,7 +1488,6 @@ class Solution121 {
 
     // DP，优化空间复杂度
     fun maxProfitDPWithOnlyO1Space(prices: IntArray): Int {
-        var max = 0
         /*
          maxProfitWhenHold[i] 代表第 i 天持有股票的情况下最大的利润（可能为负值）
          maxProfitWhenHold[i] = max(maxProfitWhenHold[i - 1], -prices[i])  => 可以使用一个变量来存储
@@ -1592,7 +1591,7 @@ class SolutionJZOfferII062 {
                 if (i == word.length - 1) {
                     node.count += 1
                 }
-                entries = node!!.next
+                entries = node.next
             }
         }
 
@@ -1706,7 +1705,7 @@ class Solution887 {
         // 所以必然存在1个或2个x使得 d[k][n - x] 和 d[k - 1][x - 1] 差值最小，只需找到这个 x，然后计算并取得最小值即可
         // 基于 d[k][n - x] 和 d[k - 1][x - 1] 遂 x 增大而相互逼近的特性，可以通过二分法来快速查找 x 值
 
-        var d = Array(K + 1){IntArray(N + 1)}
+        var d = Array(K + 1) { IntArray(N + 1) }
 
         // 1 层楼，k 个鸡蛋，总是只需要 1 次测试
         for (k in 1 until K + 1) {
@@ -1777,12 +1776,12 @@ class Solution15 {
             if (second + third == sum) {
                 result.add(listOf(first, second, third))
                 l++
-                while (l < r && nums[l] == second ) {
-                   l++
+                while (l < r && nums[l] == second) {
+                    l++
                 }
             } else if (second + third < sum) {
                 l++
-                while (l < r && nums[l] == second ) {
+                while (l < r && nums[l] == second) {
                     l++
                 }
             } else { // second + third > sum
@@ -1796,6 +1795,127 @@ class Solution15 {
     }
 }
 
+/// 877. 石子游戏
+class Solution877 {
+    // 暴力递归
+    fun stoneGame(piles: IntArray): Boolean {
+        return stoneGameAliceGain(piles, 0, piles.size - 1) > 0
+    }
+
+    fun stoneGameAliceGain(piles: IntArray, start: Int, end: Int): Int {
+        if (end - start == 1) {
+            return maxOf(piles[start] - piles[end], -piles[start] + piles[end])
+        }
+
+        return maxOf(
+            maxOf(
+                piles[start] - piles[end] + stoneGameAliceGain(
+                    piles,
+                    start + 1,
+                    end - 1
+                ), // A 选 start，B 选 end
+                piles[start] - piles[start + 1] + stoneGameAliceGain(
+                    piles,
+                    start + 2,
+                    end
+                ) // A 选 start, B 选 start + 1
+            ),
+            maxOf(
+                piles[end] - piles[start] + stoneGameAliceGain(
+                    piles,
+                    start + 1,
+                    end - 1
+                ), // A 选 end, B 选 start
+                piles[end] - piles[end - 1] + stoneGameAliceGain(
+                    piles,
+                    start,
+                    end - 2
+                )// A 选 end, B 选 end - 1
+            )
+        )
+    }
+
+    // DP
+    fun stoneGameDP(piles: IntArray): Boolean {
+        // score[i][j] 代表在以 piles 第 i 个元素到第 j 个元素组成的子数组中 Alice 可以获得的石子总数减去 Bob 可
+        // 以获得的石子总数的差值
+        /*
+         score[i][j] = max(
+           piles[i] - piles[j] + score[i + 1][j - 1] // Alice 选择了 i，Bob 选择了 j
+           piles[i] - piles[i] + score[i + 2][j]     // Alice 选择了 i，Bob 选择了 i+1
+           piles[j] - piles[i] + score[i + 1][j - 1] // Alice 选择了 j，Bob 选择了 i
+           piles[j] - piles[j + 1] + score[i + 1][j - 1] // Alice 选择了 j，Bob 选择了 j-1
+         )
+
+         0 <= i <= piles.size - 2
+         1 <= j <= piles.size - 1
+
+         */
+        var score = Array(piles.size - 1) { IntArray(piles.size) }
+
+        for (i in 0 until piles.size - 1) {
+            // piles 子数组长度为 2
+            val tmp = piles[i] - piles[i + 1]
+            score[i][i + 1] = if (tmp < 0) -tmp else tmp
+        }
+
+        for (l in 3 until piles.size step 2) { // piles 子数组长度为 4，6，8，...
+            for (j in piles.size - 1 downTo l) {
+                val i = j - l
+                var max = Int.MIN_VALUE
+                listOf(
+                    piles[i] - piles[j] + score[i + 1][j - 1], // Alice 选择了 i，Bob 选择了 j
+                    piles[i] - piles[i + 1] + score[i + 2][j], // Alice 选择了 i，Bob 选择了 i+1
+                    piles[j] - piles[i] + score[i + 1][j - 1], // Alice 选择了 j，Bob 选择了 i
+                    piles[j] - piles[j - 1] + score[i][j - 2]  // Alice 选择了 j，Bob 选择了 j-1
+                ).forEach { if (it > max) max = it }
+                score[i][j] = max
+            }
+        }
+
+        return score[0][piles.size - 1] > 0
+    }
+}
+
+/// 486. 预测赢家
+class Solution486 {
+    // 递归
+    fun PredictTheWinner(nums: IntArray): Boolean {
+        return totalScore(nums, 0, nums.size - 1, 1) >= 0
+    }
+
+    fun totalScore(nums: IntArray, start: Int, end: Int, turn: Int): Int {
+        if (start == end) {
+            return nums[start] * turn
+        }
+        val useStart = nums[start] * turn + totalScore(nums, start + 1, end, -turn)
+        val useEnd = nums[end] * turn + totalScore(nums, start, end - 1, -turn)
+        return maxOf(useStart * turn, useEnd * turn) * turn
+    }
+
+    // DP
+    fun PredictTheWinnerDP(nums: IntArray): Boolean {
+        // dp[i][j]表示剩余 nums[i..j] 时，先手选手能够获得的最大净胜分
+        // dp[i][j] = maxOf(nums[i] - dp[i+1][j], nums[j] - dp[i][j-1])
+        // dp[i][i] = nums[i]
+        // i <= j
+        // 求 dp[0][nums.size-1] >= 0
+        var dp = Array(nums.size) { IntArray(nums.size) }
+        for (i in 0 until nums.size) {
+            dp[i][i] = nums[i]
+        }
+        for (l in 1 until nums.size) {
+            for (i in 0 until nums.size) {
+                var j = i + l
+                if (j >= nums.size) break
+                dp[i][j] = maxOf(nums[i] - dp[i + 1][j], nums[j] - dp[i][j - 1])
+            }
+        }
+
+        return dp[0][nums.size-1] >= 0
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1803,7 +1923,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         try {
             log(
-                Solution1().twoSum3(intArrayOf(3,2,4), 0)
+                Solution486().PredictTheWinner(
+                    intArrayOf(
+                        2, 4, 6, 8
+                    )
+                )
             )
         } catch (e: Exception) {
             print(e)
