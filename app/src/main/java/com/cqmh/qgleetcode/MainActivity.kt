@@ -1912,7 +1912,171 @@ class Solution486 {
             }
         }
 
-        return dp[0][nums.size-1] >= 0
+        return dp[0][nums.size - 1] >= 0
+    }
+
+    // DP 空间优化
+    fun PredictTheWinnerDPMemO_N(nums: IntArray): Boolean {
+        // dp[i][j] 代表剩余 nums[i...j] 时，先手选手能获得的最大净胜分
+        // dp[i][j] = max(nums[i] - dp[i + 1][j], nums[j] - dp[i][j - 1])
+        // 优化内存空间，dp[i][j] 的计算仅用到 dp[i + 1][j] 和 dp[i][j - 1] 使用一维数组代替二维数组
+        //
+        // dp[i][i] = i
+        //          设 n = nums.size - 1
+        //          横向 i in 0 ~> n
+        //  纵向i    ... dp[i][j - 1]  dp[i][j]     ...
+        //  从0到    ...               dp[i + 1][j] ...
+        //  n
+        //
+
+        var dp = IntArray(nums.size) { nums[it] }
+
+        for (l in 2 until dp.size + 1) {
+            for (i in 0 until dp.size - (l - 1)) {
+                val j = i + (l - 1)
+                // dp[i][j] = maxOf(nums[i] - dp[i + 1][j], nums[j] - dp[i][j - 1])
+                dp[i] = maxOf(nums[i] - dp[i + 1], nums[j] - dp[i])
+            }
+        }
+
+        return dp[0] >= 0
+    }
+
+    /// 递归
+    fun PredictTheWinner__(nums: IntArray): Boolean {
+        var mem = Array(nums.size) { IntArray(nums.size) { Int.MIN_VALUE } }
+        return totalScoreDifference(mem, nums, 0, nums.size - 1) >= 0
+    }
+
+    // 代表当前先手的选手可以获得的最大『净胜分』
+    fun totalScoreDifference(mem: Array<IntArray>, nums: IntArray, start: Int, end: Int): Int {
+        if (mem[start][end] != Int.MIN_VALUE) {
+            return mem[start][end]
+        }
+
+        var result: Int
+        if (start == end) {
+            result = nums[start]
+        } else {
+            result = maxOf(
+                nums[start] - totalScoreDifference(mem, nums, start + 1, end),
+                nums[end] - totalScoreDifference(mem, nums, start, end - 1)
+            )
+        }
+
+        mem[start][end] = result
+        return result
+    }
+}
+
+/// 1406. 石子游戏 III
+class Solution1406 {
+    /// 记忆化递归
+    fun stoneGameIII(stoneValue: IntArray): String {
+        var mem = IntArray(stoneValue.size) { Int.MIN_VALUE }
+        val netScore = total(stoneValue, 0, mem)
+        if (netScore > 0) return "Alice"
+        if (netScore < 0) return "Bob"
+        return "Tie"
+    }
+
+    fun total(stoneValue: IntArray, start: Int, mem: IntArray): Int {
+        if (mem[start] != Int.MIN_VALUE) {
+            return mem[start]
+        }
+
+        val end = stoneValue.size - 1
+
+        ///////// 仅剩1堆，只能取走1堆
+        if (start == end) {
+            return stoneValue[start].also { mem[start] = it }
+        }
+
+        // 取走1堆
+        val get1 = stoneValue[start] - total(stoneValue, start + 1, mem)
+
+        ///////// 仅剩2堆，只能取走1或2堆
+        if (start + 1 == end) {
+            // 取走2堆
+            val get2 = stoneValue[start] + stoneValue[start + 1] - 0
+            return maxOf(get1, get2).also { mem[start] = it }
+        }
+
+        // 取走2堆
+        val get2 = stoneValue[start] + stoneValue[start + 1] - total(stoneValue, start + 2, mem)
+
+        ///////// 仅剩3堆，只能取走1或2或3堆
+        if (start + 2 == end) {
+            // 取走3堆
+            val get3 = stoneValue[start] + stoneValue[start + 1] + stoneValue[start + 2] - 0
+            return maxOf(maxOf(get1, get2), get3).also { mem[start] = it }
+        }
+
+        ///////// 剩下超过3堆，只能取走1或2或3堆
+        val get3 = stoneValue[start] + stoneValue[start + 1] + stoneValue[start + 2] - total(
+            stoneValue,
+            start + 3,
+            mem
+        )
+        return maxOf(maxOf(get1, get2), get3).also { mem[start] = it }
+    }
+
+    /// 代码整理优化
+    fun total1(stoneValue: IntArray, start: Int, mem: IntArray): Int {
+        fun getStoneValue(index: Int): Int {
+            return stoneValue.getOrElse(index) { 0 }
+        }
+
+        // 越界时返回 0
+        if (start >= stoneValue.size) return 0
+
+        // 读缓存
+        if (mem[start] != Int.MIN_VALUE) {
+            return mem[start]
+        }
+
+        // 取走1堆
+        val get1 = getStoneValue(start) - total(stoneValue, start + 1, mem)
+        // 取走2堆
+        val get2 =
+            getStoneValue(start) + getStoneValue(start + 1) - total(stoneValue, start + 2, mem)
+        // 取走3堆
+        val get3 =
+            getStoneValue(start) + getStoneValue(start + 1) + getStoneValue(start + 2) - total(
+                stoneValue,
+                start + 3, mem
+            )
+
+        // 取最大值，并缓存
+        return maxOf(maxOf(get1, get2), get3).also { mem[start] = it }
+    }
+
+    /// DP
+    fun stoneGameIIIDP(stoneValue: IntArray): String {
+        fun getStoneValue(index: Int): Int {
+            return stoneValue.getOrElse(index) { 0 }
+        }
+        // dp[i] = maxOf (
+        //   stoneValue[i] - dp[i+1],
+        //   stoneValue[i] + stoneValue[i+1] - dp[i+2]
+        //   stoneValue[i] + stoneValue[i+1] + stoneValue[i+2] - dp[i+3]
+        // )
+        val n = stoneValue.size
+        var dp = IntArray(n + 3)
+
+        for (i in n - 1 downTo 0) {
+            dp[i] = maxOf(
+                maxOf(
+                    getStoneValue(i) - dp[i + 1],
+                    getStoneValue(i) + getStoneValue(i + 1) - dp[i + 2]
+                ),
+                getStoneValue(i) + getStoneValue(i + 1) + getStoneValue(i + 2) - dp[i + 3]
+            )
+        }
+
+        if (dp[0] > 0) return "Alice"
+        if (dp[0] < 0) return "Bob"
+        return "Tie"
     }
 }
 
@@ -1923,9 +2087,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         try {
             log(
-                Solution486().PredictTheWinner(
+                Solution486().PredictTheWinner__(
                     intArrayOf(
-                        2, 4, 6, 8
+                        1, 5, 2
                     )
                 )
             )
