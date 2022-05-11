@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import java.math.BigInteger
 import java.util.*
-import kotlin.math.max
 
 /// 二分查找
 class BinarySearch {
@@ -2080,6 +2079,187 @@ class Solution1406 {
     }
 }
 
+/// 293. 翻转游戏
+class Solution293 {
+    fun generatePossibleNextMoves(currentState: String): List<String> {
+        var preIsPlush = false
+        var result = mutableListOf<String>()
+        for (i in currentState.indices) {
+            val currentIsPlus = currentState[i] == '+'
+            if (preIsPlush && currentIsPlus) {
+                result.add(currentState.replaceRange(i - 1 until i + 1, "--"))
+            }
+            preIsPlush = currentIsPlus
+        }
+        return result
+    }
+}
+
+/// 292. Nim 游戏
+class Solution292 {
+    fun canWinNim(n: Int): Boolean {
+        return n % 4 != 0
+    }
+}
+
+/// 294. 翻转游戏 II
+class Solution294 {
+    /// 递归
+    fun canWin(currentState: String): Boolean {
+        var mem = mutableMapOf<String, Boolean>()
+        return canWin_(currentState, mem)
+    }
+
+    fun canWin_(currentState: String, mem: MutableMap<String, Boolean>): Boolean {
+        if (mem.containsKey(currentState)) {
+            return mem[currentState]!!
+        }
+
+        val n = currentState.length
+        for (i in currentState.indices) {
+            // 找到一个 ++
+            val iCanWin = currentState[i] == '+' && i + 1 < n && currentState[i + 1] == '+'
+            if (iCanWin) {
+                // 翻转 ++
+                val next = currentState.replaceRange(i until i + 2, "--")
+                val nextCannotWin = !canWin_(next, mem).also { mem[next] = it }
+                if (nextCannotWin) {
+                    return true
+                }
+            }
+        }
+        return false.also { mem[currentState] = it }
+    }
+}
+
+/// 464. 我能赢吗
+class Solution464 {
+    /// DP
+    fun canIWin1(n: Int, target: Int): Boolean {
+        // 总和比目标数字小，则先手和后手都无法达到目标数字，判定先手输
+        if (n * (n + 1) < target) return false
+
+        // 总和小于等于目标数字，则先手和后手必然有一方可以赢
+        // maxState 低位 n 个 bit 对应 1 ~ n 这 n 个数字:
+        //   - 右起第 1 位（1左移0位）对应数字 1，
+        //   - 右起第 k+1 位（1左移k位）对应数字 k+1。
+        // 每个 bit 位可能位 1 或 0，为 1 代表选择了该位对应的数字，位 0 代表未选择该位代表的数字
+        // 所以所求结果即为：dp[0] （即全部未选时的状态）
+        var maxState = 1 shl n
+        var dp = BooleanArray(maxState) { false }
+
+        for (state in maxState - 1 downTo 0) {
+            var total = target
+            for (k in 0 until n) {
+                if (((1 shl k) and state) > 0) {
+                    // 右起第 k + 1 位对应数字 k + 1, bit 位为 1，代表已选该数字，则直接从目标值中减去该值
+                    total -= k+1
+                }
+            }
+
+            for (k in 0 until n) {
+                if (((1 shl k) and state) > 0) continue // 跳过已被选择过的数字
+
+                // 选择右起第 k + 1 位，即数字 k + 1
+                if (k + 1 >= total || !dp[state or (1 shl k)]) {
+                    dp[state] = true
+                }
+            }
+        }
+
+        return dp[0]
+    }
+
+    /// 记忆化递归
+    fun canIWin(n: Int, t: Int): Boolean {
+        // 总和比目标数字小，则先手和后手都无法达到目标数字，判定先手输
+        if (n * (n + 1) / 2 < t) return false
+
+        // 如果选完所有数字有可能达到目标数字，即在当前数字数组 numbers 和目标数 target 的条件下，在有限步数内
+        // 必然能够决出胜负
+        var mem = mutableMapOf<List<Int>, Boolean>()
+        return canIWin_((0 until n).map { it + 1 }, t, mem)
+    }
+
+    // 如果选完所有数字有可能达到目标数字，即在当前数字数组 numbers 和目标数 target 的条件下，在有限步数内
+    // 必然能够决出胜负
+    fun canIWin_(numbers: List<Int>, target: Int, mem: MutableMap<List<Int>, Boolean>): Boolean {
+        if (mem.containsKey(numbers)) {
+            return mem[numbers]!!
+        }
+
+        for (i in numbers.indices) {
+            if (numbers[i] >= target) {
+                return true.also {
+                    mem[numbers] = it
+                }
+            }
+
+            val subTarget = target - numbers[i]
+            var subNumbers =
+                numbers.filterIndexed { index, _ -> index != i }
+            if (!canIWin_(subNumbers, subTarget, mem)) {
+                return true.also {
+                    mem[numbers] = it
+                }
+            }
+        }
+
+        return false.also {
+            mem[numbers] = it
+        }
+    }
+
+    /// 记忆化递归 + 位运算
+    fun canIWin2(n: Int, t: Int): Boolean {
+        // 总和比目标数字小，则先手和后手都无法达到目标数字，判定先手输
+        if (n * (n + 1) / 2 < t) return false
+
+        // 如果选完所有数字有可能达到目标数字，即在当前数字数组 numbers 和目标数 target 的条件下，在有限步数内
+        // 必然能够决出胜负
+        var mem = mutableMapOf<Int, Boolean>()
+        // numberState 从第位开始，第 i 位代表数字 i, 第 i 位取值 0 代表该位对应的数字未被选择，反之 1 代表已被选择
+        // 所以初始输入为 0
+        return canIWin_2(0, n, t, mem)
+    }
+
+    // 如果选完所有数字有可能达到目标数字，即在当前数字数组 numbers 和目标数 target 的条件下，在有限步数内
+    // 必然能够决出胜负
+    // numberState 从第位开始，第 i 位代表数字 i, 第 i 位取值 0 代表该位对应的数字未被选择，反之 1 代表已被选择
+    fun canIWin_2(numbersState: Int, n: Int, target: Int, mem: MutableMap<Int, Boolean>): Boolean {
+        if (mem.containsKey(numbersState)) {
+            return mem[numbersState]!!
+        }
+
+        for (i in 0 until n) { // 遍历 n 位
+            if ((1 shl i) and numbersState > 0) {
+                // 说明在 numberState 状态下，第 i + 1 位（即数字 i + 1）已被选择过，不能继续选择，所以跳过
+                continue
+            }
+
+            val currentNumber = i + 1
+            if (currentNumber >= target) {
+                return true.also {
+                    mem[numbersState] = it
+                }
+            }
+
+            val subTarget = target - currentNumber
+            // 下一个状态即为选掉当前数字后的状态
+            val subNumbersState = numbersState or (1 shl i)
+            if (!canIWin_2(subNumbersState, n, subTarget, mem)) {
+                return true.also {
+                    mem[numbersState] = it
+                }
+            }
+        }
+
+        return false.also {
+            mem[numbersState] = it
+        }
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -2087,11 +2267,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         try {
             log(
-                Solution486().PredictTheWinner__(
-                    intArrayOf(
-                        1, 5, 2
-                    )
-                )
+                Solution464().canIWin(5, 50)
             )
         } catch (e: Exception) {
             print(e)
