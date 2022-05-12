@@ -2404,6 +2404,124 @@ class Solution278 {
     }
 }
 
+/// 707. 设计链表
+class MyLinkedList() {
+    class Node (var `val`: Int, var next: Node? = null) {}
+
+    var head: Node? = null
+
+    fun getNodeAt(index: Int): Node? {
+        if (index < 0) return null
+
+        var i = 0
+        var current = head
+        while (i != index) {
+            i++
+            current = current?.next
+        }
+        return current
+    }
+
+    fun get(index: Int): Int {
+        return getNodeAt(index)?.`val` ?: -1
+    }
+
+    fun addAtHead(`val`: Int) {
+        val node = Node(`val`, head)
+        head = node
+    }
+
+    fun addAtTail(`val`: Int) {
+        var current = head
+        if (current == null) {
+            head = Node(`val`)
+            return
+        }
+
+        while (current!!.next != null) {
+            current = current.next
+        }
+
+        current.next = Node(`val`)
+    }
+
+    fun addAtIndex(index: Int, `val`: Int) {
+        if (index <= 0) {
+            addAtHead(`val`)
+            return
+        }
+
+        var current = getNodeAt(index - 1)
+        if (current != null) {
+            var node = Node(`val`, current!!.next)
+            current!!.next = node
+        }
+    }
+
+    fun deleteAtIndex(index: Int) {
+        if (index == 0) {
+            head = head?.next
+            return
+        }
+
+        var current = getNodeAt(index - 1)
+        if (current != null) {
+            current!!.next = current!!.next?.next
+        }
+    }
+
+}
+
+/// 35. 搜索插入位置
+class Solution35 {
+    fun searchInsert(nums: IntArray, target: Int): Int {
+        if (nums[0] > target) {
+            return 0
+        }
+
+        if (nums[nums.size - 1] < target) {
+            return nums.size
+        }
+
+        // 此时，nums 中比然存在一个数大于或等于 target
+        // 查找第一个大于或等于 target 的数
+        var l = 0
+        var r = nums.size - 1
+
+        while (l <= r) {
+            val mid = (l + r) ushr 1
+            if (nums[mid] >= target && (mid == 0 || nums[mid - 1] < target)) {
+                return mid
+            } else if (nums[mid] >= target) {
+                r = mid - 1
+            } else { // nums[mid] < target
+                l = mid + 1
+            }
+        }
+
+        return -1
+    }
+}
+
+/// 141. 环形链表
+class Solution141 {
+    fun hasCycle(head: ListNode?): Boolean {
+        var walker = head
+        var runner = head
+
+        while (walker?.next != null && runner?.next?.next != null) {
+            walker = walker?.next
+            runner = runner?.next?.next
+
+            if (walker == runner) {
+                return true
+            }
+        }
+
+        return false
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
