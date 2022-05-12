@@ -2522,6 +2522,35 @@ class Solution141 {
     }
 }
 
+/// 202. 快乐数
+class Solution202 {
+    fun isHappy(n: Int): Boolean {
+        var seen = mutableMapOf<Int, Boolean>()
+        var sum = numberSum(n).also { seen[n] = true }
+        while (sum != 1) {
+            sum = numberSum(sum)
+            if (!seen.containsKey(sum)) {
+                seen[sum] = true
+            } else {
+                break
+            }
+        }
+        return sum == 1
+    }
+
+    fun numberSum(n_: Int): Int {
+        // return n.toString().map { it - '0'}.sumOf { it * it }
+        var sum = 0
+        var n = n_
+        while (n > 0) {
+            val v = (n % 10)
+            sum += v * v
+            n = n / 10
+        }
+        return sum
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
