@@ -2134,41 +2134,8 @@ class Solution294 {
 
 /// 464. 我能赢吗
 class Solution464 {
-    /// DP
-    fun canIWin1(n: Int, target: Int): Boolean {
-        // 总和比目标数字小，则先手和后手都无法达到目标数字，判定先手输
-        if (n * (n + 1) < target) return false
 
-        // 总和小于等于目标数字，则先手和后手必然有一方可以赢
-        // maxState 低位 n 个 bit 对应 1 ~ n 这 n 个数字:
-        //   - 右起第 1 位（1左移0位）对应数字 1，
-        //   - 右起第 k+1 位（1左移k位）对应数字 k+1。
-        // 每个 bit 位可能位 1 或 0，为 1 代表选择了该位对应的数字，位 0 代表未选择该位代表的数字
-        // 所以所求结果即为：dp[0] （即全部未选时的状态）
-        var maxState = 1 shl n
-        var dp = BooleanArray(maxState) { false }
-
-        for (state in maxState - 1 downTo 0) {
-            var total = target
-            for (k in 0 until n) {
-                if (((1 shl k) and state) > 0) {
-                    // 右起第 k + 1 位对应数字 k + 1, bit 位为 1，代表已选该数字，则直接从目标值中减去该值
-                    total -= k+1
-                }
-            }
-
-            for (k in 0 until n) {
-                if (((1 shl k) and state) > 0) continue // 跳过已被选择过的数字
-
-                // 选择右起第 k + 1 位，即数字 k + 1
-                if (k + 1 >= total || !dp[state or (1 shl k)]) {
-                    dp[state] = true
-                }
-            }
-        }
-
-        return dp[0]
-    }
+    /////////////// 方法一：递归 + 状态记忆 ///////////////
 
     /// 记忆化递归
     fun canIWin(n: Int, t: Int): Boolean {
@@ -2209,6 +2176,46 @@ class Solution464 {
             mem[numbers] = it
         }
     }
+
+    /////////////// 动态规划，参考 https://leetcode.cn/problems/can-i-win/solution/shuang-zhong-forxun-huan-dpkan-bu-dong-n-wwyj/
+
+    /// DP
+    fun canIWin1(n: Int, target: Int): Boolean {
+        // 总和比目标数字小，则先手和后手都无法达到目标数字，判定先手输
+        if (n * (n + 1) < target) return false
+
+        // 总和小于等于目标数字，则先手和后手必然有一方可以赢
+        // maxState 低位 n 个 bit 对应 1 ~ n 这 n 个数字:
+        //   - 右起第 1 位（1左移0位）对应数字 1，
+        //   - 右起第 k+1 位（1左移k位）对应数字 k+1。
+        // 每个 bit 位可能位 1 或 0，为 1 代表选择了该位对应的数字，位 0 代表未选择该位代表的数字
+        // 所以所求结果即为：dp[0] （即全部未选时的状态）
+        var maxState = 1 shl n
+        var dp = BooleanArray(maxState) { false }
+
+        for (state in maxState - 1 downTo 0) {
+            var total = target
+            for (k in 0 until n) {
+                if (((1 shl k) and state) > 0) {
+                    // 右起第 k + 1 位对应数字 k + 1, bit 位为 1，代表已选该数字，则直接从目标值中减去该值
+                    total -= k+1
+                }
+            }
+
+            for (k in 0 until n) {
+                if (((1 shl k) and state) > 0) continue // 跳过已被选择过的数字
+
+                // 选择右起第 k + 1 位，即数字 k + 1
+                if (k + 1 >= total || !dp[state or (1 shl k)]) {
+                    dp[state] = true
+                }
+            }
+        }
+
+        return dp[0]
+    }
+
+    ////////////// 结合位运算 + 递归 + 状态记忆，降低内存占用
 
     /// 记忆化递归 + 位运算
     fun canIWin2(n: Int, t: Int): Boolean {
