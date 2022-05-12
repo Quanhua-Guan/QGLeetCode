@@ -2648,6 +2648,74 @@ class Solution19 {
     }
 }
 
+/// 206. 反转链表
+class Solution206 {
+    fun reverseList(head: ListNode?): ListNode? {
+        var pre: ListNode? = null
+        var cur = head
+
+        while (cur != null) {
+            val curNext = cur?.next
+            cur.next = pre
+            // 为下次迭代准备
+            pre = cur
+            cur = curNext
+        }
+
+        return pre
+    }
+}
+
+/// 203. 移除链表元素
+class Solution203 {
+    fun removeElements(head: ListNode?, value: Int): ListNode? {
+        var prehead = ListNode(0, head)
+        var cur: ListNode? = prehead
+        while (cur?.next != null) {
+            if (cur!!.next?.`val` == value) {
+                cur!!.next = cur!!.next?.next
+            } else {
+                cur = cur.next
+            }
+        }
+        return prehead.next
+    }
+}
+
+/// 328. 奇偶链表
+class Solution328 {
+    fun oddEvenList(head: ListNode?): ListNode? {
+        var even: ListNode? = ListNode(0)
+        var odd: ListNode? = ListNode(0)
+        var evenHead = even
+        var oddHead = odd
+
+        var current = head
+        while (current != null) {
+            val currentNext = current.next
+            val currentNextNext = currentNext?.next
+
+            current.next = null
+            currentNext?.next = null
+
+            odd?.next = current
+            odd = current
+
+            if (currentNext != null) {
+                even?.next = currentNext
+                even = currentNext
+                current = currentNextNext
+            } else {
+                current = null // current.next
+            }
+        }
+
+        odd?.next = evenHead!!.next
+
+        return oddHead?.next
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
