@@ -2340,6 +2340,70 @@ class Solution944 {
     }
 }
 
+/// 704. 二分查找
+class Solution704 {
+    fun search(nums: IntArray, target: Int): Int {
+        var l = 0
+        var r = nums.size - 1
+
+        while (l <= r) {
+            var m = (l + r) ushr 1
+            if (nums[m] == target) {
+                return m
+            } else if (nums[m] < target) {
+                l = m + 1
+            } else { // nums[m] > target
+                r = m - 1
+            }
+        }
+
+        return -1
+    }
+
+    fun search1(nums: IntArray, target: Int): Int {
+        var l = 0
+        var r = nums.size - 1
+
+        while (l < r) {
+            var m = (l + r) ushr 1
+            if (nums[m] < target) {
+                l = m + 1
+            } else { // nums[m] >= target
+                r = m
+            }
+        }
+
+        if (l < nums.size && nums[l] == target) {
+            return l
+        }
+
+        return -1
+    }
+}
+
+/// 278. 第一个错误的版本
+class Solution278 {
+    fun isBadVersion(index: Int) = true
+    fun firstBadVersion(n: Int) : Int {
+        var l = 0
+        var r = n - 1
+
+        while (l <= r) {
+            val m = (l + r) ushr 1
+            val isBad = isBadVersion(m + 1)
+            if (isBad && (m == 0 || !isBadVersion(m))) {
+                return m + 1
+            } else if (isBad) {
+                r = m - 1
+            } else { // !isBad
+                l = m + 1
+            }
+        }
+
+        return -1
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
