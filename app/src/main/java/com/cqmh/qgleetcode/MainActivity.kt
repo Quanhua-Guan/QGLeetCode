@@ -166,9 +166,7 @@ class Solution1 {
     }
 }
 
-class ListNode(var `val`: Int) {
-    var next: ListNode? = null
-}
+class ListNode(var `val`: Int, var next: ListNode? = null) {}
 
 // 两数相加
 class Solution2 {
@@ -2384,7 +2382,7 @@ class Solution704 {
 /// 278. 第一个错误的版本
 class Solution278 {
     fun isBadVersion(index: Int) = true
-    fun firstBadVersion(n: Int) : Int {
+    fun firstBadVersion(n: Int): Int {
         var l = 0
         var r = n - 1
 
@@ -2406,7 +2404,7 @@ class Solution278 {
 
 /// 707. 设计链表
 class MyLinkedList() {
-    class Node (var `val`: Int, var next: Node? = null) {}
+    class Node(var `val`: Int, var next: Node? = null) {}
 
     var head: Node? = null
 
@@ -2509,9 +2507,9 @@ class Solution141 {
         var walker = head
         var runner = head
 
-        while (walker?.next != null && runner?.next?.next != null) {
-            walker = walker!!.next
-            runner = runner!!.next!!.next
+        while (walker != null && runner?.next != null) {
+            walker = walker?.next
+            runner = runner!!.next?.next
 
             if (walker == runner) {
                 return true
@@ -2519,6 +2517,33 @@ class Solution141 {
         }
 
         return false
+    }
+}
+
+/// 142. 环形链表 II
+class Solution142 {
+    fun detectCycle(head: ListNode?): ListNode? {
+        var walker = head
+        var runner = head
+        var hasCircle = false
+        while (walker != null && runner?.next != null) {
+            walker = walker!!.next
+            runner = runner!!.next?.next
+            if (walker == runner) {
+                hasCircle = true
+                break
+            }
+        }
+
+        if (!hasCircle) return null
+
+        // 让 runner 减速，和 walker 保持一致速度
+        walker = head
+        while (walker != runner) {
+            walker = walker!!.next
+            runner = runner!!.next
+        }
+        return walker
     }
 }
 
@@ -2548,6 +2573,78 @@ class Solution202 {
             n = n / 10
         }
         return sum
+    }
+}
+
+/// 160. 相交链表
+class Solution160 {
+    fun getIntersectionNode(headA: ListNode?, headB: ListNode?): ListNode? {
+        // 链A长度
+        var a = headA
+        var lengthA = 0
+        while (a != null) {
+            a = a?.next
+            lengthA++
+        }
+
+        // 链B长度
+        var b = headB
+        var lengthB = 0
+        while (b != null) {
+            b = b?.next
+            lengthB++
+        }
+
+        // 计算长度差
+        var diff: Int
+        a = headA
+        b = headB
+        // 假设后续 a 更长，b 更短
+        if (lengthA >= lengthB) {
+            diff = lengthA - lengthB
+        } else {
+            diff = lengthB - lengthA
+            a = b.also { b = a }
+        }
+
+        // 优先移动长链表
+        // 然后一起移动链表，检测是否找到相交点
+        while (a != null && b != null) {
+            if (a == b) {
+                return a
+            }
+            a = a?.next
+            if (diff > 0) {
+                diff--
+                continue
+            }
+            b = b?.next
+        }
+
+        // 未找到相交点的情况
+        return null
+    }
+}
+
+// 19. 删除链表的倒数第 N 个结点
+class Solution19 {
+    fun removeNthFromEnd(head: ListNode?, n: Int): ListNode? {
+        var prehead = ListNode(0, head)
+        var count = n
+        var current = prehead
+        var target = prehead
+
+        while (current.next != null) {
+            current = current.next!!
+            if (count > 0) {
+                count--
+                continue
+            }
+            target = target.next!!
+        }
+        target!!.next = target!!.next?.next
+
+        return prehead.next
     }
 }
 
