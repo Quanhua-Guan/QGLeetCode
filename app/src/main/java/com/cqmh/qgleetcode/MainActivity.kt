@@ -2324,6 +2324,22 @@ class Solution464 {
     }
 }
 
+/// 944. 删列造序
+class Solution944 {
+    fun minDeletionSize(strs: Array<String>): Int {
+        var count = 0
+        for (c in 0 until strs[0].length) {
+            for (r in 0 until strs.size - 1) {
+                if (strs[r][c] > strs[r + 1][c]) {
+                    count++
+                    break
+                }
+            }
+        }
+        return count
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
