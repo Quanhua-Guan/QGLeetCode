@@ -2130,6 +2130,63 @@ class Solution294 {
         }
         return false.also { mem[currentState] = it }
     }
+
+    /// 状态 A 的 SG 数：SG(A) = mex({SG(B) | A -> B})，状态A的SG数是所有状态A的次态的SG数集合的 mex 值。
+    /// mex 为 minimum excluded value 的简写, 即 mex(S) 表示集合 S 所不包含的最小非负整数（该值可能比 S 中最大值更大，也可能比 S 中最小值小）。
+    ///   例如： mex({2,3}) = 0，mex({3}) = 0，mex({1,2}) = 3
+    /// B 是 A 的次态，即从状态 A 可以转移到状态 B。
+    fun canWinSG(currentState: String): Boolean {
+        var subStates = mutableListOf<Int>() // 记录所有连续 "+" 号子串的长度
+
+        // 从当前状态字符串中提取所有 子状态（注意：子状态和次态是不一样的两个概念）
+        var plusLength = 0
+        var maxPlusLength = 0
+        for (c in "$currentState-") {
+            if (c == '+') {
+                plusLength++
+            } else {
+                if (plusLength > 0) {
+                    subStates.add(plusLength)
+                    if (plusLength > maxPlusLength) {
+                        maxPlusLength = plusLength
+                    }
+                }
+                plusLength = 0
+            }
+        }
+
+        if (maxPlusLength <= 1) return false // 所有子状态都是无法翻转的，所以判定先手输
+
+        // 需要求出 sg(1) ~ sg(maxPlusLength)
+        // sg[i] 代表仅由 '+' 号组成的长度为 i 的字符串的 SG 数
+        // 根据翻转游戏规则，默认 sg[0] = 0（空字符串无法翻转，所以不存在次态）, sg[1] = 0
+        var sg = IntArray(maxPlusLength + 1)
+
+        for (length in 2 until maxPlusLength + 1) { // 长度从 2 到 maxPlusLength，从小到大
+            // 仅由 '+' 号组成的长度为 i 的字符串 => 求它的次态的 sg 值的集合 nextStateSgSet，然后找到 mex(nextStateSgSet)
+            var nextStateSgSet = mutableSetOf<Int>()
+            var nextStateSgMax = 0
+            for (j in 0 until length / 2) { // 只需包含前半部分即可，后半部分和前半部分实际为等价的
+                /* 每种翻转后，形成的次态可以分解成两种状态 */
+                /* 可分解的状态（g值）等于各分解子状态（g值）的异或和 */
+                val nextStateSg = sg[j] xor sg[length - j - 2]
+                nextStateSgSet.add(nextStateSg)
+                nextStateSgMax = maxOf(nextStateSgMax, nextStateSg)
+            }
+            // 寻找 mex(nextStateSgSet)，不被 nextStateSgSet 包含的最小非负整数
+            for (nonnegative in 0 until nextStateSgMax + 2) {
+                if (nextStateSgSet.contains(nonnegative)) {
+                    continue
+                }
+                sg[length] = nonnegative // 记录 sg 值
+                break
+            }
+        }
+
+        var result = 0
+        subStates.forEach { result = result xor sg[it] }
+        return result > 0 // SG数为正则先手必胜，SG为0则后手必胜
+    }
 }
 
 /// 464. 我能赢吗
@@ -2198,7 +2255,7 @@ class Solution464 {
             for (k in 0 until n) {
                 if (((1 shl k) and state) > 0) {
                     // 右起第 k + 1 位对应数字 k + 1, bit 位为 1，代表已选该数字，则直接从目标值中减去该值
-                    total -= k+1
+                    total -= k + 1
                 }
             }
 
