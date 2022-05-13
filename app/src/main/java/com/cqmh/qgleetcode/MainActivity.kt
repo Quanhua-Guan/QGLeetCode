@@ -3,6 +3,7 @@ package com.cqmh.qgleetcode
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import java.lang.Math.abs
 import java.math.BigInteger
 import java.util.*
 
@@ -3135,7 +3136,7 @@ class Solution977 {
         return -1
     }
 
-    fun sortedSquares(nums: IntArray): IntArray {
+    fun sortedSquares1(nums: IntArray): IntArray {
         // 二分查找最大的那个负数
         var negativeIndex = binarySearchMaxNegative(nums)
         // 两个下标（负数部分，正数部分）向两个方向遍历
@@ -3265,6 +3266,39 @@ class Solution189 {
     }
 }
 
+/// 面试题 01.05. 一次编辑
+class Solution0105 {
+    fun oneEditAway(first: String, second: String): Boolean {
+        // 长度相差大于等于2，则无法通过1次编辑就让两个字符串相等
+        if (first.length - second.length >= 2 || first.length - second.length <= -2) return false
+
+        // 长度相等
+        if (first.length == second.length) {
+            var count = 0
+            for (i in first.indices) {
+                if (first[i] != second[i]) count++
+                if (count >= 2) break
+            }
+            return count <= 1
+        }
+
+        // 长度差1
+        var longer = first
+        var shorter = second
+        if (shorter.length > longer.length) {
+            longer = second
+            shorter = first
+        }
+
+        for (i in longer.indices) {
+            if (longer.removeRange(i until i + 1) == shorter) {
+                return true
+            }
+        }
+        return false
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -3272,7 +3306,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         try {
             log(
-                Solution977().sortedSquares(intArrayOf(-1))
+                Solution0105().oneEditAway("h", "e")
             )
         } catch (e: Exception) {
             print(e)
