@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import java.math.BigInteger
 import java.util.*
-import kotlin.math.abs
 
 /// 二分查找
 class BinarySearch {
@@ -3185,6 +3184,84 @@ class Solution977 {
         }
 
         return result
+    }
+}
+
+// 求两数的最大公约数
+// 欧几里得算法
+class Utils {
+    companion object {
+        // 计算最大公约数（欧几里得算法）
+        fun gcd(a: Int, b: Int): Int {
+            if (b == 0) {
+                return a
+            }
+            return gcd(b, a % b)
+        }
+
+        // lcm(a,b) = a*b / gcd(a,b)
+        fun lcm(a: Int, b: Int): Int {
+            return a * b / gcd(a, b)
+        }
+    }
+}
+
+/// 189. 轮转数组
+class Solution189 {
+    fun rotate(nums: IntArray, k: Int): Unit {
+        if (nums.size <= 1) return
+
+        var theK = k % nums.size
+        for (i in 0 until theK) {
+            var tmp = nums[nums.size - 1]
+            for (j in nums.size - 1 downTo 1) {
+                nums[j] = nums[j - 1]
+            }
+            nums[0] = tmp
+        }
+    }
+
+    fun rotate1(nums: IntArray, k: Int): Unit {
+        val n = nums.size
+        var k = k % n
+        var count = gcd(k, n)
+        for (start in 0 until count) {
+            var current = start
+            var prev = nums[start]
+            do {
+                var next = (current + k) % n
+                var tmp = nums[next]
+                nums[next] = prev
+                prev = tmp
+                current = next
+            } while (start != current)
+        }
+    }
+
+    fun gcd(a: Int, b: Int): Int {
+        if (b == 0) return a
+        return gcd(b, a % b)
+    }
+
+    /// 翻转法
+
+    fun reverse(nums: IntArray, start: Int, end: Int) {
+        var l = start
+        var r = end
+        while (l <= r) {
+            nums[l] = nums[r].also { nums[r] = nums[l] }
+            l++
+            r--
+        }
+    }
+
+    fun rotate2(nums: IntArray, k: Int): Unit {
+        var n = nums.size
+        var k = k % n
+
+        reverse(nums, 0, n - 1)
+        reverse(nums, 0, k - 1)
+        reverse(nums, k, n - 1)
     }
 }
 
