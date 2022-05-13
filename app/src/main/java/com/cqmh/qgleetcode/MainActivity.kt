@@ -1457,6 +1457,47 @@ class Solution902 {
         }
         return result
     }
+
+    // 动态规划复习
+    fun atMostNGivenDigitSet3(digitStrings: Array<String>, n: Int): Int {
+        var digits = digitStrings.map { it.first() - '0' }.toIntArray()
+        var nDigits = n.toString().map { it - '0' }.toIntArray()
+
+        // 所求结果分为2部分，一部分为数位小于 nDigits.size 的数，一部分为数位等于 nDigits.size 的数.
+        // counts[i] 代表通过选择 digits 中的数字来构造 i 位数字，能够构造的个数，即 digits.size ^ i。
+        var counts = IntArray(nDigits.size)
+        if (nDigits.size > 1) {
+            counts[1] = digits.size
+            for (i in 2 until nDigits.size) { // i = 2 ~> nDigits.size - 1
+                counts[i] = counts[i - 1] * digits.size
+            }
+        }
+
+        // 数位小于 nDigits.size 的数的个数
+        var part1Count = counts.sum()
+
+        // 通过选择 digits 中的数字来构造数字，c[i] 代表这些被构造数字中位数为 i 位，且小于等于『nDigits 后 i 位数构成的数』的个数。
+        // 显然，c[1] = {digits 中小于等于 nDigits[nDigits.length - 1] 的数字的个数}
+        var c = IntArray(nDigits.size + 1)
+        var targetIndex = BinarySearch.indexOfLessThanOrEqual(digits, nDigits[nDigits.size - 1])
+        c[1] = if (targetIndex == -1) 0 else targetIndex + 1
+        for (i in 2 until nDigits.size + 1) {
+            var theCount = 0
+            var targetDigit = nDigits[nDigits.size - i]
+            targetIndex = BinarySearch.indexOfLessThanOrEqual(digits, targetDigit)
+            if (targetIndex == -1) {
+                c[i] = 0
+            } else if (digits[targetIndex] == targetDigit) {
+                c[i] = c[i - 1] + targetIndex * counts[i - 1]
+            } else { // digits[targetIndex] < targetDigit
+                c[i] = (targetIndex + 1) * counts[i - 1]
+            }
+        }
+
+        // 根据 c[i] 的定义, 数位等于 nDigits.size 的数的个数即为 c[nDigits.size]
+        var part2Count = c[nDigits.size]
+        return part1Count + part2Count
+    }
 }
 
 /// 121. 买卖股票的最佳时机
