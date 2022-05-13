@@ -3299,6 +3299,37 @@ class Solution0105 {
     }
 }
 
+/// 821. 字符的最短距离
+class Solution821 {
+    fun shortestToChar(s: String, c: Char): IntArray {
+        var indices = mutableListOf<Int>()
+        for (i in s.indices) {
+            if (s[i] == c) {
+                indices.add(i)
+            }
+        }
+
+        var bounds = mutableListOf<Int>()
+        for (i in 1 until indices.size) {
+            bounds.add((indices[i] + indices[i - 1] + 1) ushr 1)
+        }
+        bounds.add(s.length)
+
+        var result = IntArray(s.length)
+        var i = 0
+        for (b in 0 until bounds.size) {
+            val bound = bounds[b]
+            val index = indices[b]
+            while (i < bound) {
+                result[i] = kotlin.math.abs(i - index)
+                i++
+            }
+        }
+
+        return result
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
