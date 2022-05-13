@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import java.math.BigInteger
 import java.util.*
+import kotlin.math.abs
 
 /// 二分查找
 class BinarySearch {
@@ -3116,6 +3117,77 @@ class Solution61 {
     }
 }
 
+/// 977. 有序数组的平方
+class Solution977 {
+    fun binarySearchMaxNegative(nums: IntArray): Int {
+        var l = 0
+        var r = nums.size - 1
+
+        while (l <= r) {
+            val mid = (l + r) ushr 1
+            if (nums[mid] < 0 && (mid == nums.size - 1 || nums[mid + 1] >= 0)) {
+                return mid
+            } else if (nums[mid] < 0) {
+                l = mid + 1
+            } else { // nums[mid] >= 0
+                r = mid - 1
+            }
+        }
+        return -1
+    }
+
+    fun sortedSquares(nums: IntArray): IntArray {
+        // 二分查找最大的那个负数
+        var negativeIndex = binarySearchMaxNegative(nums)
+        // 两个下标（负数部分，正数部分）向两个方向遍历
+        var nonnegativeIndex = negativeIndex + 1
+
+        var result = IntArray(nums.size)
+        var i = 0
+
+        while (negativeIndex >= 0 || nonnegativeIndex < nums.size) {
+            val negative = nums.getOrElse(negativeIndex) { Int.MIN_VALUE }
+            val nonnegative = nums.getOrElse(nonnegativeIndex) { Int.MAX_VALUE }
+
+            if (negative + nonnegative < 0) {
+                // nonnegative 绝对值更小，所以 nonnegative^2 更小
+                result[i] = nonnegative * nonnegative
+                nonnegativeIndex++
+            } else {
+                result[i] = negative * negative
+                negativeIndex--
+            }
+            i++
+        }
+
+        return result
+    }
+
+    fun sortedSquares(nums: IntArray): IntArray {
+        var result = IntArray(nums.size)
+
+        var low = 0
+        var high = nums.size - 1
+        var i = high
+
+        while (low <= high) {
+            val lowValue = if (nums[low] < 0) -nums[low] else nums[low]
+            val highValue = if (nums[high] < 0) -nums[high] else nums[high]
+
+            if (lowValue < highValue) {
+                result[i] = highValue * highValue
+                high--
+            } else {
+                result[i] = lowValue * lowValue
+                low++
+            }
+            i--
+        }
+
+        return result
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -3123,7 +3195,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         try {
             log(
-                Solution464().canIWin(5, 50)
+                Solution977().sortedSquares(intArrayOf(-1))
             )
         } catch (e: Exception) {
             print(e)
