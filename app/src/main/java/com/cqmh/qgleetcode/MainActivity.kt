@@ -168,8 +168,34 @@ class Solution1 {
 
 class ListNode(var `val`: Int, var next: ListNode? = null) {}
 
-// 两数相加
+// 2. 两数相加
 class Solution2 {
+    fun addTwoNumbers1(l1: ListNode?, l2: ListNode?): ListNode? {
+        var l = l1
+        var r = l2
+        var carry = 0 // 进位
+        var sumPrehead = ListNode(0)
+        var sumNode = sumPrehead
+
+        while (l != null || r != null) {
+            var sum = (l?.`val` ?: 0) + (r?.`val` ?: 0) + carry
+            carry = sum / 10
+            sum %= 10
+
+            sumNode.next = ListNode(sum)
+            sumNode = sumNode.next!!
+
+            l = l?.next
+            r = r?.next
+        }
+
+        if (carry > 0) {
+            sumNode.next = ListNode(carry)
+        }
+
+        return sumPrehead.next
+    }
+
     fun addTwoNumbers(l1: ListNode?, l2: ListNode?): ListNode? {
         var l1 = l1
         var l2 = l2
@@ -2470,6 +2496,95 @@ class MyLinkedList() {
 
 }
 
+class MyLinkedList2() {
+    class Node(var `val`: Int, var next: Node? = null, var prev: Node? = null) {}
+
+    var head: Node? = null
+    var tail: Node? = null
+
+    fun getNode(index: Int): Node? {
+        if (index < 0) return null
+
+        var count = index
+        var current = head
+        while (count > 0) {
+            current = current?.next
+            count--
+        }
+        return current
+    }
+
+    fun get(index: Int): Int {
+        return getNode(index)?.`val` ?: -1
+    }
+
+    fun addAtHead(`val`: Int) {
+        val node = Node(`val`, head)
+        if (head == null) {
+            head = node
+            tail = node
+            return
+        }
+
+        head?.prev = node
+        head = node
+    }
+
+    fun addAtTail(`val`: Int) {
+        val node = Node(`val`)
+        if (head == null) {
+            head = node
+            tail = node
+            return
+        }
+
+        tail?.next = node
+        node.prev = tail
+        tail = node
+    }
+
+    fun addAtIndex(index: Int, `val`: Int) {
+        val nodeAtIndexMinus1 = getNode(index - 1)
+        if (nodeAtIndexMinus1 == null) {
+            if (index == 0) {
+                addAtHead(`val`)
+            }
+            return
+        }
+
+        if (nodeAtIndexMinus1 == tail) {
+            addAtTail(`val`)
+            return
+        }
+
+        val node = Node(`val`, nodeAtIndexMinus1.next, nodeAtIndexMinus1)
+        nodeAtIndexMinus1.next = node
+        node.next!!.prev = node
+    }
+
+    fun deleteAtIndex(index: Int) {
+        val node = getNode(index)
+        if (node == null) return
+
+        val nodeIsHead = node == head
+        val nodeIsTail = node == tail
+        if (nodeIsHead && nodeIsTail) { // node 即是头结点也是尾节点
+            head = null
+            tail = null
+        } else if (nodeIsHead) { // node 只是头结点
+            head = node.next
+            head!!.prev = null
+        } else if (nodeIsTail) { // node 只是尾节点
+            tail = node.prev
+            tail!!.next = null
+        } else {
+            node.prev!!.next = node.next
+            node.next!!.prev = node.prev
+        }
+    }
+
+}
+
 /// 35. 搜索插入位置
 class Solution35 {
     fun searchInsert(nums: IntArray, target: Int): Int {
@@ -2684,6 +2799,25 @@ class Solution203 {
 
 /// 328. 奇偶链表
 class Solution328 {
+    fun oddEvenList0(head: ListNode?): ListNode? {
+        if (head == null) return null
+
+        var odd: ListNode = head!!
+        var even: ListNode? = head!!.next
+        var evenHead: ListNode? = even
+
+        while (even != null && even!!.next != null) {
+            odd.next = even.next
+            even.next = even.next?.next
+
+            odd = odd.next!!
+            even = even.next
+        }
+        odd.next = evenHead
+
+        return head
+    }
+
     fun oddEvenList(head: ListNode?): ListNode? {
         var even: ListNode? = ListNode(0)
         var odd: ListNode? = ListNode(0)
@@ -2713,6 +2847,272 @@ class Solution328 {
         odd?.next = evenHead!!.next
 
         return oddHead?.next
+    }
+}
+
+/// 234. 回文链表
+class Solution234 {
+    fun reverseList(head: ListNode?): ListNode? {
+        var pre: ListNode? = null
+        var cur = head
+        while (cur != null) {
+            val curNext = cur.next
+            cur.next = pre
+            pre = cur
+            cur = curNext
+        }
+
+        return pre
+    }
+
+    fun isPalindrome(head: ListNode?): Boolean {
+        // 计算链表长度
+        var length = 0
+        var current = head
+        while (current != null) {
+            length++
+            current = current.next
+        }
+
+        if (length <= 1) return true
+
+        // 找到中间节点
+        length = length / 2 - 1
+        var middle = head!!
+        while (length > 0) {
+            length--
+            middle = middle.next!!
+        }
+
+        // 拆成前后两条链 head 代表前链，post 代表后链
+        var post = middle.next!!
+        middle.next = null
+
+        // 后链翻转
+        post = reverseList(post)!!
+
+        // 前链和翻转后的后链对比 记录结果
+        var isPalindrome = true
+        var currentPost: ListNode? = post
+        current = head
+        while (current != null && currentPost != null) {
+            if (current!!.`val` != currentPost!!.`val`) {
+                isPalindrome = false
+                break
+            }
+            current = current?.next
+            currentPost = currentPost?.next
+        }
+
+        // 后链翻转（非必须）
+        post = reverseList(post)!!
+        // 前量接回后链（非必须）
+        middle.next = post
+
+        // 返回结果
+        return isPalindrome
+    }
+
+    /// 快慢指针找中间节点
+    fun isPalindrome1(head: ListNode?): Boolean {
+        // 找到中间节点
+        var current = head
+        var middle = head
+        while (current?.next?.next != null) {
+            current = current!!.next!!.next
+            middle = middle!!.next
+        }
+
+        // 拆成前后两条链 head 代表前链，post 代表后链
+        var post = middle?.next
+        middle?.next = null
+
+        // 后链翻转
+        post = reverseList(post)
+
+        // 前链和翻转后的后链对比 记录结果
+        var isPalindrome = true
+        var currentPost: ListNode? = post
+        current = head
+        while (current != null && currentPost != null) {
+            if (current!!.`val` != currentPost!!.`val`) {
+                isPalindrome = false
+                break
+            }
+            current = current?.next
+            currentPost = currentPost?.next
+        }
+
+        // 后链翻转（非必须）
+        post = reverseList(post)
+        // 前量接回后链（非必须）
+        middle?.next = post
+
+        // 返回结果
+        return isPalindrome
+    }
+}
+
+/// 21. 合并两个有序链表
+class Solution21 {
+    fun mergeTwoLists(list1: ListNode?, list2: ListNode?): ListNode? {
+        var l1 = list1
+        var l2 = list2
+        if (l1 == null) return l2
+        if (l2 == null) return l1
+
+        var prehead = ListNode(0)
+        var current = prehead
+        while (l1 != null && l2 != null) {
+            if (l1!!.`val` > l2!!.`val`) {
+                current.next = l2!!
+                l2 = l2!!.next
+            } else {
+                current.next = l1!!
+                l1 = l1!!.next
+            }
+            current = current.next!!
+        }
+        current.next = l1 ?: l2
+
+        return prehead.next
+    }
+}
+
+/// 430. 扁平化多级双向链表
+class Solution430 {
+    class Node(var `val`: Int) {
+        var prev: Node? = null
+        var next: Node? = null
+        var child: Node? = null
+    }
+
+    fun flatten(root: Node?): Node? {
+        var flattenPrehead = Node(0)
+        var flatten: Node? = flattenPrehead
+        var current = root
+        var stack = mutableListOf<Node>()
+
+        while (current != null) {
+            flatten?.next = current
+            current.prev = flatten
+
+            if (current.child != null) {
+                if (current?.next != null) {
+                    stack.add(current.next!!)
+                    // current.next!!.prev = null
+                    // current.next = null
+                }
+
+                val currentChild = current.child
+                current.child = null
+                current = currentChild
+            } else {
+                val currentNext = current.next
+                // currentNext?.prev = null
+                // current.next = null
+                current = currentNext
+                if (current == null && stack.size > 0) {
+                    current = stack.removeAt(stack.size - 1)
+                }
+            }
+
+            flatten = flatten?.next
+        }
+
+        var result = flattenPrehead.next
+        result?.prev = null
+
+        return result
+    }
+}
+
+/// 138. 复制带随机指针的链表
+class Solution138 {
+    class Node(var `val`: Int) {
+        var next: Node? = null
+        var random: Node? = null
+    }
+
+    fun copyNode(node: Node?, mem: MutableMap<Int, Node>): Node? {
+        if (node == null) return null
+        val copy = Node(node.`val`)
+        copy.next = copyNode(node.next, mem)
+        copy.random = node.random
+        mem[node.hashCode()] = copy
+        return copy
+    }
+
+    fun copyRandomList(node: Node?): Node? {
+        var mem = mutableMapOf<Int, Node>()
+        var copy = copyNode(node, mem)
+        var current = copy
+        while (current != null) {
+            current.random = mem[current.random.hashCode()]
+            current = current.next
+        }
+        return copy
+    }
+
+    /////
+
+    var cachedNode: MutableMap<Node, Node> = HashMap()
+    fun copyRandomList1(head: Node?): Node? {
+        if (head == null) {
+            return null
+        }
+        if (!cachedNode.containsKey(head)) {
+            val headNew = Node(head.`val`)
+            cachedNode[head] = headNew
+            headNew.next = copyRandomList1(head.next)
+            headNew.random = copyRandomList1(head.random)
+        }
+        return cachedNode[head]
+    }
+}
+
+/// 61. 旋转链表
+class Solution61 {
+    // 确定链表长度 L
+    // k = k % L
+    // 找到倒数第 k + 1 个节点 tail
+    // 断开倒数第 k+1 个节点和倒数第 k 个节点，新链表表头为原链表倒数第 k 个节点
+    // 将新链表接到原链表前面
+    fun rotateRight(head: ListNode?, k: Int): ListNode? {
+        // 确定链表长度 L
+        var length = 0
+        var current = head
+        while (current != null) {
+            length++
+            current = current.next
+        }
+
+        if (length <= 1) return head
+
+        // k = k % L
+        var theK = k % length
+
+        if (theK == 0) return head
+
+        // 找到倒数第 k + 1 个节点 tail
+        current = head
+        var theTail = head
+        while (current?.next != null) {
+            current = current!!.next
+            if (theK > 0) {
+                theK--
+                continue
+            }
+            theTail = theTail?.next
+        }
+
+        // 断开倒数第 k+1 个节点和倒数第 k 个节点，新链表表头为原链表倒数第 k 个节点
+        var theHead = theTail!!.next
+        theTail.next = null
+        // 将新链表接到原链表前面
+        current?.next = head
+
+        return theHead
     }
 }
 
