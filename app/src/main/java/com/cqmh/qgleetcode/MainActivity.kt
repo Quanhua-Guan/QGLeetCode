@@ -3647,7 +3647,63 @@ class Solution691 {
         if (result == Int.MAX_VALUE) return -1
         return result
     }
+
+    ////////////
+
+    fun minStickers2(stickers: Array<String>, target: String): Int {
+        val targetValue = (Math.pow(2.0, target.length.toDouble()) - 1).toInt()
+
+        var stickerValues = mutableListOf<Int>()
+
+        var stickers = stickers.map { s -> s.filter { target.indexOf(it) != -1 } }.filter { it.isNotEmpty() }
+        for (sticker in stickers) {
+            var stickerValueBits = mutableMapOf<Char, MutableList<Int>>()
+            target.forEachIndexed { index, c ->
+                val found = sticker.indexOf(c)
+                if (found != -1) {
+                    if (!stickerValueBits.containsKey(c)) {
+                        stickerValueBits[c] = mutableListOf()
+                    }
+                    stickerValueBits[c]!!.add(1 shl index)
+                }
+            }
+            val charsList = combination(sticker, sticker.length)
+            charsList.forEach {
+                stickerValues.addAll(bitCombination(stickerValueBits, it))
+            }
+            stickerValues = stickerValues
+        }
+
+        // minCountCache[targetValue] 代表拼成目标 target 字符串需要使用的最小贴纸数量
+        var minCountCache = mutableMapOf<Int, Int>()
+        minCountCache[0] = 0
+
+        for (currentTarget in 1 until targetValue + 1) {
+            var minCount = Int.MAX_VALUE
+            for (stickerValue in stickerValues) {
+                val nextTarget = currentTarget and stickerValue.inv()
+                if (nextTarget == currentTarget) {
+                    continue
+                }
+                val nextTargetMinCount = minCountCache[nextTarget]!!
+                if (nextTargetMinCount == Int.MAX_VALUE) {
+                    continue
+                }
+                minCount = minOf(minCount, 1 + nextTargetMinCount)
+                if (minCount == 1) {
+                    break
+                }
+            }
+            minCountCache[currentTarget] = minCount
+        }
+
+        val result = minCountCache[targetValue]!!
+        if (result == Int.MAX_VALUE) return -1
+        return result
+    }
 }
+
+
 
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
@@ -3657,7 +3713,7 @@ class MainActivity : AppCompatActivity() {
         try {
             while (true) {
                 log(
-                    Solution691().minStickers(
+                    Solution691().minStickers2(
                         arrayOf(
                             "fly", "me", "charge", "mind", "bottom"
                         ), "centorder"
