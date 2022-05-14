@@ -3,7 +3,6 @@ package com.cqmh.qgleetcode
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import java.lang.Math.abs
 import java.math.BigInteger
 import java.util.*
 
@@ -29,7 +28,12 @@ class BinarySearch {
         }
 
         /// 升序数组，查找第一个大于或等于目标数的元素下标
-        fun indexOfGreaterThanOrEqual(nums: IntArray, target: Int, from: Int? = null, to: Int? = null): Int {
+        fun indexOfGreaterThanOrEqual(
+            nums: IntArray,
+            target: Int,
+            from: Int? = null,
+            to: Int? = null
+        ): Int {
             var l = from ?: 0
             var r = to ?: nums.size - 1
 
@@ -49,7 +53,12 @@ class BinarySearch {
         }
 
         /// 升序数组，查找最后一个小于或等于目标数的元素下标
-        fun indexOfLessThanOrEqual(nums: IntArray, target: Int, from: Int? = null, to: Int? = null): Int {
+        fun indexOfLessThanOrEqual(
+            nums: IntArray,
+            target: Int,
+            from: Int? = null,
+            to: Int? = null
+        ): Int {
             var l = from ?: 0
             var r = to ?: nums.size - 1
 
@@ -3419,7 +3428,8 @@ class Solution167 {
         var high = numbers.size - 1
         while (low < high) {
             // 『第一步』：判断当前最大的数是否不可能为目标，去除不可能的
-            var targetIndex = BinarySearch.indexOfLessThanOrEqual(numbers, target - numbers[low], low, high)
+            var targetIndex =
+                BinarySearch.indexOfLessThanOrEqual(numbers, target - numbers[low], low, high)
             if (numbers[targetIndex] + numbers[low] == target) {
                 return intArrayOf(low + 1, targetIndex + 1)
             } else {
@@ -3427,7 +3437,8 @@ class Solution167 {
             }
 
             // 『第二步』：判断当前最小的数是否不可能为目标，去除不可能的
-            targetIndex = BinarySearch.indexOfGreaterThanOrEqual(numbers, target - numbers[high], low, high)
+            targetIndex =
+                BinarySearch.indexOfGreaterThanOrEqual(numbers, target - numbers[high], low, high)
             if (numbers[targetIndex] + numbers[low] == target) {
                 return intArrayOf(low + 1, targetIndex + 1)
             } else {
@@ -3454,15 +3465,205 @@ class Solution167 {
     }
 }
 
+/// 691. 贴纸拼词
+class Solution691 {
+    fun minStickers(stickers: Array<String>, target: String): Int {
+        val nextTargetCache = mutableMapOf<String, MutableMap<String, String>>()
+        fun nextTarget(target: String, sticker: String): String {
+
+            fun getCache(target: String, sticker: String): String? {
+                if (nextTargetCache.containsKey(target)) {
+                    if (nextTargetCache[target]!!.containsKey(sticker)) {
+                        return nextTargetCache[target]!![sticker]!!
+                    }
+                }
+                return null
+            }
+
+            fun setCache(target: String, sticker: String, nextTarget: String) {
+                if (!nextTargetCache.containsKey(target)) {
+                    nextTargetCache[target] = mutableMapOf<String, String>()
+                }
+                nextTargetCache[target]!![sticker] = nextTarget
+            }
+
+            var result = getCache(target, sticker)
+            if (result != null) {
+                return result
+            }
+
+            var next = StringBuffer("")
+            var stickerChars = sticker.map { it }.toMutableList()
+            target.forEach {
+                val index = stickerChars.indexOf(it)
+                if (index != -1) { // 找到了，不记录，并从 stickerChars 中删除
+                    stickerChars.removeAt(index)
+                } else {
+                    next.append(it)
+                }
+            }
+
+            val nextTargetString = next.toString()
+
+            setCache(target, sticker, nextTargetString)
+
+            return nextTargetString
+        }
+
+        // minTargetCounts[target] 代表拼成目标 target 字符串需要使用的最小贴纸数量
+        var minCountCache = mutableMapOf<String, Int>()
+
+        val theStickers = stickers.map {
+            it.filter { c -> target.contains(c) }
+        }.filter { it.isNotEmpty() }
+
+        fun searchMinTargetCount(target: String): Int {
+            if (minCountCache.containsKey(target)) {
+                return minCountCache[target]!!
+            }
+
+            if (target.isEmpty()) {
+                return 0.also { minCountCache[target] = it }
+            }
+
+            var targetMinCount = Int.MAX_VALUE
+            for (sticker in theStickers) {
+                val nextTarget = nextTarget(target, sticker)
+                if (target == nextTarget) {
+                    // target 和 sticker 没有交集，sticker 对构造当前 target 没有用
+                    continue
+                }
+
+                val nextTargetMinCount = searchMinTargetCount(nextTarget)
+                if (nextTargetMinCount == Int.MAX_VALUE) {
+                    continue
+                }
+
+                targetMinCount = minOf(targetMinCount, 1 + nextTargetMinCount)
+            }
+
+            return targetMinCount.also { minCountCache[target] = it }
+        }
+
+        val theTargetMinCount = searchMinTargetCount(target)
+        if (theTargetMinCount == Int.MAX_VALUE) {
+            return -1
+        }
+        return theTargetMinCount
+    }
+
+    ///////////////////////////////
+
+    fun combination(string: String, bitCount: Int): List<List<Char>> {
+        if (bitCount == 1) {
+            return string.map { listOf(it) }
+        }
+
+        var resultList = mutableListOf<List<Char>>()
+        for (i in 0 until string.length) {
+            combination(string.substring(i + 1), bitCount - 1).forEach {
+                var list = it.toMutableList()
+                list.add(0, string[i])
+                resultList.add(list)
+            }
+        }
+        return resultList
+    }
+
+    fun bitCombination(bitsMap: Map<Char, MutableList<Int>>, chars: List<Char>): List<Int> {
+        if (chars.size == 0) return listOf<Int>()
+        if (chars.size == 1) {
+            var result = bitsMap[chars.first()] ?: listOf<Int>()
+            return result
+        }
+
+        var otherBitValues = bitCombination(bitsMap, chars.subList(1, chars.size))
+
+        val bitValues = mutableListOf<Int>()
+        val bitList = bitsMap[chars.first()]!!
+        for (bit in bitList) {
+            otherBitValues.forEach {
+                bitValues.add(bit or it)
+            }
+        }
+
+        return bitValues
+    }
+
+    fun minStickers1(stickers: Array<String>, target: String): Int {
+        val targetValue = (Math.pow(2.0, target.length.toDouble()) - 1).toInt()
+
+        var stickerValues = mutableListOf<Int>()
+
+        var stickers = stickers.map { s -> s.filter { target.indexOf(it) != -1 } }
+        for (sticker in stickers) {
+            var stickerValueBits = mutableMapOf<Char, MutableList<Int>>()
+            target.forEachIndexed { index, c ->
+                val found = sticker.indexOf(c)
+                if (found != -1) {
+                    if (!stickerValueBits.containsKey(c)) {
+                        stickerValueBits[c] = mutableListOf()
+                    }
+                    stickerValueBits[c]!!.add(1 shl index)
+                }
+            }
+            for (count in 1 until sticker.length + 1) {
+                val charsList = combination(sticker, count)
+                charsList.forEach {
+                    stickerValues.addAll(bitCombination(stickerValueBits, it))
+                }
+            }
+            stickerValues = stickerValues
+        }
+
+        var mem = mutableMapOf<Int, Int>()
+        fun minimumCount(state: Int): Int {
+            if (mem.containsKey(state)) {
+                return mem[state]!!
+            }
+
+            if (state == 0) {
+                return 0.also { mem[state] = it }
+            }
+
+            var min = Int.MAX_VALUE
+            for (stickerValue in stickerValues) {
+                val newState = state and stickerValue.inv()
+                if (newState == state) {
+                    // 选择当前的 stickerValue 对应的 sticker 无法改变当前状态，即操作无效
+                    continue
+                }
+                var newStateMinCount = minimumCount(newState)
+                if (newStateMinCount == Int.MAX_VALUE) {
+                    // 子状态对应的字符串无法被构造
+                    continue
+                }
+                min = minOf(min, 1 + newStateMinCount)
+            }
+            return min.also { mem[state] = it }
+        }
+
+        val result = minimumCount(targetValue)
+        if (result == Int.MAX_VALUE) return -1
+        return result
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         try {
-            log(
-                Solution0105().oneEditAway("h", "e")
-            )
+            while (true) {
+                log(
+                    Solution691().minStickers(
+                        arrayOf(
+                            "fly", "me", "charge", "mind", "bottom"
+                        ), "centorder"
+                    )
+                )
+            }
         } catch (e: Exception) {
             print(e)
         }
