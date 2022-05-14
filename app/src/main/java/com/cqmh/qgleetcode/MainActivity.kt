@@ -3703,7 +3703,62 @@ class Solution691 {
     }
 }
 
+/// 11. 盛最多水的容器
+class Solution11 {
+    fun maxArea(heights: IntArray): Int {
+        fun area(low: Int, high: Int): Int = minOf(heights[low], heights[high]) * (high - low)
 
+        var l = 0
+        var r = heights.size - 1
+
+        var max = area(l, r)
+        while (l < r) {
+            var leftArea = area(l + 1, r)
+            if (leftArea > max) {
+                max = leftArea
+                l += 1
+                continue
+            }
+
+            var rightArea = area(l, r - 1)
+            if (rightArea > max) {
+                max = rightArea
+                r -= 1
+                continue
+            }
+
+            if (heights[l] < heights[r]) {
+                l += 1
+            } else {
+                r -= 1
+            }
+        }
+
+        return max
+    }
+
+    fun maxAreaBetter(heights: IntArray): Int {
+        fun area(low: Int, high: Int): Int = minOf(heights[low], heights[high]) * (high - low)
+
+        var l = 0
+        var r = heights.size - 1
+
+        var max = 0
+        while (l < r) {
+            var tmp = area(l, r)
+            if (tmp > max) {
+                max = tmp
+            }
+            if (heights[l] < heights[r]) {
+                l += 1
+            } else {
+                r -= 1
+            }
+        }
+
+        return max
+    }
+}
 
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
