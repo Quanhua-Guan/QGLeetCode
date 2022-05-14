@@ -11,9 +11,9 @@ import java.util.*
 class BinarySearch {
     companion object {
         /// 升序数组，查找某个数字下标
-        fun indexOf(nums: IntArray, target: Int): Int {
-            var l = 0
-            var r = nums.size
+        fun indexOf(nums: IntArray, target: Int, from: Int? = null, to: Int? = null): Int {
+            var l = from ?: 0
+            var r = to ?: nums.size - 1
 
             while (l <= r) { // 包含相等，考虑 nums 仅包含 target 的情况
                 var mid = (l + r) ushr 1
@@ -29,9 +29,9 @@ class BinarySearch {
         }
 
         /// 升序数组，查找第一个大于或等于目标数的元素下标
-        fun indexOfGreaterThanOrEqual(nums: IntArray, target: Int): Int {
-            var l = 0
-            var r = nums.size - 1
+        fun indexOfGreaterThanOrEqual(nums: IntArray, target: Int, from: Int? = null, to: Int? = null): Int {
+            var l = from ?: 0
+            var r = to ?: nums.size - 1
 
             while (l <= r) {
                 var mid = (l + r) ushr 1
@@ -49,9 +49,9 @@ class BinarySearch {
         }
 
         /// 升序数组，查找最后一个小于或等于目标数的元素下标
-        fun indexOfLessThanOrEqual(nums: IntArray, target: Int): Int {
-            var l = 0
-            var r = nums.size - 1
+        fun indexOfLessThanOrEqual(nums: IntArray, target: Int, from: Int? = null, to: Int? = null): Int {
+            var l = from ?: 0
+            var r = to ?: nums.size - 1
 
             while (l <= r) {
                 var mid = (l + r) ushr 1
@@ -3368,6 +3368,89 @@ class Solution821 {
         }
 
         return result
+    }
+}
+
+/// 283. 移动零
+class Solution283 {
+    fun moveZeroes(nums: IntArray): Unit {
+        var cur = 0
+        var i = 0
+        while (cur < nums.size) {
+            if (nums[i] != 0) {
+                i++
+                cur = i + 1
+                continue
+            }
+            if (nums[cur] != 0 && cur != i) {
+                nums[i] = nums[cur]
+                nums[cur] = 0
+                i++
+            }
+            cur++
+        }
+    }
+}
+
+/// 167. 两数之和 II - 输入有序数组
+class Solution167 {
+    fun twoSum(numbers: IntArray, target: Int): IntArray {
+        var low = 0
+        var high = numbers.size - 1
+        while (low < high) {
+            // 『第一步』：判断当前最大的数是否不可能为目标，去除不可能的
+            while (numbers[high] + numbers[low] > target) {
+                high--
+            }
+            // 『第二步』：判断当前最小的数是否不可能为目标，去除不可能的
+            while (numbers[high] + numbers[low] < target) {
+                low++
+            }
+            // 『第三步』：此时，numbers[high] + numbers[low] >= target，相等时直接返回，否则继续循环回到 『第一步』
+            if (numbers[high] + numbers[low] == target) {
+                return intArrayOf(low + 1, high + 1)
+            }
+        }
+        return intArrayOf()
+    }
+
+    fun twoSum2(numbers: IntArray, target: Int): IntArray {
+        var low = 0
+        var high = numbers.size - 1
+        while (low < high) {
+            // 『第一步』：判断当前最大的数是否不可能为目标，去除不可能的
+            var targetIndex = BinarySearch.indexOfLessThanOrEqual(numbers, target - numbers[low], low, high)
+            if (numbers[targetIndex] + numbers[low] == target) {
+                return intArrayOf(low + 1, targetIndex + 1)
+            } else {
+                high = targetIndex
+            }
+
+            // 『第二步』：判断当前最小的数是否不可能为目标，去除不可能的
+            targetIndex = BinarySearch.indexOfGreaterThanOrEqual(numbers, target - numbers[high], low, high)
+            if (numbers[targetIndex] + numbers[low] == target) {
+                return intArrayOf(low + 1, targetIndex + 1)
+            } else {
+                low = targetIndex
+            }
+        }
+        return intArrayOf()
+    }
+
+    fun twoSum1(numbers: IntArray, target: Int): IntArray {
+        var low = 0
+        var high = numbers.size - 1
+        while (low < high) {
+            val sum = numbers[high] + numbers[low]
+            if (sum > target) {
+                high--
+            } else if (sum < target) {
+                low++
+            } else { // (numbers[high] + numbers[low] == target)
+                return intArrayOf(low + 1, high + 1)
+            }
+        }
+        return intArrayOf()
     }
 }
 
