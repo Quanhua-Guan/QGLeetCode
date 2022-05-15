@@ -3254,6 +3254,31 @@ class Utils {
         fun lcm(a: Int, b: Int): Int {
             return a * b / gcd(a, b)
         }
+
+        // 三角形面积 海伦公式 √[p(p-a)(p-b)(p-c)], p=(a+b+c)/2.
+        fun triangleArea(points: Array<IntArray>): Double {
+            var x = points[0][0] - points[1][0].toDouble()
+            var y = points[0][1] - points[1][1].toDouble()
+
+            var a = Math.sqrt(x * x + y * y)
+
+            x = points[0][0] - points[2][0].toDouble()
+            y = points[0][1] - points[2][1].toDouble()
+            var b = Math.sqrt(x * x + y * y)
+
+            x = points[1][0] - points[2][0].toDouble()
+            y = points[1][1] - points[2][1].toDouble()
+            var c = Math.sqrt(x * x + y * y)
+
+            val p = (a + b + c) / 2
+            return Math.sqrt(p * (p - a) * (p - b) * (p - c))
+        }
+
+        fun distance(points: Array<IntArray>): Double {
+            var x = points[0][0] - points[1][0].toDouble()
+            var y = points[0][1] - points[1][1].toDouble()
+            return Math.sqrt(x * x + y * y)
+        }
     }
 }
 
@@ -3655,7 +3680,8 @@ class Solution691 {
 
         var stickerValues = mutableListOf<Int>()
 
-        var stickers = stickers.map { s -> s.filter { target.indexOf(it) != -1 } }.filter { it.isNotEmpty() }
+        var stickers =
+            stickers.map { s -> s.filter { target.indexOf(it) != -1 } }.filter { it.isNotEmpty() }
         for (sticker in stickers) {
             var stickerValueBits = mutableMapOf<Char, MutableList<Int>>()
             target.forEachIndexed { index, c ->
@@ -3760,6 +3786,153 @@ class Solution11 {
     }
 }
 
+/// 344. 反转字符串
+class Solution344 {
+    fun reverseString(s: CharArray): Unit {
+        var i = 0
+        while (i < s.size / 2) {
+            var j = s.size - 1 - i
+            s[i] = s[j].also { s[j] = s[i] }
+            i++
+        }
+    }
+}
+
+/// 557. 反转字符串中的单词 III
+class Solution557 {
+    fun reverseWords(str: String): String {
+        var start = 0
+        var current = 0
+        var s = str.map { it }.toMutableList()
+
+        while (current < s.size + 1) {
+            val currentIsSpace = (current == s.size || s[current] == ' ')
+            if (currentIsSpace) {
+                // 翻转 start ~ current - 1
+                var end = current - 1
+                while (start < end) {
+                    s[start] = s[end].also { s[end] = s[start] }
+                    start++
+                    end--
+                }
+                // 恢复 start，为下个单词准备
+                start = current + 1
+            }
+            current++
+        }
+
+        return s.joinToString("")
+    }
+
+    fun reverseWords1(str: String): String {
+        var start = 0
+        var current = 0
+        var s = StringBuffer("")
+
+        while (current < str.length + 1) {
+            val currentIsSpace = (current == str.length || str[current] == ' ')
+            if (currentIsSpace) {
+                var end = current - 1
+                while (start <= end) {
+                    s.append(str[end])
+                    end--
+                }
+                s.append(if (current == str.length) "" else " ")
+                // 恢复 start，为下个单词准备
+                start = current + 1
+            }
+            current++
+        }
+
+        return s.toString()
+    }
+}
+
+/// 876. 链表的中间结点
+class Solution876 {
+    /// 快慢指针寻找链表右中位数
+    fun middleNode(head: ListNode?): ListNode? {
+        var walker = head
+        var runner = head
+        while (runner?.next != null) {
+            runner = runner!!.next?.next
+            walker = walker!!.next
+        }
+        return walker
+    }
+
+    /// 朴素方法
+    fun middleNode1(head: ListNode?): ListNode? {
+        var current = head
+        var length = 0
+        while (current != null) {
+            length++
+            current = current.next
+        }
+
+        length = (length ushr 1) - 1
+
+        current = head
+        while (length >= 0) {
+            current = current?.next
+            length--
+        }
+
+        return current
+    }
+}
+
+/// 812. 最大三角形面积
+class Solution812 {
+    fun largestTriangleArea(points: Array<IntArray>): Double {
+        fun distance(i: Int, j: Int): Double {
+            val x = points[i][0] - points[j][0]
+            val y = points[i][1] - points[j][1]
+            val result = Math.sqrt((x * x + y * y).toDouble())
+            return result
+        }
+
+        /* 三阶行列式，主对角线（左上到右下） - 副对角线（左下到右上）
+         x1 y1 1
+         x2 y2 1
+         x3 y3 1
+               x1 * y2 + x2 * y3 + x3 * y1 - x1 * y3 - x2 * y1 - x3 * y2
+         */
+        // abs(x1 * y2 + x2 * y3 + x3 * y1 - x1 * y3 - x2 * y1 - x3 * y2) / 2
+        fun triangleArea1(i: Int, j: Int, k: Int): Double {
+            return Math.abs(points[i][0] * points[j][1] + points[j][0] * points[k][1] + points[k][0] * points[i][1] - points[i][0] * points[k][1] - points[j][0] * points[i][1] - points[k][0] * points[j][1].toDouble()) / 2
+        }
+
+        // 三角形面积 海伦公式 √[p(p-a)(p-b)(p-c)], p=(a+b+c)/2.
+        fun triangleArea(i: Int, j: Int, k: Int): Double {
+            var a = distance(i, j)
+            var b = distance(i, k)
+            var c = distance(j, k)
+            val p = (a + b + c) / 2
+            var sq = p * (p - a) * (p - b) * (p - c)
+            if (sq < 0) {
+                sq = -sq
+            }
+            val result = Math.sqrt(sq)
+            if (result.isNaN()) {
+                return result
+            }
+            return result
+        }
+
+        var max = 0.0
+        for (i in 0 until points.size - 2) {
+            for (j in i + 1 until points.size - 1) {
+                for (k in j + 1 until points.size) {
+                    max = maxOf(max, triangleArea(i, j, k))
+                }
+            }
+        }
+
+        return max
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -3768,10 +3941,8 @@ class MainActivity : AppCompatActivity() {
         try {
             while (true) {
                 log(
-                    Solution691().minStickers2(
-                        arrayOf(
-                            "fly", "me", "charge", "mind", "bottom"
-                        ), "centorder"
+                    Solution812().largestTriangleArea(
+                        arrayOf(intArrayOf(35,-23),intArrayOf(-12,-48),intArrayOf(-34,-40),intArrayOf(21,-25),intArrayOf(-35,-44),intArrayOf(24,1),intArrayOf(16,-9),intArrayOf(41,4),intArrayOf(-36,-49),intArrayOf(42,-49),intArrayOf(-37,-20),intArrayOf(-35,11),intArrayOf(-2,-36),intArrayOf(18,21),intArrayOf(18,8),intArrayOf(-24,14),intArrayOf(-23,-11),intArrayOf(-8,44),intArrayOf(-19,-3),intArrayOf(0,-10),intArrayOf(-21,-4),intArrayOf(23,18),intArrayOf(20,11),intArrayOf(-42,24),intArrayOf(6,-19))
                     )
                 )
             }
