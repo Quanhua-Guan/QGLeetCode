@@ -3933,6 +3933,454 @@ class Solution812 {
     }
 }
 
+/// 42. 接雨水
+class Solution42 {
+    fun trap1(walls: IntArray): Int {
+
+        fun calSumWithWater(ascendWallIndices: List<Int>): Int {
+            if (ascendWallIndices.size == 1) {
+                return walls[ascendWallIndices[0]]
+            }
+
+            var sum = 0
+            for (i in 0 until ascendWallIndices.size - 1) {
+                val lowWallIndex = ascendWallIndices[i]
+                val highWallIndex = ascendWallIndices[i + 1]
+                val lowWall = walls[lowWallIndex]
+                val highWall = walls[highWallIndex]
+                sum += (highWall - lowWall) + (Math.abs(lowWallIndex - highWallIndex) + 1) * lowWall
+                if (i > 0) {
+                    sum -= lowWall
+                }
+            }
+            return sum
+        }
+
+        var sum = 0 // 墙体高度总和
+        var ascendWallIndices = mutableListOf<Int>()
+
+        var current = 0
+        var i = 0
+        while (i < walls.size) {
+            if (walls[i] >= current) {
+                ascendWallIndices.add(i)
+                current = walls[i]
+            }
+            sum += walls[i]
+            i++
+        }
+
+        var bigSum = calSumWithWater(ascendWallIndices)
+
+        var left = ascendWallIndices.last()
+        current = 0
+        i = walls.size - 1
+        ascendWallIndices = mutableListOf<Int>()
+        while (i >= left) {
+            if (walls[i] >= current) {
+                ascendWallIndices.add(i)
+                current = walls[i]
+            }
+            i--
+        }
+
+        bigSum += calSumWithWater(ascendWallIndices)
+
+        // 减掉多加的那堵最高的墙
+        bigSum -= walls[ascendWallIndices.last()]
+
+        return bigSum - sum
+    }
+
+    fun trap2(walls: IntArray): Int {
+        var sumHeight = 0
+
+        var prevIndex = -1
+        var currentHeight = 0
+        var originSumHeight = 0
+
+        var i = 0
+        while (i < walls.size) {
+            if (walls[i] >= currentHeight) {
+                if (i - prevIndex > 1) {
+                    // 计算
+                    val sum = currentHeight * (i - prevIndex - 1)
+                    sumHeight += (sum - originSumHeight)
+                }
+                currentHeight = walls[i]
+                originSumHeight = 0
+                prevIndex = i
+            } else {
+                originSumHeight += walls[i]
+            }
+            i++
+        }
+
+        val theHighestWallIndex = prevIndex
+        prevIndex = walls.size
+        currentHeight = 0
+        originSumHeight = 0
+
+        i = walls.size - 1
+        while (i >= theHighestWallIndex) {
+            if (walls[i] >= currentHeight) {
+                if (prevIndex - i > 1) {
+                    // 计算
+                    val sum = currentHeight * (prevIndex - i - 1)
+                    sumHeight += (sum - originSumHeight)
+                }
+                currentHeight = walls[i]
+                originSumHeight = 0
+                prevIndex = i
+            } else {
+                originSumHeight += walls[i]
+            }
+            i--
+        }
+
+        return sumHeight
+    }
+
+    fun trap(heights: IntArray): Int {
+        var ans = 0
+
+        var left = 0
+        var leftMax = 0
+
+        var right = heights.size - 1
+        var rightMax = 0
+        while (left < right) {
+            if (leftMax < heights[left]) {
+                leftMax = heights[left]
+            }
+            if (rightMax < heights[right]) {
+                rightMax = heights[right]
+            }
+            if (heights[left] < heights[right]) {
+                ans += leftMax - heights[left]
+                left++
+            } else {
+                ans += rightMax - heights[right]
+                --right
+            }
+        }
+
+        return ans
+    }
+}
+
+/// 198. 打家劫舍
+class Solution198 {
+    fun rob(nums: IntArray): Int {
+        if (nums.size == 0) return 0
+        if (nums.size == 1) return nums[0]
+
+        // dp[i] 代表在第 0~i 这 i+1 栋房屋可以获得的最大金额
+        // dp[0] = nums[0]
+        val n = nums.size
+        var dp = IntArray(n)
+        dp[0] = nums[0]
+        dp[1] = maxOf(nums[0], nums[1])
+
+        for (i in 2 until n) {
+            dp[i] = maxOf(
+                dp[i - 2] + nums[i],
+                dp[i - 1]
+            )
+        }
+
+        return dp[n - 1]
+    }
+
+    fun rob1(nums: IntArray): Int {
+        // dp[i][j] 代表小偷从房屋 i 到 j 总共能够获取的最大金额
+        /*  dp[i][j] = maxOf(
+                nums[i] + dp[i + 2][j],
+                nums[i + 1] + dp[i + 3][j]
+                ...
+                dp[i][i + k - 2] + nums[i + k] + dp[i + k + 2][j]
+            )
+            i <= j
+
+            显然，dp[i][i] = nums[i]
+        */
+        var dp = Array(nums.size) { IntArray(nums.size) }
+
+        for (i in dp.indices) {
+            dp[i][i] = nums[i]
+        }
+
+        for (i in nums.size - 2 downTo 0) {
+            for (j in i + 1 until nums.size) {
+                var max = 0
+                for (k in 0 until j - i + 1) {
+                    var sum = if (i + k - 2 >= 0) dp[i][i + k - 2] else 0
+                    sum += nums[i + k]
+                    sum += if (i + k + 2 < nums.size) dp[i + k + 2][j] else 0
+                    max = maxOf(max, sum)
+                }
+                dp[i][j] = max
+            }
+        }
+
+        return dp[0][nums.size - 1]
+    }
+}
+
+/// 213. 打家劫舍 II
+class Solution213 {
+    fun rob(nums: IntArray): Int {
+        // dp[i] 代表在第 0~i 这 i+1 栋房屋可以获得的最大金额
+
+        // dp[0] = nums[0]
+        // dp[1] = maxOf(nums[0], nums[1])
+
+        val n = nums.size
+        if (n == 0) return 0
+        if (n <= 3) {
+            return maxOf(nums[0], nums.getOrElse(1) { 0 }, nums.getOrElse(2) { 0 })
+        }
+
+        // dpNoFirst[i] 代表在第 0~i 这 i+1 栋房屋，并在不偷第一栋房屋的前提下可以获得的最大金额
+        var dpNoFirst = IntArray(n)
+        dpNoFirst[0] = 0
+        dpNoFirst[1] = nums[1]
+
+        var dp = IntArray(n)
+        dp[0] = nums[0]
+        dp[1] = maxOf(nums[1], nums[0])
+
+        for (i in 2 until n) {
+            dpNoFirst[i] = maxOf(nums[i] + dpNoFirst[i - 2], dpNoFirst[i - 1])
+
+            if (i == n - 1) {
+                val a = dpNoFirst[i] // dpNoFirst 不偷第一家的前提下的最大值
+                val b = dp[i - 1]   // dp 偷第一家的前提下，不偷最后一家时的最大值
+                dp[i] = maxOf(a, b)
+            } else {
+                dp[i] = maxOf(nums[i] + dp[i - 2], dp[i - 1])
+            }
+        }
+
+        return dp[n - 1]
+    }
+
+    fun rob1(nums: IntArray): Int {
+        // dp[i][j] 代表小偷从房屋 i 到 j 总共能够获取的最大金额
+        /*  dp[i][j] =
+            maxOf(
+                nums[i] + dp[i + 2][j],
+                nums[i + 1] + dp[i + 3][j]
+                ...
+                dp[i][i + k - 2] + nums[i + k] + dp[i + k + 2][j]
+            )
+            i <= j
+
+            显然，dp[i][i] = nums[i]
+        */
+        var dp = Array(nums.size) { IntArray(nums.size) }
+
+        for (i in dp.indices) {
+            dp[i][i] = nums[i]
+        }
+
+        fun getDp(i: Int, j: Int): Int {
+            if (i <= j) {
+                return dp[i][j]
+            }
+            return 0
+        }
+
+        for (i in nums.size - 2 downTo 0) {
+            for (j in i + 1 until nums.size) {
+                var max = 0
+                for (k in i until j + 1) {
+                    var value = nums[k]
+                    // 根据 k 的取值分情况处理
+                    if (k == 0) { ////////////////////////// (1). k == 0
+                        value += getDp(k + 2, minOf(j, nums.size - 2))
+                    } else if (k == nums.size - 1) { /////// (2). k == nums.size - 1
+                        value += getDp(maxOf(1, i), k - 2)
+                    } else
+                    /////////////////////////////// (3). 0 < k < nums.size - 1
+                    // 根据 i, j 是否联通，分为 2 种情况
+                    {
+                        if (i == 0 && j == nums.size - 1) { //// (3.1) 首尾联通时，分为 『取首去尾』 和 『取尾去首』两种情况处理。
+                            // 需要考虑首尾联通问题
+                            value += maxOf(
+                                // 取首去尾
+                                getDp(i, k - 2) + getDp(k + 2, minOf(j, nums.size - 2)),
+                                // 取尾去首
+                                getDp(maxOf(i, 1), k - 2) + getDp(k + 2, j)
+                            )
+                        } else { //////////////////////////////// (3.2) 首尾不联通时，按普通情况处理
+                            value += getDp(i, k - 2) + getDp(k + 2, j)
+                        }
+                    }
+                    max = maxOf(max, value)
+                }
+                dp[i][j] = max
+            }
+        }
+
+        return dp[0][nums.size - 1]
+    }
+}
+
+//class Solution {
+//    Map<TreeNode, Integer> f = new HashMap<TreeNode, Integer>();
+//    Map<TreeNode, Integer> g = new HashMap<TreeNode, Integer>();
+//
+//    public int rob(TreeNode root) {
+//        dfs(root);
+//        return Math.max(f.getOrDefault(root, 0), g.getOrDefault(root, 0));
+//    }
+//
+//    public void dfs(TreeNode node) {
+//        if (node == null) {
+//            return;
+//        }
+//        dfs(node.left);
+//        dfs(node.right);
+//        f.put(node, node.val + g.getOrDefault(node.left, 0) + g.getOrDefault(node.right, 0));
+//        g.put(node, Math.max(f.getOrDefault(node.left, 0), g.getOrDefault(node.left, 0)) + Math.max(f.getOrDefault(node.right, 0), g.getOrDefault(node.right, 0)));
+//    }
+//}
+
+/// 337. 打家劫舍 III
+class Solution337 {
+    class TreeNode(var `val`: Int) {
+        var left: TreeNode? = null
+        var right: TreeNode? = null
+    }
+
+    //// dfs
+
+    fun dfs(root: TreeNode?): Pair<Int, Int> {
+        if (root == null) return Pair<Int, Int>(0, 0)
+
+        val l = dfs(root.left)
+        val r = dfs(root.right)
+        // first 存选root的情况
+        // second 存不选root的情况
+        val selectRoot = root.`val` + l.second + r.second
+        val notSelectRoot = maxOf(l.first, l.second) + maxOf(r.first, r.second)
+        return Pair<Int, Int>(selectRoot, notSelectRoot)
+    }
+
+    fun rob(root: TreeNode?): Int {
+        val result = dfs(root)
+        return maxOf(result.first, result.second)
+    }
+
+    /////////////
+
+    /// 记忆化递归 双缓存
+    val robRootCache = mutableMapOf<TreeNode?, Int>()
+    val noRobRootCache = mutableMapOf<TreeNode?, Int>()
+
+    fun robMax2(root: TreeNode?, canRobRoot: Boolean): Int {
+        if (canRobRoot && robRootCache.containsKey(root)) {
+            return robRootCache[root]!!
+        }
+        if (!canRobRoot && noRobRootCache.containsKey(root)) {
+            return noRobRootCache[root]!!
+        }
+
+        if (root == null) {
+            robRootCache[root] = 0
+            noRobRootCache[root] = 0
+            return 0
+        }
+
+        if (canRobRoot) {
+            return maxOf(
+                root.`val` + robMax2(root.left, false) + robMax2(root.right, false),
+                robMax2(root.left, true) + robMax2(root.right, true)
+            ).also { robRootCache[root] = it }
+        } else {
+            return (robMax2(root.left, true) + robMax2(
+                root.right,
+                true
+            )).also { noRobRootCache[root] = it }
+        }
+    }
+
+    fun rob2(root: TreeNode?): Int {
+        return maxOf(robMax2(root, true), robMax2(root, false))
+    }
+
+    //////////////
+
+    /// 记忆化递归 单缓存
+    fun robMax1(
+        root: TreeNode?,
+        canRobRoot: Boolean,
+        mem: MutableMap<TreeNode?, MutableList<Int?>>
+    ): Int {
+        fun getCache(): Int? {
+            var maxList: MutableList<Int?>
+            if (!mem.containsKey(root)) {
+                maxList = mutableListOf<Int?>(null, null)
+                mem[root] = maxList
+            } else {
+                maxList = mem[root]!!
+            }
+            val index = if (canRobRoot) 1 else 0
+            return maxList[index]
+        }
+
+        fun setCache(maxValue: Int, canRob: Boolean? = null) {
+            var maxList: MutableList<Int?>
+            if (!mem.containsKey(root)) {
+                maxList = mutableListOf<Int?>(null, null)
+                mem[root] = maxList
+            } else {
+                maxList = mem[root]!!
+            }
+            var canRob = canRob
+            if (canRob == null) {
+                canRob = canRobRoot
+            }
+            val index = if (canRob) 1 else 0
+            maxList[index] = maxValue
+        }
+
+
+        val cacheValue = getCache()
+        if (cacheValue != null) {
+            return cacheValue
+        }
+
+        if (root == null) {
+            setCache(0, true)
+            setCache(0, false)
+            return 0
+        }
+
+        var result = 0
+        if (canRobRoot) {
+            // 1. rob root & not rob left and right
+            val rootMax =
+                root.`val` + robMax1(root.left, false, mem) + robMax1(root.right, false, mem)
+
+            // 2. not rob root & can rob left and right
+            val subMax = robMax1(root.left, true, mem) + robMax1(root.right, true, mem)
+            result = maxOf(rootMax, subMax)
+        } else {
+            val subMax = robMax1(root.left, true, mem) + robMax1(root.right, true, mem)
+            result = subMax
+        }
+
+        return result.also { setCache(it) }
+    }
+
+    fun rob1(root: TreeNode?): Int {
+        var mem = mutableMapOf<TreeNode?, MutableList<Int?>>()
+        return robMax1(root, true, mem)
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -3941,9 +4389,7 @@ class MainActivity : AppCompatActivity() {
         try {
             while (true) {
                 log(
-                    Solution812().largestTriangleArea(
-                        arrayOf(intArrayOf(35,-23),intArrayOf(-12,-48),intArrayOf(-34,-40),intArrayOf(21,-25),intArrayOf(-35,-44),intArrayOf(24,1),intArrayOf(16,-9),intArrayOf(41,4),intArrayOf(-36,-49),intArrayOf(42,-49),intArrayOf(-37,-20),intArrayOf(-35,11),intArrayOf(-2,-36),intArrayOf(18,21),intArrayOf(18,8),intArrayOf(-24,14),intArrayOf(-23,-11),intArrayOf(-8,44),intArrayOf(-19,-3),intArrayOf(0,-10),intArrayOf(-21,-4),intArrayOf(23,18),intArrayOf(20,11),intArrayOf(-42,24),intArrayOf(6,-19))
-                    )
+                    Solution213().rob(intArrayOf(2, 1, 1, 2))
                 )
             }
         } catch (e: Exception) {
