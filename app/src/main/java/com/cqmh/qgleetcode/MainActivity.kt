@@ -4779,6 +4779,87 @@ class Solution18 {
 
 }
 
+/// 32. 最长有效括号
+class Solution32 {
+    fun longestValidParenthesesTwoRuns(s: String): Int {
+        var l = 0
+        var r = 0
+        var max = 0
+
+        for (c in s) {
+            if (c == '(') {
+                l++
+            } else {
+                r++
+            }
+
+            if (r > l) {
+                l = 0
+                r = 0
+            }
+
+            if (l == r && l * 2 > max) {
+                max = l * 2
+            }
+        }
+
+        l = 0
+        r = 0
+
+        for (c in s.reversed()) {
+            if (c == '(') {
+                l++
+            } else {
+                r++
+            }
+
+            if (r < l) {
+                l = 0
+                r = 0
+            }
+
+            if (l == r && l * 2 > max) {
+                max = l * 2
+            }
+        }
+
+        return max
+    }
+
+    fun longestValidParenthesesDP(s: String): Int {
+        var n = s.length
+        if (n < 2) return 0
+
+        // dp[i] 代表以 s[i] 结尾的最长有效括号子串的长度，所以所有 '(' 对应的 dp[i] = 0，因为以 '(' 结尾的子串不可能是有效括号子串。
+        var dp = IntArray(n)
+        // 默认 dp[0] = 0, dp[1] 仅在 s[0] == '(' && s[1] == ')' 时为 2，否则为 0
+        dp[1] = if (s[0] == '(' && s[1] == ')') 2 else 0
+
+        var max = dp[1]
+
+        for (i in 2 until n) {
+            if (s[i] == ')') {
+                if (s[i - 1] == '(') {
+                    dp[i] = dp[i - 2] + 2
+                } else if (s[i - 1] == ')') {
+                    var c = i - dp[i - 1] - 1
+                    if (c >= 0 && s[c] == '(') {
+                        dp[i] = 2 + dp[i - 1]
+                        if (c - 1 >= 0) {
+                            dp[i] += dp[c - 1]
+                        }
+                    }
+                }
+                if (max < dp[i]) {
+                    max = dp[i]
+                }
+            }
+        }
+
+        return max
+    }
+}
+
 
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
