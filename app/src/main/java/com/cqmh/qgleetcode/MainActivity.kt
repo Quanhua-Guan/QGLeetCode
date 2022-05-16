@@ -4860,6 +4860,94 @@ class Solution32 {
     }
 }
 
+/// 448. 找到所有数组中消失的数字
+class Solution448 {
+    fun findDisappearedNumbers1(nums: IntArray): List<Int> {
+        var seen = mutableMapOf<Int, Boolean>()
+        for (i in nums) {
+            seen[i] = true
+        }
+        var result = mutableListOf<Int>()
+        for (i in 1 until nums.size + 1) {
+            if (!seen.containsKey(i)) {
+                result.add(i)
+            }
+        }
+        return result
+    }
+
+    fun findDisappearedNumbers2(nums: IntArray): List<Int> {
+        var result = mutableListOf<Int>()
+
+        nums.sort()
+
+        var target = 1
+        var i = 0
+        while (i < nums.size && target <= nums.size) {
+            if (target == nums[i]) {
+                i++
+                while (i < nums.size && nums[i - 1] == nums[i]) {
+                    i++
+                }
+                target++
+            } else if (nums[i] > target) {
+                result.add(target)
+                target++
+            } else { // nums[i] < target
+                i++
+            }
+        }
+
+        while (target <= nums.size) {
+            result.add(target)
+            target++
+        }
+
+        return result
+    }
+
+    /// 将所有可以恢复的数字恢复到原位，然后再遍历一遍找到值和下标不对应的元素。
+    fun findDisappearedNumbers(nums: IntArray): List<Int> {
+        var i = 0
+        while (i < nums.size) {
+            val l = nums[i]
+            if (l != i + 1) {
+                if (nums[i] == nums[l - 1]) {
+                    i++
+                } else {
+                    nums[l - 1] = nums[i].also { nums[i] = nums[l - 1] }
+                }
+            } else {
+                i++
+            }
+        }
+
+        var result = mutableListOf<Int>()
+        for (i in nums.indices) {
+            if (nums[i] != i + 1) {
+                result.add(i + 1)
+            }
+        }
+
+        return result
+    }
+
+    /// 原地哈希标记法
+    fun findDisappearedNumbersHASH(nums: IntArray): List<Int> {
+        val n = nums.size
+        for (num in nums) {
+            nums[(num - 1) % n] += n
+        }
+        var result = mutableListOf<Int>()
+        for (i in nums.indices) {
+            if (nums[i] <= n) {
+                result.add(i + 1)
+            }
+        }
+        return result
+    }
+}
+
 
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
@@ -4874,11 +4962,8 @@ class MainActivity : AppCompatActivity() {
 //                            1, -1, -1, 0
 //                        )
 //                    )
-                    Solution18().fourSum(
-                        intArrayOf(
-                            0,0,0,1000000000,1000000000,1000000000,1000000000
-
-                        ), 1000000000
+                    Solution448().findDisappearedNumbers(
+                        intArrayOf(4, 3, 2, 7, 8, 2, 3, 1)
                     )
                 )
             }
