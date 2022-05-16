@@ -2812,6 +2812,28 @@ class Solution19 {
 
         return prehead.next
     }
+
+    fun removeNthFromEnd1(head: ListNode?, n: Int): ListNode? {
+        var prehead = ListNode(0)
+        prehead.next = head
+
+        // 要删除倒数第 n 个节点，需要找到倒数第 n+1 个节点。
+
+        var target: ListNode? = prehead
+        var current: ListNode? = prehead
+        var i = 0
+        while (current?.next != null) {
+            current = current.next!!
+            if (i < n) { // 保证 current 先走 n 步，之后 target 和 current 同步走，直到 current 到达最后一个节点，此时 target 即为倒数第 n+1 个节点
+                i++
+                continue
+            }
+            target = target!!.next
+        }
+        target!!.next = target!!.next?.next
+
+        return prehead.next
+    }
 }
 
 /// 206. 反转链表
