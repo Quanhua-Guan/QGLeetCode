@@ -792,7 +792,7 @@ class Solution62 {
 }
 
 /// 64. 最小路径和
-class Solution {
+class Solution64 {
     fun minPathSum(grid: Array<IntArray>): Int {
         // m 行，n 列，grid[i][j]为非负整数（0<=i<m, 0<=j<n）
         val m = grid.size
@@ -1824,7 +1824,176 @@ class Solution887 {
 
 /// 15. 三数之和
 class Solution15 {
+    fun threeSumXX(nums: IntArray): List<List<Int>> {
+        if (nums.size < 3) return listOf()
+
+        nums.sort()
+
+        val result = arrayListOf<List<Int>>()
+
+        if (nums[0] + nums[1] + nums[2] > 0) return result
+        if (nums[nums.size - 1] + nums[nums.size - 2] + nums[nums.size - 3] < 0) return result
+
+        for (a in 0 until nums.size - 2) {
+            if (a > 0 && nums[a] == nums[a - 1]) continue
+
+            if (nums[a] + nums[a + 1] + nums[a + 2] > 0) break
+            if (nums[a] + nums[nums.size - 1] + nums[nums.size - 2] < 0) continue
+
+            var c = nums.size - 1
+            val target = -nums[a]
+            for (b in a + 1 until nums.size - 1) {
+                if (b > a + 1 && nums[b] == nums[b - 1]) continue
+
+                if (nums[b] + nums[b + 1] > target) break
+                if (nums[b] + nums[c] < target) continue
+
+                while (b < c && nums[b] + nums[c] > target) {
+                    c--
+                }
+                if (b == c) break;
+                if (nums[b] + nums[c] == target) {
+                    result.add(arrayListOf<Int>(nums[a], nums[b], nums[c]))
+                }
+            }
+        }
+
+        return result
+    }
+
+    fun threeSumX(nums: IntArray): List<List<Int>> {
+        nums.sort()
+
+        val result = arrayListOf<List<Int>>()
+
+        for (a in 0 until nums.size - 2) {
+            if (a > 0 && nums[a] == nums[a - 1]) continue
+
+            if (nums[a] + nums[a + 1] + nums[a + 2] > 0) break
+            if (nums[nums.size - 1] + nums[nums.size - 2] + nums[nums.size - 3] < 0) break
+
+            var c = nums.size - 1
+            val target = -nums[a]
+            for (b in a + 1 until nums.size - 1) {
+                if (b > a + 1 && nums[b] == nums[b - 1]) continue
+
+                if (nums[b] + nums[b + 1] > target) break
+                if (nums[b] + nums[c] < target) continue
+
+                while (b < c && nums[b] + nums[c] > target) {
+                    c--
+                }
+                if (b == c) break;
+                if (nums[b] + nums[c] == target) {
+                    result.add(arrayListOf<Int>(nums[a], nums[b], nums[c]))
+                }
+            }
+        }
+
+        return result
+    }
+
     fun threeSum(nums: IntArray): List<List<Int>> {
+        nums.sort()
+
+        val result = arrayListOf<List<Int>>()
+
+        for (a in 0 until nums.size - 2) {
+            if (a > 0 && nums[a] == nums[a - 1]) continue
+            var c = nums.size - 1
+            val target = -nums[a]
+            for (b in a + 1 until nums.size - 1) {
+                if (b > a + 1 && nums[b] == nums[b - 1]) continue
+                while (b < c && nums[b] + nums[c] > target) {
+                    c--
+                }
+                if (b == c) break;
+                if (nums[b] + nums[c] == target) {
+                    result.add(arrayListOf<Int>(nums[a], nums[b], nums[c]))
+                }
+            }
+        }
+
+        return result
+    }
+
+    fun threeSum3(nums: IntArray): List<List<Int>> {
+        fun bs(nums: IntArray, target: Int, start: Int, end: Int): Int {
+            var l = start
+            var r = end
+
+            while (l < r) {
+                val m = (l + r) ushr 1
+                if (nums[m] < target) {
+                    l = m + 1
+                } else {
+                    r = m
+                }
+            }
+
+            if (l < nums.size && nums[l] == target) return l
+
+            return -1
+        }
+
+        nums.sort()
+
+        val result = mutableListOf<List<Int>>()
+
+        for (a in 0 until nums.size - 2) {
+            if (a > 0 && nums[a] == nums[a - 1]) continue
+            var cc = nums.size - 1
+            for (b in a + 1 until nums.size - 1) {
+                if (b > a + 1 && nums[b] == nums[b - 1]) continue
+                val c = bs(nums, -(nums[a] + nums[b]), b + 1, cc)
+                if (c != -1) {
+                    cc = c - 1
+                    result.add(listOf<Int>(nums[a], nums[b], nums[c]))
+                }
+            }
+        }
+
+        return result
+    }
+
+    fun threeSum2(nums: IntArray): List<List<Int>> {
+        nums.sort()
+
+        var result = mutableListOf<List<Int>>()
+
+        // a, b, c 为三个下标
+        val n = nums.size
+        var a = 0
+        while (a < n - 2) {
+            if (a > 0 && nums[a] == nums[a - 1]) {
+                a++
+                continue
+            }
+
+            val target = -nums[a]
+            var b = a + 1
+            var c = n - 1
+            while (b < c) {
+                val sum = nums[b] + nums[c]
+                if (sum == target) {
+                    result.add(listOf(nums[a], nums[b], nums[c]))
+                    while (b < c && nums[b] == nums[b + 1]) b++
+                    b++
+                    while (b < c && nums[c] == nums[c - 1]) c--
+                    c--
+                } else if (sum < target) {
+                    b++
+                } else { // sum > target
+                    c--
+                }
+            }
+            a++
+        }
+
+        return result
+    }
+
+    fun threeSum1(nums: IntArray): List<List<Int>> {
         var result = mutableListOf<List<Int>>()
         nums.sort()
         var first: Int? = null
@@ -4403,6 +4572,214 @@ class Solution337 {
     }
 }
 
+/// 18. 四数之和
+class Solution18 {
+    fun fourSum1(nums: IntArray, target: Int): List<List<Int>> {
+        nums.sort()
+
+        val n = nums.size
+
+        var a = 0
+        var d = n - 1
+
+        var result = mutableSetOf<List<Int>>()
+
+        while (a <= d - 3) {
+            var b = a + 1
+            var c = d - 1
+
+            fun process() {
+                while (b < c) {
+                    if (nums[a] + nums[c - 1] + nums[c] + nums[d] < target ||
+                        nums[a] + nums[b] + nums[b + 1] + nums[d] > target
+                    ) {
+                        return
+                    }
+
+                    val sum = nums[a] + nums[b] + nums[c] + nums[d]
+                    if (sum == target) {
+                        result.add(listOf(nums[a], nums[b], nums[c], nums[d]))
+                        while (b < c && nums[b + 1] == nums[b]) {
+                            b++
+                        }
+                        b++
+                        while (b < c && nums[c - 1] == nums[c]) {
+                            c--
+                        }
+                        c++
+                    } else if (sum < target) {
+                        b++
+                    } else { // sum > target
+                        c--
+                    }
+                }
+            }
+
+            process()
+
+            var tmp = d
+
+            while (a <= d - 3) {
+                b = a + 1
+                d -= 1
+                c = d - 1
+                if (a <= d - 3) {
+                    process()
+                }
+            }
+
+            d = tmp
+            tmp = a
+
+            while (a <= d - 3) {
+                a += 1
+                b = a + 1
+                c = d - 1
+                if (a <= d - 3) {
+                    process()
+                }
+            }
+
+            a = tmp + 1
+            d -= 1
+        }
+
+        return result.toList()
+    }
+
+    fun fourSumO(nums: IntArray, target: Int): List<List<Int>> {
+        //4数之和，前面3数之和可以使用 排序 + 双指针 来实现，这个4数之和，感觉可以
+        //2层遍历 加双指针
+
+        //特判
+        if (nums.size < 4) {
+            return ArrayList()
+        }
+
+        //定义2个指针
+        var leftIndex: Int
+        var rightIndex: Int
+
+        //定义返回集合，使用set来去重
+        val ans = ArrayList<ArrayList<Int>>()
+
+        //先排序
+        Arrays.sort(nums)
+
+        //第一层遍历
+        for (i in 0..nums.size - 4) {
+            //优化特判 当i从1开始，假如nums[1]和nums[0]相同，则i==1不用再处理
+            if (i > 0 && nums[i] == nums[i - 1]) continue
+
+            //优化特判 当前几个最小值已经大于target，则无需再遍历
+            if (nums[i].toLong() + nums[i + 1].toLong() + nums[i + 2].toLong() + nums[i + 3].toLong() > target) {
+                break
+            }
+            //优化特判 当当前值和最大的几个值小于target，则说明i要往后面移动了
+            if (nums[i].toLong() + nums[nums.size - 1].toLong() + nums[nums.size - 2].toLong() + nums[nums.size - 3].toLong() < target) {
+                continue
+            }
+            //第二层遍历
+            for (j in i + 1..nums.size - 3) {
+                //优化特例 当当前j的值和上一个j值一样，则不处理
+                if (j > i + 1 && nums[j] == nums[j - 1]) {
+                    continue
+                }
+                //优化特判 当前几个最小值都已经大于target，则无需再遍历
+                if (nums[i].toLong() + nums[j].toLong() + nums[j + 1].toLong() + nums[j + 2].toLong() > target) {
+                    break
+                }
+                //优化特判 当当前值和最大的几个值小于target，说明j需要右移动了
+                if (nums[i].toLong() + nums[j].toLong() + nums[nums.size - 1].toLong() + nums[nums.size - 2].toLong() < target) {
+                    continue
+                }
+                //再使用双指针
+                leftIndex = j + 1
+                rightIndex = nums.size - 1
+                //循环判断
+                while (leftIndex < rightIndex) {
+                    val curSum = nums[i] + nums[j] + nums[leftIndex] + nums[rightIndex]
+                    when {
+                        curSum == target -> {
+                            //符合条件，返回值
+                            val tempList =
+                                arrayListOf(nums[i], nums[j], nums[leftIndex], nums[rightIndex])
+                            ans.add(tempList)
+                            //优化特判 当左指针右移时，可能移动完和前面是一样的
+                            leftIndex++
+                            while (leftIndex < rightIndex && nums[leftIndex] == nums[leftIndex - 1]) {
+                                leftIndex++
+                            }
+                            //优化特判 当右指针左移时，可能移动完和前面是一样的
+                            rightIndex--
+                            while (leftIndex < rightIndex && nums[rightIndex] == nums[rightIndex + 1]) {
+                                rightIndex--
+                            }
+                        }
+                        curSum > target -> {
+                            //4数之和大于target
+                            rightIndex--
+                        }
+                        curSum < target -> {
+                            //4数之和小于target
+                            leftIndex++
+                        }
+                    }
+                }
+            }
+        }
+        return ans
+    }
+
+    fun fourSum(nums: IntArray, target: Int): List<List<Int>> {
+        if (nums.size < 4) return listOf()
+
+        val result = mutableListOf<List<Int>>()
+        val n = nums.size
+
+        nums.sort()
+        if (nums[n - 1].toLong() + nums[n - 2] + nums[n - 3] + nums[n - 4] < target ||
+            nums[0].toLong() + nums[1] + nums[2] + nums[3] > target
+        ) {
+            return result
+        }
+
+        for (a in 0 until n - 3) {
+            if (a > 0 && nums[a] == nums[a - 1]) continue
+
+            if (nums[a].toLong() + nums[a + 1] + nums[a + 2] + nums[a + 3] > target) break
+            if (nums[a].toLong() + nums[n - 1] + nums[n - 2] + nums[n - 3] < target) continue
+
+            for (b in a + 1 until n - 2) {
+                if (b > a + 1 && nums[b] == nums[b - 1]) continue
+
+                if (nums[a].toLong() + nums[b] + nums[b + 1] + nums[b + 2] > target) break
+                if (nums[a].toLong() + nums[b] + nums[n - 1] + nums[n - 2] < target) continue
+
+                var d = n - 1
+                for (c in b + 1 until n - 1) {
+                    if (c > b + 1 && nums[c] == nums[c - 1]) continue
+
+                    val sum = nums[a].toLong() + nums[b] + nums[c]
+                    if (sum + nums[c + 1].toLong() > target) break
+                    if (sum + nums[d].toLong() < target) continue
+
+                    while (c < d && sum + nums[d] > target) d--
+                    if (c == d) break
+
+                    if (sum + nums[d] == target.toLong()) {
+                        result.add(listOf(nums[a], nums[b], nums[c], nums[d]))
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
+}
+
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -4411,7 +4788,17 @@ class MainActivity : AppCompatActivity() {
         try {
             while (true) {
                 log(
-                    Solution213().rob(intArrayOf(2, 1, 1, 2))
+//                    Solution15().threeSumX(
+//                        intArrayOf(
+//                            1, -1, -1, 0
+//                        )
+//                    )
+                    Solution18().fourSum(
+                        intArrayOf(
+                            0,0,0,1000000000,1000000000,1000000000,1000000000
+
+                        ), 1000000000
+                    )
                 )
             }
         } catch (e: Exception) {
