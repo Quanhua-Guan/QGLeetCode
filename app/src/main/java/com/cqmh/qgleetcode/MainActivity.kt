@@ -5070,6 +5070,7 @@ class Solution567 {
                 }
             }
             if (i >= s1.length - 1) {
+
                 if (indicesEqual()) {
                     return true
                 }
@@ -5081,6 +5082,58 @@ class Solution567 {
     }
 }
 
+/// 20. 有效的括号
+/*
+给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串 s ，判断字符串是否有效。
+
+有效字符串需满足：
+ - 左括号必须用相同类型的右括号闭合。
+ - 左括号必须以正确的顺序闭合。
+
+*/
+class Solution20 {
+    fun isValid1(s: String): Boolean {
+        fun isLeft(c: Char) = (c == '(' || c == '{' || c == '[')
+        fun isRight(c: Char) = (c == ')' || c == '}' || c == ']')
+        fun isPair(left: Char, right: Char) =
+            (left == '(' && right == ')' || left == '{' && right == '}' || left == '[' && right == ']')
+
+        var stack = mutableListOf<Char>('a')
+        for (c in s) {
+            if (isLeft(c)) {
+                stack.add(c)
+            } else if (isRight(c)) {
+                if (isPair(stack.last(), c)) {
+                    stack.removeAt(stack.size - 1)
+                } else {
+                    return false
+                }
+            }
+        }
+
+        return stack.size == 1
+    }
+
+    fun isValid(s: String): Boolean {
+        if (s.length % 2 == 1) return false
+
+        var stack = LinkedList<Char>()
+        stack.add('_')
+        for (c in s) {
+            when (c) {
+                '(' -> stack.addLast(')')
+                '{' -> stack.addLast('}')
+                '[' -> stack.addLast(']')
+                else -> {
+                    if (stack.removeLast() != c) return false
+                }
+            }
+        }
+
+        return stack.size == 1
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -5089,7 +5142,7 @@ class MainActivity : AppCompatActivity() {
         try {
             while (true) {
                 log(
-                    Solution567().checkInclusion("adc", "dcda")
+                    Solution20().isValid("()")
                 )
             }
         } catch (e: Exception) {
