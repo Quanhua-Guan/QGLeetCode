@@ -5134,6 +5134,129 @@ class Solution20 {
     }
 }
 
+/// 22. 括号生成
+class Solution22 {
+    fun generateParenthesis(n: Int): List<String> {
+        val res = generate(n * 2)
+        val res1 = res.filter { isValid(it) }
+        return res1
+    }
+
+    fun isValid(s: String): Boolean {
+        var count = 0
+        for (c in s) {
+            when (c) {
+                '(' -> count++
+                else -> {
+                    count--
+                    if (count < 0) return false
+                }
+            }
+        }
+        return count == 0
+    }
+
+    fun generate(n: Int): List<String> {
+        if (n == 1) return listOf("(", ")")
+
+        var results = mutableListOf<String>()
+
+        var subResults = generate(n - 1)
+        subResults.forEach {
+            var r = ")" + it
+            results.add(r)
+            r = "(" + it
+            results.add(r)
+        }
+
+        return results
+    }
+}
+
+class Solution22_1 {
+    fun generateParenthesis(n: Int): List<String> {
+        val results = mutableListOf<String>()
+        generate(CharArray(n * 2), 0, results)
+        return results
+    }
+
+    fun isValid(s: CharArray): Boolean {
+        var count = 0
+        for (c in s) {
+            when (c) {
+                '(' -> count++
+                else -> {
+                    count--
+                    if (count < 0) return false
+                }
+            }
+        }
+        return count == 0
+    }
+
+    fun generate(chars: CharArray, pos: Int, result: MutableList<String>) {
+        if (chars.size == pos) {
+            if (isValid(chars)) {
+                result.add(chars.joinToString(""))
+            }
+        } else {
+            chars[pos] = '('
+            generate(chars, pos + 1, result)
+            chars[pos] = ')'
+            generate(chars, pos + 1, result)
+        }
+    }
+}
+
+class Solution22_2 {
+    fun generateParenthesis(n: Int): List<String> {
+        val results = mutableListOf<String>()
+        generate(CharArray(n * 2), 0, 0, 0, results)
+        return results
+    }
+
+    fun generate(chars: CharArray, pos: Int, left: Int, right: Int, result: MutableList<String>) {
+        if (chars.size == pos) {
+            result.add(chars.joinToString(""))
+        } else {
+            var max = chars.size / 2
+            if (left < max) {
+                chars[pos] = '('
+                generate(chars, pos + 1, left + 1, right, result)
+            }
+
+            if (left > right) {
+                chars[pos] = ')'
+                generate(chars, pos + 1, left, right + 1, result)
+            }
+        }
+    }
+}
+
+class Solution22_3 {
+    fun generateParenthesis(n: Int): List<String> {
+        val res = ArrayList<String>()
+        dfs(res, n, n, "")
+        return res
+    }
+
+    private fun dfs(
+        res: ArrayList<String>,
+        left: Int, right: Int, curStr: String
+    ) {
+        if (left == 0 && right == 0) {
+            res.add(curStr)
+            return
+        }
+        if (left > 0) {
+            dfs(res, left - 1, right, curStr + "(")
+        }
+        if (right > left) {
+            dfs(res, left, right - 1, curStr + ")")
+        }
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -5142,7 +5265,7 @@ class MainActivity : AppCompatActivity() {
         try {
             while (true) {
                 log(
-                    Solution20().isValid("()")
+                    Solution22().generateParenthesis(3)
                 )
             }
         } catch (e: Exception) {
