@@ -5281,7 +5281,101 @@ class Solution136 {
     }
 }
 
+/// 146. LRU 缓存
+/*
+请你设计并实现一个满足 LRU (最近最少使用) 缓存 约束的数据结构。
+实现 LRUCache 类：
+- LRUCache(int capacity) 以 正整数 作为容量 capacity 初始化 LRU 缓存
+- int get(int key) 如果关键字 key 存在于缓存中，则返回关键字的值，否则返回 -1 。
+- void put(int key, int value) 如果关键字 key 已经存在，则变更其数据值 value ；如果不存在，则向缓存中插入该组key-value 。
+  如果插入操作导致关键字数量超过capacity ，则应该 逐出 最久未使用的关键字。
 
+函数 get 和 put 必须以 O(1) 的平均时间复杂度运行。
+* */
+class LRUCache(val capacity: Int) {
+    private class Node(
+        var value: Int,
+        val key: Int,
+        var next: Node? = null,
+        var prev: Node? = null
+    )
+
+    private var keyValues = mutableMapOf<Int, Node>()
+
+    private var preHead = Node(-1, -1)
+    private var postTail = Node(-2, -2)
+
+    init {
+        preHead.next = postTail
+        postTail.prev = preHead
+    }
+
+    private fun insertAtFirst(node: Node) {
+        val next = preHead.next!!
+
+        preHead.next = node
+        node.prev = preHead
+
+        node.next = next
+        next.prev = node
+    }
+
+    private fun removeNode(node: Node) {
+        if (node.next == null || node.prev == null) return
+
+        val prev = node.prev!!
+        val next = node.next!!
+
+        node.next = null
+        node.prev = null
+
+        prev.next = next
+        next.prev = prev
+    }
+
+    fun get(key: Int): Int {
+        val node = keyValues.get(key)
+        if (node != null) {
+            if (node != preHead.next) {
+                removeNode(node)
+                insertAtFirst(node)
+            }
+            return node.value
+        }
+        return -1
+    }
+
+    fun put(key: Int, value: Int) {
+        var node: Node
+        if (keyValues.containsKey(key)) {
+            node = keyValues[key]!!
+            node.value = value
+
+            removeNode(node)
+            insertAtFirst(node)
+        } else {
+            node = Node(value, key)
+            keyValues[key] = node
+            insertAtFirst(node)
+
+            if (keyValues.size > capacity) {
+                // 链表中删除最后一个元素 postTail.prev
+                val deleted = postTail.prev!!
+                removeNode(deleted)
+
+                // 哈希表中删除对应的 key 值
+                keyValues.remove(deleted.key)
+            }
+        }
+    }
+}
+
+/**
+ * Your LRUCache object will be instantiated and called as such:
+ * var obj = LRUCache(capacity)
+ * var param_1 = obj.get(key)
+ * obj.put(key,value)
+ */
 
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
