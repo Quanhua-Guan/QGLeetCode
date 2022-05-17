@@ -5257,6 +5257,32 @@ class Solution22_3 {
     }
 }
 
+/// 136. 只出现一次的数字
+class Solution136 {
+    fun singleNumber(nums: IntArray): Int {
+        var result = 0
+        for (num in nums) {
+            result = result xor num
+        }
+        return result
+    }
+
+    fun singleNumber1(nums: IntArray): Int {
+        nums.sort()
+        var result = 0
+        for (i in 0 until nums.size) {
+            if (i % 2 == 0) {
+                result += nums[i]
+            } else {
+                result -= nums[i]
+            }
+        }
+        return result
+    }
+}
+
+
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
