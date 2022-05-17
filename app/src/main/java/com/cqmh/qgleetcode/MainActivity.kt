@@ -307,6 +307,29 @@ class Solution3 {
 
         return maxLength
     }
+
+    fun lengthOfLongestSubstring20220517(s: String): Int {
+        // 无重复
+        // 最长
+        // 子串
+        var start = 0
+        var max = 0
+        var mem = mutableMapOf<Char, Int>() // 存放出现过的字符所在的下标（如果字符重复，则只保持距离当前遍历到的下标最近的那个）
+
+        var current = 0
+        while (current < s.length) {
+            val c = s[current]
+            if (mem.containsKey(c) && mem[c]!! >= start) {
+                start = mem[c]!! + 1
+            }
+            max = maxOf(max, current - start + 1)
+            mem[c] = current
+
+            current++
+        }
+
+        return max
+    }
 }
 
 class Solution647 {
@@ -4948,6 +4971,115 @@ class Solution448 {
     }
 }
 
+/// 953. 验证外星语词典
+class Solution953 {
+    fun isAlienSorted(words: Array<String>, order: String): Boolean {
+        /// 记录每个字符应该处于的下标，下标越小其字典序越靠前
+        var orderInfo = ShortArray(26)
+        for (i in order.indices) {
+            orderInfo[order[i] - 'a'] = i.toShort()
+        }
+
+        val MIN: Short = -1
+        var valid = true
+        for (i in 1 until words.size) {
+            // 检查 w1 和 w2 是否是order字典序
+            val w1 = words[i - 1]
+            val w2 = words[i]
+            var i1 = 0
+            var i2 = 0
+            while (i1 < w1.length || i2 < w2.length) {
+                var v1 = if (i1 < w1.length) orderInfo[w1[i1] - 'a'] else MIN
+                var v2 = if (i2 < w2.length) orderInfo[w2[i2] - 'a'] else MIN
+
+                if (v2 > v1) {
+                    break
+                } else if (v1 > v2) {
+                    valid = false // 发现一处非 orderd字典序
+                    break
+                }
+
+                i1++
+                i2++
+            }
+        }
+
+        return valid
+    }
+}
+
+/// 567. 字符串的排列
+class Solution567 {
+
+    fun checkInclusion(s1: String, s2: String): Boolean {
+        val feq = IntArray(26)
+        var cnt = 0
+        val n1 = s1.length
+        val n2 = s2.length
+        for (c in s1.toCharArray()) {
+            if (feq[c - 'a'] == 0) {
+                cnt++
+            }
+            feq[c - 'a']++
+        }
+        val chars = s2.toCharArray()
+        for (i in 0 until n2) {
+            if (--feq[chars[i] - 'a'] == 0) {
+                cnt--
+            }
+            if (i >= n1 && feq[chars[i - n1] - 'a']++ == 0) {
+                cnt++
+            }
+            if (cnt == 0) {
+                return true
+            }
+        }
+        return false
+    }
+
+
+    fun checkInclusion1(s1: String, s2: String): Boolean {
+        var s1Indices = IntArray(26)
+        for (c in s1) {
+            s1Indices[c - 'a']++
+        }
+
+        var s2Indices = IntArray(26)
+
+        fun indicesEqual(): Boolean {
+            var equal = true
+            for (i in 0 until s1Indices.size) {
+                if (s1Indices[i] != s2Indices[i]) {
+                    equal = false
+                    break
+                }
+            }
+            return equal
+        }
+
+        var i = 0
+        while (i < s2.length) {
+            val c = s2[i] - 'a'
+            if (s1Indices[c] > 0) {
+                s2Indices[c]++
+            }
+            if (i >= s1.length) {
+                val dump = s2[i - s1.length] - 'a'
+                if (s2Indices[dump] > 0) {
+                    s2Indices[dump]--
+                }
+            }
+            if (i >= s1.length - 1) {
+                if (indicesEqual()) {
+                    return true
+                }
+            }
+            i++
+        }
+
+        return false
+    }
+}
 
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
@@ -4957,14 +5089,7 @@ class MainActivity : AppCompatActivity() {
         try {
             while (true) {
                 log(
-//                    Solution15().threeSumX(
-//                        intArrayOf(
-//                            1, -1, -1, 0
-//                        )
-//                    )
-                    Solution448().findDisappearedNumbers(
-                        intArrayOf(4, 3, 2, 7, 8, 2, 3, 1)
-                    )
+                    Solution567().checkInclusion("adc", "dcda")
                 )
             }
         } catch (e: Exception) {
