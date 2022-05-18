@@ -5427,7 +5427,164 @@ class Solution733 {
 /// 695. 岛屿的最大面积
 class Solution695 {
     fun maxAreaOfIsland(grid: Array<IntArray>): Int {
+        val rowCount = grid.size
+        val columnCount = grid[0].size
 
+        var searchedPoints = mutableSetOf<Int>()
+        var maxArea = 0
+
+        fun getKey(row: Int, column: Int) = row * columnCount + column
+        fun getRowColumn(key: Int) = Pair(key / columnCount, key % columnCount)
+
+        fun searchMax(row: Int, column: Int): Int {
+            val pointKey = getKey(row, column)
+            var max = 0
+
+            if (grid[row][column] == 1 && !searchedPoints.contains(pointKey)) {
+                val willSearchPoints = LinkedList<Int>()
+                willSearchPoints.offer(pointKey)
+
+                max++
+                searchedPoints.add(pointKey)
+                while (willSearchPoints.isNotEmpty()) {
+                    val key = willSearchPoints.poll()!!
+                    val (r, c) = getRowColumn(key)
+                    // 向上下左右扩散搜索为 1 的区域
+                    // up
+                    fun subSearch(key: Int) {
+                        if (!searchedPoints.contains(key)) {
+                            willSearchPoints.offer(key)
+                            searchedPoints.add(key)
+                            max++
+                        }
+                    }
+
+                    if (r - 1 >= 0 && grid[r - 1][c] == 1) {
+                        subSearch(getKey(r - 1, c))
+                    }
+                    // down
+                    if (r + 1 < rowCount && grid[r + 1][c] == 1) {
+                        subSearch(getKey(r + 1, c))
+                    }
+                    // left
+                    if (c - 1 >= 0 && grid[r][c - 1] == 1) {
+                        subSearch(getKey(r, c - 1))
+                    }
+                    // right
+                    if (c + 1 < columnCount && grid[r][c + 1] == 1) {
+                        subSearch(getKey(r, c + 1))
+                    }
+                }
+            }
+
+            return max
+        }
+
+        // 一行一行遍历
+        for (i in 0 until rowCount) {
+            for (j in 0 until columnCount) {
+                maxArea = maxOf(maxArea, searchMax(i, j))
+            }
+        }
+
+        return maxArea
+    }
+
+    ///// 递归
+
+    fun maxAreaOfIslandRC(grid: Array<IntArray>): Int {
+        var maxSize = 0
+        for (i in grid.indices) {
+            for (j in grid[i].indices) {
+                if (grid[i][j] == 1) {
+                    var maxLen = grid.findMax(i, j)
+                    maxSize = Math.max(maxLen, maxSize)
+                }
+            }
+        }
+        return maxSize
+    }
+
+    fun Array<IntArray>.findMax(i: Int, j: Int): Int {
+        if (i < 0 || i >= this.size || j < 0 || j >= this[i].size || this[i][j] != 1) {
+            return 0
+        }
+        this[i][j] = 0
+        return 1 + findMax(i + 1, j) + findMax(i - 1, j) + findMax(i, j - 1) + findMax(i, j + 1)
+    }
+}
+
+/// 215. 数组中的第K个最大元素
+class Solution215 {
+    /*
+    - pivot 是一个分界，这边直接取了最后一位(下标r)
+    - j 只是用来遍历取完分界后的数组，目标就是直接把小于 pivot 的数往前挪，自然最好的方式是直接依次挪到第1，2，3，4...位
+    - i 最终代表 pivot 所处的下标，所以最终需要 Swap A[i] and A[r]
+    * */
+    fun partitionAscend(nums: IntArray, start: Int, end: Int): Int {
+        fun swap(i: Int, j: Int) {
+            if (i == j) return
+            nums[i] = nums[j].also { nums[j] = nums[i] }
+        }
+
+        val pivot = nums[end]
+        var i = start
+        for (j in start until end) {
+            if (nums[j] < pivot) { // pivot = nums[end]
+                swap(i, j) // 将比 pivot 小的数放到位置 i，i自然需要往后移动一位
+                i++
+            }
+            // 如果本次循环 nums[j] 比 pivot 大，则 i 保持不变，而 j 每次循环结束后都往后移动一位
+            // 所以下标指针 j 总是比下标指针 i 移动得快。
+        }
+
+        // 遍历完 start ~> end - 1 所有数字，此时可以确认 i 下标的数是不小于 pivot 的，所以将下标位置 i 的数和 pivot 交换
+        swap(i, end)
+        return i
+    }
+
+    val rand = Random()
+    fun partitionDescend(nums: IntArray, start: Int, end: Int): Int {
+        fun swap(i: Int, j: Int) {
+            if (i == j) return
+            nums[i] = nums[j].also { nums[j] = nums[i] }
+        }
+
+        // 随机取 pivot，避免极端情况
+        val pivotIndex = rand.nextInt(end - start + 1) + start
+        swap(pivotIndex, end)
+
+        val pivot = nums[end]
+        var i = start
+        for (j in start until end) {
+            if (nums[j] > pivot) {
+                swap(i, j)
+                i++
+            }
+        }
+        swap(i, end)
+        return i
+    }
+
+    fun findKthLargest(nums: IntArray, k: Int): Int {
+        // 使用快排分区的思想，第一次选一个数 x，把剩下的数中比 x 大的放在 x 左侧，比 x 小的放在 x 右侧，
+        // 最终可以知道 x 的所处位置 ix，x 即为数组中第 ix + 1 大的元素，因为共有 ix 个元素比 x 大。
+        // 如果 k == ix + 1，则 x 即为所找的数 => ix == k - 1
+        var k = k
+        var start = 0
+        var end = nums.size - 1
+        while (start <= end) {
+            val pivotIndex = partitionDescend(nums, start, end)
+            if (pivotIndex == k - 1) {
+                return nums[pivotIndex]
+            } else if (pivotIndex < k - 1) { // k - 1 是目标
+                start = pivotIndex + 1
+                k -= (pivotIndex - start + 1) // 排除掉前面 pivotIndex - start + 1 个更大的数
+            } else { // k - 1 < pivotIndex
+                end = pivotIndex - 1 // 此时排除掉得是比目标数更小的数，所以 k 值不需要变化
+            }
+        }
+        return -1
     }
 }
 
@@ -5436,14 +5593,26 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        try {
-            while (true) {
+
+        while (true) {
+            try {
                 log(
-                    Solution22().generateParenthesis(3)
+                    Solution695().maxAreaOfIsland(
+                        arrayOf(
+                            intArrayOf(0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
+                            intArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0),
+                            intArrayOf(0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0),
+                            intArrayOf(0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0),
+                            intArrayOf(0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0),
+                            intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0),
+                            intArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0),
+                            intArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)
+                        )
+                    )
                 )
+            } catch (e: Exception) {
+                print(e)
             }
-        } catch (e: Exception) {
-            print(e)
         }
     }
 
