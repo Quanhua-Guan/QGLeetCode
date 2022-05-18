@@ -5760,6 +5760,61 @@ class Solution17 {
     }
 }
 
+/// 31. 下一个排列
+class Solution31 {
+    fun nextPermutation(nums: IntArray): Unit {
+        fun swap(l: Int, r: Int) {
+            nums[l] = nums[r].also { nums[r] = nums[l] }
+        }
+        fun flip(from: Int, to: Int) {
+            var l = from
+            var r = to
+            while (l < r) {
+                swap(l, r)
+                l++
+                r--
+            }
+        }
+        /// 从 from ~> to 降序排列，找到从右往左数第一个大于 target 的数的下标
+        fun searchGreeterThen(target: Int, from: Int, to: Int): Int {
+            var l = from
+            var r = to
+            while (l <= r) {
+                val mid = (l + r) ushr 1
+                if (nums[mid] > target && (mid == to || nums[mid + 1] <= target)) {
+                    return mid
+                } else if (nums[mid] > target) {
+                    l = mid + 1
+                } else { // target >= nums[mid]
+                    r = mid - 1
+                }
+            }
+            return -1
+        }
+
+        // 是否降序
+        // 最后两个数升序
+        // 最后两个数降序
+
+        if (nums.size == 1) return
+
+        var i = nums.size - 1
+        while (i > 0) {
+            if (nums[i - 1] < nums[i]) {
+                // 找到从右往左第一个降序
+                val index = searchGreeterThen(nums[i - 1], i, nums.size - 1)
+                swap(i - 1, index)
+                flip(i, nums.size - 1)
+                return
+            }
+            i--
+        }
+
+        // 从左往右，整体降序，则需要翻转整个数组
+        flip(0, nums.size - 1)
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
