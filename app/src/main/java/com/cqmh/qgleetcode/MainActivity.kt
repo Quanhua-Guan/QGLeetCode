@@ -5654,6 +5654,55 @@ class Solution240 {
     }
 }
 
+/// 668. 乘法表中第k小的数
+class Solution668 {
+    fun findKthNumber1(m: Int, n: Int, k: Int): Int {
+        var left = 1
+        var right = m * n
+        while (left < right) {
+            var x = left + (right - left) / 2
+            var count = x / n * n;
+            for (i in x / n + 1 until m + 1) {
+                count += x / i
+            }
+            if (count >= k) {
+                right = x
+            } else {
+                left = x + 1
+            }
+        }
+        return left
+    }
+
+    fun findKthNumber(m: Int, n: Int, target: Int): Int {
+        fun count(x: Int): Int {
+            // 从第 1 行开始，第 i 行的数字：1*i, 2*i, 3*i, ..., n*i, 所以
+            // (1) 0 <= x / i <= n, 则第 i 行有 x / i 个数小于等于 x
+            // (2) x / i > n, 则第 i 行有 n 个数小于等于 x
+            // 总结：count = min(x/i, n)
+            var sum = x / n * n
+            for (i in x / n + 1 until m + 1) {
+                sum += minOf(x / i, n)
+            }
+            return sum
+        }
+
+        var left = 1
+        var right = m * n
+        while (left < right) {
+            val mid = (left + right) ushr 1 // left + (right - left) / 2
+            // 要找符合 count(mid) == target 的最小 mid, 所以 target <= count(mid) 时，右边界不收缩
+            if (target <= count(mid)) {
+                right = mid
+            } else { // count(mid) < target, 因为小于，所以目标必然不是 mid，所以左边界 left = mid + 1
+                left = mid + 1
+            }
+        }
+
+        return left
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
