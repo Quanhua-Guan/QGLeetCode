@@ -5521,7 +5521,10 @@ class Solution695 {
         fun countAndWipeLand(i: Int, j: Int): Int {
             if (i < 0 || i > rowMax || j < 0 || j > colMax || grid[i][j] == 0) return 0
             grid[i][j] = 0
-            return 1 + countAndWipeLand(i + 1, j) + countAndWipeLand(i - 1, j) + countAndWipeLand(i, j + 1) + countAndWipeLand(i, j - 1)
+            return 1 + countAndWipeLand(i + 1, j) + countAndWipeLand(i - 1, j) + countAndWipeLand(
+                i,
+                j + 1
+            ) + countAndWipeLand(i, j - 1)
         }
 
         for (i in 0 until rowMax + 1) {
@@ -5720,6 +5723,40 @@ class Solution668 {
         }
 
         return left
+    }
+}
+
+/// 17. 电话号码的字母组合
+class Solution17 {
+    fun letterCombinations(digits: String): List<String> {
+        if (digits.length == 0) return listOf()
+
+        var results = mutableListOf<String>()
+        var digitMap = mapOf(
+            Pair('2', listOf('a', 'b', 'c')),
+            Pair('3', listOf('d', 'e', 'f')),
+            Pair('4', listOf('g', 'h', 'i')),
+            Pair('5', listOf('j', 'k', 'l')),
+            Pair('6', listOf('m', 'n', 'o')),
+            Pair('7', listOf('p', 'q', 'r', 's')),
+            Pair('8', listOf('t', 'u', 'v')),
+            Pair('9', listOf('w', 'x', 'y', 'z'))
+        )
+
+        fun combine(content: String, i: Int) {
+            if (i == digits.length) {
+                results.add(content)
+                return
+            }
+
+            val d = digits[i]
+            for (c in digitMap[d]!!) {
+                combine(content + c, i + 1)
+            }
+        }
+
+        combine("", 0)
+        return results
     }
 }
 
