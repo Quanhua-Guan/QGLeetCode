@@ -5377,6 +5377,60 @@ class LRUCache(val capacity: Int) {
  * obj.put(key,value)
  */
 
+/// 733. 图像渲染
+class Solution733 {
+    fun floodFill(image: Array<IntArray>, sr: Int, sc: Int, newColor: Int): Array<IntArray> {
+        val color = image[sr][sc]
+        if (color == newColor) return image
+
+
+        val rMax = image.size - 1
+        val cMax = image[0].size - 1
+
+        var fillPoints = LinkedList<Pair<Int, Int>>()
+        fillPoints.offer(Pair(sr, sc))
+        image[sr][sc] = newColor
+
+        fun fillPointIfNeeded(r: Int, c: Int) {
+            if (color == image[r][c]) {
+                fillPoints.add(Pair(r, c))
+                image[r][c] = newColor
+            }
+        }
+
+        while (fillPoints.isNotEmpty()) {
+            val p = fillPoints.poll()
+            val (r, c) = p
+            // 检查s上下左右的点，如果颜色相同的点不在 filledPoints 中，则将其加入 fillPoints
+            // 上
+            if (r - 1 >= 0) {
+                fillPointIfNeeded(r - 1, c)
+            }
+            // 下
+            if (r + 1 <= rMax) {
+                fillPointIfNeeded(r + 1, c)
+            }
+            // 左
+            if (c - 1 >= 0) {
+                fillPointIfNeeded(r, c - 1)
+            }
+            // 右
+            if (c + 1 <= cMax) {
+                fillPointIfNeeded(r, c + 1)
+            }
+        }
+
+        return image
+    }
+}
+
+/// 695. 岛屿的最大面积
+class Solution695 {
+    fun maxAreaOfIsland(grid: Array<IntArray>): Int {
+
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
