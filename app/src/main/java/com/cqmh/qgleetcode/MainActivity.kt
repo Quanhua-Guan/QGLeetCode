@@ -5512,6 +5512,26 @@ class Solution695 {
         this[i][j] = 0
         return 1 + findMax(i + 1, j) + findMax(i - 1, j) + findMax(i, j - 1) + findMax(i, j + 1)
     }
+
+    fun maxAreaOfIslandGood(grid: Array<IntArray>): Int {
+        val rowMax = grid.size - 1
+        val colMax = grid[0].size - 1
+        var max = 0
+
+        fun countAndWipeLand(i: Int, j: Int): Int {
+            if (i < 0 || i > rowMax || j < 0 || j > colMax || grid[i][j] == 0) return 0
+            grid[i][j] = 0
+            return 1 + countAndWipeLand(i + 1, j) + countAndWipeLand(i - 1, j) + countAndWipeLand(i, j + 1) + countAndWipeLand(i, j - 1)
+        }
+
+        for (i in 0 until rowMax + 1) {
+            for (j in 0 until colMax + 1) {
+                max = maxOf(max, countAndWipeLand(i, j))
+            }
+        }
+
+        return max
+    }
 }
 
 /// 215. 数组中的第K个最大元素
