@@ -1,8 +1,5 @@
 package com.cqmh.qgleetcode
 
-import android.os.Bundle
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import java.math.BigInteger
 import java.util.*
 
@@ -1116,18 +1113,18 @@ class Solution957 {
 
         var cells = cells
         // 需要一个临时空间暂存昨天的房间状态
-        var yestodayCells = cells.clone()
+        var yesterdayCells = cells.clone()
 
         for (n in 1 until n + 1) {
             cells[0] = 0
             cells[cells.size - 1] = 0
             for (i in 1 until cells.size - 1) {
-                cells[i] = if (yestodayCells[i - 1] == yestodayCells[i + 1]) 1 else 0
+                cells[i] = if (yesterdayCells[i - 1] == yesterdayCells[i + 1]) 1 else 0
             }
-            yestodayCells = cells.also { cells = yestodayCells }
+            yesterdayCells = cells.also { cells = yesterdayCells }
         }
 
-        return yestodayCells
+        return yesterdayCells
     }
 
     /// 方法2：将数组换成 Int
@@ -1160,7 +1157,7 @@ class Solution957 {
         var day = 1
         var didJump = false
         while (day <= n) {
-            val yestodayRooms = rooms
+            val yesterdayRooms = rooms
 
             if (!didJump) {
                 if (history.containsKey(rooms)) {
@@ -1179,8 +1176,8 @@ class Solution957 {
             // 只需遍历第 2 到第 7 位，第 1 和第 8 位已经重置为 0
             // 8 - 7 - 6 - 5 - 4 - 3 - 2 - 1
             for (i in 2 until cells.size) {
-                val l = getBit(yestodayRooms, i - 1)
-                val r = getBit(yestodayRooms, i + 1)
+                val l = getBit(yesterdayRooms, i - 1)
+                val r = getBit(yesterdayRooms, i + 1)
                 val bitValue = if (l == r) 1 else 0
                 rooms = valueWithNewBit(rooms, i, bitValue)
             }
@@ -5814,40 +5811,3 @@ class Solution31 {
         flip(0, nums.size - 1)
     }
 }
-
-/////////////////////////////////////////////////////////////////////
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        while (true) {
-            try {
-                log(
-                    Solution240().searchMatrix(
-                        arrayOf(
-                            intArrayOf(93, 157, 226, 308, 365, 384, 479, 539, 557, 652),
-                            intArrayOf(118, 234, 287, 368, 395, 432, 480, 607, 634, 723),
-                            intArrayOf(132, 263, 381, 453, 525, 533, 577, 650, 707, 800),
-                            intArrayOf(171, 307, 473, 504, 526, 596, 643, 719, 776, 842),
-                            intArrayOf(233, 319, 514, 571, 668, 710, 733, 777, 875, 886),
-                            intArrayOf(318, 362, 555, 605, 717, 782, 809, 884, 889, 940),
-                            intArrayOf(349, 415, 622, 708, 787, 795, 824, 921, 957, 1014),
-                            intArrayOf(414, 420, 656, 789, 813, 898, 954, 1052, 1095, 1175),
-                            intArrayOf(430, 477, 705, 863, 961, 991, 1003, 1121, 1190, 1236),
-                            intArrayOf(524, 611, 793, 868, 1027, 1111, 1112, 1123, 1252, 1253)
-                        ), 430
-                    )
-                )
-            } catch (e: Exception) {
-                print(e)
-            }
-        }
-    }
-
-    fun log(message: Any) {
-        Log.i("lc", message.toString())
-    }
-}
-
-/////////////////////////////////////////////////////////////////////

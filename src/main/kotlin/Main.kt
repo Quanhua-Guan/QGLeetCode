@@ -1,7 +1,15 @@
-fun main(args: Array<String>) {
-    println("Hello World!")
+import com.cqmh.qgleetcode.*
 
-    // Try adding program arguments via Run/Debug configuration.
-    // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
-    println("Program arguments: ${args.joinToString()}")
+fun main() {
+    while (true) {
+        try {
+            var nums = intArrayOf(1,2,3,7,7,7,7,6)
+            Solution31().nextPermutation(nums)
+            println(nums.joinToString(","))
+        } catch (e: java.lang.Exception) {
+            println(e.stackTrace)
+        }
+        Thread.sleep(800)
+    }
+
 }
