@@ -5588,6 +5588,72 @@ class Solution215 {
     }
 }
 
+/// 240. 搜索二维矩阵 II
+class Solution240 {
+    fun searchMatrix(matrix: Array<IntArray>, target: Int): Boolean {
+        // top, bottom, left, right 分界数据列表
+        var tblrList = mutableListOf(intArrayOf(0, matrix.size - 1, 0, matrix[0].size - 1))
+        while (tblrList.isNotEmpty()) {
+            val tblr = tblrList.removeAt(0)!!
+            var top = tblr[0]
+            var bottom = tblr[1]
+            var left = tblr[2]
+            var right = tblr[3]
+            while (top <= bottom && left <= right) {
+                val mid = (top + bottom) ushr 1
+                val nums = matrix[mid]
+
+                // 找到第一个小于等于 target 的数的下标
+                val indexLE = BinarySearch.indexOfLessThanOrEqual(nums, target, left, right)
+                if (indexLE == -1) {
+                    // 没有找到比 target 小的数，则都比 target 大
+                    bottom = mid - 1
+                } else if (nums[indexLE] == target) {
+                    // 如果就是目标数，则直接返回
+                    return true
+                } else if (indexLE == right) {
+                    // 都比 target 小
+                    top = mid + 1
+                } else {
+                    // index 在 0 ~ colMax-1 范围
+                    // 找到第一个大于等于 target 的数的下标
+                    val indexGE =
+                        BinarySearch.indexOfGreaterThanOrEqual(nums, target, left, right)
+                    tblrList.add(intArrayOf(mid + 1, bottom, left, indexGE - 1))
+                    tblrList.add(intArrayOf(top, mid - 1, indexLE + 1, right))
+                    break
+                }
+            }
+        }
+
+        return false
+    }
+
+    fun searchMatrixWoohoo(matrix: Array<IntArray>, target: Int): Boolean {
+        val rowMax = matrix.size - 1
+        val colMax = matrix[0].size - 1
+
+        // 左下角
+        var row = rowMax // 垂直向下增长
+        var col = 0 // 水平向右增长
+
+        while (row >= 0 && col <= colMax) {
+            val v = matrix[row][col]
+            if (v == target) {
+                return true
+            }
+
+            if (v < target) {
+                col++
+            } else { // matrix[row][col] > target
+                row--
+            }
+        }
+
+        return false
+    }
+}
+
 /////////////////////////////////////////////////////////////////////
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -5597,17 +5663,19 @@ class MainActivity : AppCompatActivity() {
         while (true) {
             try {
                 log(
-                    Solution695().maxAreaOfIsland(
+                    Solution240().searchMatrix(
                         arrayOf(
-                            intArrayOf(0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
-                            intArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0),
-                            intArrayOf(0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0),
-                            intArrayOf(0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0),
-                            intArrayOf(0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0),
-                            intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0),
-                            intArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0),
-                            intArrayOf(0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0)
-                        )
+                            intArrayOf(93, 157, 226, 308, 365, 384, 479, 539, 557, 652),
+                            intArrayOf(118, 234, 287, 368, 395, 432, 480, 607, 634, 723),
+                            intArrayOf(132, 263, 381, 453, 525, 533, 577, 650, 707, 800),
+                            intArrayOf(171, 307, 473, 504, 526, 596, 643, 719, 776, 842),
+                            intArrayOf(233, 319, 514, 571, 668, 710, 733, 777, 875, 886),
+                            intArrayOf(318, 362, 555, 605, 717, 782, 809, 884, 889, 940),
+                            intArrayOf(349, 415, 622, 708, 787, 795, 824, 921, 957, 1014),
+                            intArrayOf(414, 420, 656, 789, 813, 898, 954, 1052, 1095, 1175),
+                            intArrayOf(430, 477, 705, 863, 961, 991, 1003, 1121, 1190, 1236),
+                            intArrayOf(524, 611, 793, 868, 1027, 1111, 1112, 1123, 1252, 1253)
+                        ), 430
                     )
                 )
             } catch (e: Exception) {
