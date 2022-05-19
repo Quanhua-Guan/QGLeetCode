@@ -5763,6 +5763,7 @@ class Solution31 {
         fun swap(l: Int, r: Int) {
             nums[l] = nums[r].also { nums[r] = nums[l] }
         }
+
         fun flip(from: Int, to: Int) {
             var l = from
             var r = to
@@ -5772,6 +5773,7 @@ class Solution31 {
                 r--
             }
         }
+
         /// 从 from ~> to 降序排列，找到从右往左数第一个大于 target 的数的下标
         fun searchGreeterThen(target: Int, from: Int, to: Int): Int {
             var l = from
@@ -5809,5 +5811,73 @@ class Solution31 {
 
         // 从左往右，整体降序，则需要翻转整个数组
         flip(0, nums.size - 1)
+    }
+}
+
+/// 200. 岛屿数量
+class Solution200 {
+    fun numIslands(grid: Array<CharArray>): Int {
+        val rowMax = grid.size - 1
+        val colMax = grid[0].size - 1
+
+        fun wipe(row: Int, col: Int): Int {
+            if (row < 0 || row > rowMax || col < 0 || col > colMax || grid[row][col] == '0') {
+                return 0
+            }
+            grid[row][col] = '0'
+            wipe(row + 1, col)
+            wipe(row - 1, col)
+            wipe(row, col + 1)
+            wipe(row, col - 1)
+            return 1
+        }
+
+        var count = 0
+        for (row in 0 until rowMax + 1) {
+            for (col in 0 until colMax + 1) {
+                count += wipe(row, col)
+            }
+        }
+
+        return count
+    }
+}
+
+/**
+ * Example:
+ * var ti = TreeNode(5)
+ * var v = ti.`val`
+ * Definition for a binary tree node.
+ *
+ */
+class TreeNode(var `val`: Int) {
+    var left: TreeNode? = null
+    var right: TreeNode? = null
+}
+
+/// 617. 合并二叉树
+class Solution617 {
+    fun mergeTrees1(root1: TreeNode?, root2: TreeNode?): TreeNode? {
+        if (root1 == null) return root2
+        if (root2 == null) return root1
+
+        var node1 = root1
+        var node2 = root2
+        var root = TreeNode(node1.`val` + node2.`val`)
+        root.left = mergeTrees(node1.left, node2.left)
+        root.right = mergeTrees(node1.right, node2.right)
+        return root
+    }
+
+    fun mergeTrees(root1: TreeNode?, root2: TreeNode?): TreeNode? {
+        if (root1 == null) return root2
+        if (root2 == null) return root1
+
+        var node1 = root1
+        var node2 = root2
+        node1.`val` += node2.`val`
+        node1.left = mergeTrees(node1.left, node2.left)
+        node1.right = mergeTrees(node1.right, node2.right)
+        return node1
     }
 }
