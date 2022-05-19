@@ -5975,3 +5975,62 @@ class Solution116 {
         return root
     }
 }
+
+/// 462. 最少移动次数使数组元素相等 II
+class Solution462 {
+    /// 排序
+    fun minMoves2(nums: IntArray): Int {
+        if (nums.size <= 1) return 0
+
+        nums.sort()
+
+        var count = 0
+        val target = nums[(0 + nums.size - 1) ushr 1]
+        nums.forEach {
+            count += Math.abs(it - target)
+        }
+
+        return count
+    }
+
+    /// 找中位数，快排分区思想
+    fun minMoves2_MidValue(nums: IntArray): Int {
+        if (nums.size <= 1) return 0
+
+        /// 找到数组中第 N 小的数
+        val rand = Random()
+        fun findNth(start: Int, end: Int, nth: Int): Int {
+            val pivotIndex = rand.nextInt(end - start + 1) + start
+            nums[pivotIndex] = nums[end].also { nums[end] = nums[pivotIndex] }
+            val pivot = nums[end]
+            var i = start
+            for (j in start until end) {
+                if (nums[j] < pivot) {
+                    if (i != j) {
+                        nums[i] = nums[j].also { nums[j] = nums[i] }
+                    }
+                    i++
+                }
+            }
+            if (i != end) {
+                nums[i] = nums[end].also { nums[end] = nums[i] }
+            }
+
+            if (i - start + 1 == nth) {
+                return nums[i]
+            } else if (i - start + 1 > nth) {
+                return findNth(start, i - 1, nth)
+            } else { // i - start + 1 < nth
+                return findNth(i + 1, end, nth - (i - start + 1))
+            }
+        }
+
+        var count = 0
+        val target = findNth(0, nums.size - 1, ((nums.size - 1) ushr 1) + 1)
+        nums.forEach {
+            count += Math.abs(it - target)
+        }
+
+        return count
+    }
+}
