@@ -5881,3 +5881,97 @@ class Solution617 {
         return node1
     }
 }
+
+/// 116. 填充每个节点的下一个右侧节点指针
+class Solution116 {
+    class Node(var `val`: Int) {
+        var left: Node? = null
+        var right: Node? = null
+        var next: Node? = null
+    }
+
+    fun connect(root: Node?): Node? {
+        if (root == null) return root
+
+        var tmpNodes = mutableListOf<Node>()
+        var nodes = LinkedList(listOf(root))
+
+        while (nodes.isNotEmpty()) {
+            val node = nodes.pollFirst()
+            tmpNodes.add(node)
+
+            if (node.left == null) continue
+
+            nodes.add(node.left!!)
+            nodes.add(node.right!!)
+        }
+
+        var power = 1
+        var target = 0
+        for (i in 0 until tmpNodes.size - 1) {
+            if (i == target) {
+                power *= 2
+                target += power
+            } else {
+                tmpNodes[i].next = tmpNodes[i + 1]
+            }
+        }
+
+        return root
+    }
+
+    fun connectRecurve(root: Node?): Node? {
+
+        fun connectNext(node: Node?) {
+            if (node?.left == null || node?.right == null) {
+                return
+            }
+
+            node.left!!.next = node!!.right
+            node.right!!.next = node?.next?.left
+
+            connectNext(node.left)
+            connectNext(node.right)
+        }
+
+        connectNext(root)
+        return root
+    }
+
+    fun connect3(root: Node?): Node? {
+
+        fun connectNext(node: Node?) {
+            if (node == null) return
+
+            if (node.left != null) {
+                node.left!!.next = node!!.right
+                if (node.right != null) {
+                    node.right!!.next = node?.next?.left
+                }
+            }
+
+            connectNext(node.left)
+            connectNext(node.right)
+        }
+
+        connectNext(root)
+        return root
+    }
+
+    fun connect3Plus(root: Node?): Node? {
+
+        if (root == null) return root
+
+        if (root.left != null) {
+            root.left!!.next = root!!.right
+            if (root.right != null) {
+                root.right!!.next = root?.next?.left
+            }
+        }
+
+        connect(root.left)
+        connect(root.right)
+
+        return root
+    }
+}
