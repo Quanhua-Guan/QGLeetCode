@@ -6040,7 +6040,6 @@ class Solution542 {
     fun updateMatrix(mat: Array<IntArray>): Array<IntArray> {
         val rowMax = mat.size - 1
         val colMax = mat[0].size - 1
-        val indices = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
 
         fun get(r: Int, c: Int): Int {
             if (r < 0 || r > rowMax || c < 0 || c > colMax) {
@@ -6048,6 +6047,7 @@ class Solution542 {
             }
             return mat[r][c]
         }
+
         fun getMin(r: Int, c: Int) {
             var min = minOf(get(r - 1, c), get(r, c - 1))
             if (min != Int.MAX_VALUE) {
@@ -6055,6 +6055,7 @@ class Solution542 {
             }
             mat[r][c] = min
         }
+
         fun getMin2(r: Int, c: Int) {
             var min = minOf(get(r + 1, c), get(r, c + 1))
             if (min != Int.MAX_VALUE) {
@@ -6080,5 +6081,140 @@ class Solution542 {
         }
 
         return mat
+    }
+}
+
+/// 994. 腐烂的橘子
+class Solution994 {
+    fun orangesRotting_1(grid: Array<IntArray>): Int {
+        var rowMax = grid.size - 1
+        var colMax = grid[0].size - 1
+
+        // 2 烂橘子。
+        // 1 好橘子。
+        // 0 神奇隔板，隔离腐烂和新鲜。
+
+        fun get(r: Int, c: Int): Int {
+            if (r < 0 || r > rowMax || c < 0 || c > colMax) {
+                return Int.MAX_VALUE
+            }
+            if (grid[r][c] == Int.MIN_VALUE) {
+                return Int.MAX_VALUE
+            }
+            return grid[r][c]
+        }
+
+        val indices = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+
+        // 计算每个橘子距离它最近的烂橘子的最小距离，考虑空格的阻挡(距离无限大)
+        var good = (colMax + 1) * (rowMax + 1)
+
+        var rotted = LinkedList<Pair<Int, Int>>()
+        var seen = Array(rowMax + 1) { BooleanArray(colMax + 1) }
+        var gridTmp = Array(rowMax + 1) { row -> IntArray(colMax + 1) { col ->
+            if (grid[row][col] == 2) {
+                rotted.add(Pair(row, col))
+                seen[row][col] = true
+                good--
+            } else if (grid[row][col] == 0) {
+                seen[row][col] = true
+                good--
+            }
+            0
+        } }
+
+        // 然后取最大值
+        var max = 0
+        while (rotted.isNotEmpty()) {
+            val (row, col) = rotted.poll()
+            for ((dr, dc) in indices) {
+                val r = row + dr
+                val c = col + dc
+                if (r in 0..rowMax && c in 0..colMax && !seen[r][c]) {
+                    gridTmp[r][c] = gridTmp[row][col] + 1
+                    max = gridTmp[r][c]
+                    rotted.offer(Pair(r, c))
+                    seen[r][c] = true
+                    good--
+                }
+            }
+        }
+
+        if (good > 0) return -1
+
+        return max
+    }
+
+    fun orangesRotting(grid: Array<IntArray>): Int {
+        var rowMax = grid.size - 1
+        var colMax = grid[0].size - 1
+
+        // 2 烂橘子。
+        // 1 好橘子。
+        // 0 神奇隔板，隔离腐烂和新鲜。
+
+        val directions = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+
+        // 计算每个橘子距离它最近的烂橘子的最小距离，考虑空格的阻挡(距离无限大)
+        var good = 0
+
+        var rotten = LinkedList<Triple<Int, Int, Int>>()
+        for (row in 0 until rowMax + 1) {
+            for (col in 0 until colMax + 1) {
+                if (grid[row][col] == 2) {
+                    rotten.offer(Triple(row, col, 0))
+                    grid[row][col] = 0 // 用 0 代表无法搜索的位置
+                } else if (grid[row][col] == 1) {
+                    // 用 1 代表可以搜索的位置（是好橘子）
+                    good++
+                }
+            }
+        }
+
+        // 然后取最大值
+        var maxDepth = 0
+        while (rotten.isNotEmpty()) {
+            val (row, col, depth) = rotten.poll()
+            maxDepth = depth
+            for ((dr, dc) in directions) {
+                val r = row + dr
+                val c = col + dc
+                if (r in 0..rowMax && c in 0..colMax && grid[r][c] == 1) { // 1 说明原来是好的
+                    good--         // 搞坏一个橘子
+                    grid[r][c] = 0 // 并标记它不可以再次被搜索到
+                    rotten.offer(Triple(r, c, depth + 1)) // 将当前位置加入带搜索队列（它已经准备好去搞坏其它橘子）
+                }
+            }
+        }
+
+        if (good > 0) return -1
+        return maxDepth
+    }
+}
+
+/// 56. 合并区间
+class Solution56 {
+    fun merge(intervals: Array<IntArray>): Array<IntArray> {
+        if (intervals.isEmpty()) return intervals
+
+        intervals.sortBy { it.first() }
+
+        var results = mutableListOf<IntArray>()
+
+        var i = 1
+        var intervalList = intervals[0]
+        while (i < intervals.size) {
+            val currentList = intervals[i]
+            if (currentList.first()!! > intervalList.last()!!) {
+                results.add(intervalList)
+                intervalList = currentList
+            } else { // currentList.first()!! <= intervalList.last()!!
+                intervalList[1] = maxOf(currentList[1], intervalList[1])
+            }
+            i++
+        }
+        results.add(intervalList)
+
+        return results.toTypedArray()
     }
 }
