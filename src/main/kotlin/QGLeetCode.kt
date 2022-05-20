@@ -6034,3 +6034,51 @@ class Solution462 {
         return count
     }
 }
+
+/// 542. 01 矩阵
+class Solution542 {
+    fun updateMatrix(mat: Array<IntArray>): Array<IntArray> {
+        val rowMax = mat.size - 1
+        val colMax = mat[0].size - 1
+        val indices = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+
+        fun get(r: Int, c: Int): Int {
+            if (r < 0 || r > rowMax || c < 0 || c > colMax) {
+                return Int.MAX_VALUE
+            }
+            return mat[r][c]
+        }
+        fun getMin(r: Int, c: Int) {
+            var min = minOf(get(r - 1, c), get(r, c - 1))
+            if (min != Int.MAX_VALUE) {
+                min += 1
+            }
+            mat[r][c] = min
+        }
+        fun getMin2(r: Int, c: Int) {
+            var min = minOf(get(r + 1, c), get(r, c + 1))
+            if (min != Int.MAX_VALUE) {
+                min += 1
+            }
+            mat[r][c] = minOf(mat[r][c], min)
+        }
+
+        for (r in 0 until rowMax + 1) {
+            for (c in 0 until colMax + 1) {
+                if (mat[r][c] != 0) {
+                    getMin(r, c)
+                }
+            }
+        }
+
+        for (r in rowMax downTo 0) {
+            for (c in colMax downTo 0) {
+                if (mat[r][c] != 0) {
+                    getMin2(r, c)
+                }
+            }
+        }
+
+        return mat
+    }
+}
