@@ -705,7 +705,9 @@ class Solution4_20220521 {
         }
 
         if (isEven) {
-            return (tmp + minOf(nums1.getOrElse(l1) { Int.MAX_VALUE }, nums2.getOrElse(l2) { Int.MAX_VALUE }).toDouble()) / 2
+            return (tmp + minOf(
+                nums1.getOrElse(l1) { Int.MAX_VALUE },
+                nums2.getOrElse(l2) { Int.MAX_VALUE }).toDouble()) / 2
         } else {
             return minOf(nums1.getOrElse(l1) { Int.MAX_VALUE }, nums2.getOrElse(l2) { Int.MAX_VALUE }).toDouble()
         }
@@ -1043,7 +1045,7 @@ class Solution72 {
 }
 
 // 10. 正则表达式匹配
-class Solution10 {
+class Solution10 { // 动态规划
     ///  匹配 "*"  和 "."
     fun isMatch(s: String, p: String): Boolean {
         // 给 p 分词，从后往前扫描，
@@ -1105,6 +1107,105 @@ class Solution10 {
 
     private fun isMatchEmpty(p: String): Boolean {
         return p.length == 2 && p[1] == '*'
+    }
+}
+
+class Solution10_20220521 { // 递归
+    // s可能是长度为1的字符串或空字符串
+    // pattern长度必须为1或2，例如 "a", "a*", ".*"
+    fun stringMatch(s: String, pattern: String): Boolean {
+        if (pattern.length == 2) {
+            assert(pattern[1] == '*')
+            if (s.isEmpty() || pattern[0] == '.' || s[0] == pattern[0]) return true
+            return false
+        }
+
+        assert(pattern.length == 1)
+        return (s.length == 1 && (pattern[0] == '.' || s[0] == pattern[0]))
+    }
+
+    fun match(s: String, p: List<String>, mem: MutableMap<String, MutableMap<String, Boolean>>): Boolean {
+        fun hasMem(s: String, p: String): Boolean {
+            return mem.containsKey(s) && mem[s]!!.containsKey(p)
+        }
+
+        fun getMem(s: String, p: String): Boolean {
+            if (mem.containsKey(s)) {
+                if (mem[s]!!.containsKey(p)) {
+                    return mem[s]!![p]!!
+                }
+            }
+            return false
+        }
+
+        fun setMem(s: String, p: String, v: Boolean) {
+            var map: MutableMap<String, Boolean>
+            if (mem.containsKey(s)) {
+                map = mem[s]!!
+            } else {
+                map = mutableMapOf<String, Boolean>()
+                mem[s] = map
+            }
+            map[p] = v
+        }
+
+        if (hasMem(s, p.joinToString(""))) {
+            return getMem(s, p.joinToString(""))
+        }
+
+        if (s.isNotEmpty()) {
+            if (p.isEmpty()) {
+                return false.also { setMem(s, p.joinToString(""), it) }
+            } else {
+                // s.isNotEmpty() && p.isNotEmpty()
+                val subList = (if (1 < p.size) p.subList(1, p.size) else listOf<String>())
+                return (stringMatch("", p[0]) && match(s, subList, mem) ||
+                        stringMatch(s.substring(0, 1), p[0]) && (p[0].length == 2 && match(
+                    s.substring(1, s.length),
+                    p,
+                    mem
+                ) || match(
+                    s.substring(1, s.length),
+                    subList,
+                    mem
+                ))).also { setMem(s, p.joinToString(""), it) }
+            }
+        } else {
+            if (p.isEmpty()) {
+                return true.also { setMem(s, p.joinToString(""), it) }
+            } else { // s.isEmpty && p.isNotEmpty
+                val subList = (if (1 < p.size) p.subList(1, p.size) else listOf<String>())
+                return stringMatch(s, p[0]) && match(s, subList, mem).also {
+                    setMem(
+                        s,
+                        p.joinToString(""),
+                        it
+                    )
+                }
+            }
+        }
+    }
+
+    fun isMatch(s: String, p: String): Boolean {
+        var patterns = mutableListOf<String>()
+        var pre: Char? = null
+        for (i in 0 until p.length) {
+            if (pre == null) {
+                pre = p[i]
+            } else if (p[i] == '*') {
+                patterns.add(pre.toString() + p[i])
+                pre = null
+            } else {
+                patterns.add(pre.toString())
+                pre = p[i]
+            }
+        }
+        if (pre != null) {
+            patterns.add(pre.toString())
+        }
+
+        val mem = mutableMapOf<String, MutableMap<String, Boolean>>()
+        return match(s, patterns, mem)
     }
 }
 
