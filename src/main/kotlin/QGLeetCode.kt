@@ -2,6 +2,8 @@ package com.cqmh.qgleetcode
 
 import java.math.BigInteger
 import java.util.*
+import kotlin.collections.ArrayDeque
+import kotlin.collections.ArrayList
 
 /// 二分查找
 class BinarySearch {
@@ -6460,5 +6462,91 @@ class Solution20220521 {
             }
         }
         return max
+    }
+}
+
+/// 39. 组合总和
+class Solution39 {
+    fun combinationSum1(candidates: IntArray, target: Int): List<List<Int>> {
+        fun searchLessThanOrEqual(): Int {
+            var l = 0
+            var r = candidates.size - 1
+
+            while (l <= r) {
+                val m = (l + r) ushr 1
+                if (candidates[m] <= target && (m == candidates.size - 1 || candidates[m + 1] > target)) {
+                    return m
+                } else if (candidates[m] <= target) {
+                    l = m + 1
+                } else { // target < candidates[m]
+                    r = m - 1
+                }
+            }
+
+            return -1
+        }
+
+        var results = mutableSetOf<List<Int>>()
+        candidates.sort()
+
+        val to = searchLessThanOrEqual()
+        if (to == -1) {
+            return results.toList()
+        }
+
+        fun search(target: Int, selected:List<Int>) {
+            for (i in 0 until to + 1) {
+                val candidate = candidates[i]
+                if (target == candidate) {
+                    val nums = selected.toMutableList()
+                    nums.add(candidate)
+                    nums.sort()
+                    results.add(nums)
+                    // candidate 继续增长无法满足 target，因为总会比 target 大，所以直接退出循环
+                    // candidates 中不包含重复的数
+                    break
+                } else if (candidate > target) {
+                    break // candidate 比 target 大，所以直接退出循环
+                } else { // candidate < target
+                    val nums = selected.toMutableList()
+                    nums.add(candidate)
+                    nums.sort()
+                    search(target - candidate, nums)
+                }
+            }
+        }
+
+        search(target, listOf<Int>())
+        return results.toList()
+    }
+
+    class Solution {
+        fun combinationSum(candidates: IntArray, target: Int): List<List<Int>> {
+            val result = ArrayList<ArrayList<Int>>()
+
+            if (candidates.size == 0) return emptyList()
+
+            val path = ArrayDeque<Int>()
+            dfs(candidates, target, 0, candidates.size - 1, path, result)
+            return result
+        }
+
+        fun dfs(candidates: IntArray, target: Int, from: Int, to: Int, path: ArrayDeque<Int>, result: ArrayList<ArrayList<Int>>) {
+            for (i in from until to + 1) {
+                val candidate = candidates[i]
+                if (candidate == target) {
+                    path.addLast(candidate)
+                    result.add(ArrayList(path))
+                    path.removeLast()
+                } else if (candidate < target) {
+                    path.addLast(candidate)
+                    // 这里 dfs 时的关键点： from 的值为 i，即每次只去尝试当前候选数字以及排在它后面的数字，这样可以避免重复
+                    dfs(candidates, target - candidate, i, to, path, result)
+                    path.removeLast()
+                } else { // candidate > target
+                    continue
+                }
+            }
+        }
     }
 }
