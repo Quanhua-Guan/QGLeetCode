@@ -659,6 +659,103 @@ class Solution4 {
     }
 }
 
+class Solution4_20220521 {
+    fun findMedianSortedArrays2(nums1: IntArray, nums2: IntArray): Double {
+        var count = nums1.size + nums2.size
+        val isEven = count % 2 == 0
+        count = count / 2
+
+        var l1 = 0
+        var l2 = 0
+
+        var tmp = 0
+        while (l1 + l2 <= count) {
+            if (l2 >= nums2.size || (l1 < nums1.size && nums1[l1] < nums2[l2])) {
+                if (!isEven && l1 + l2 == count) tmp += nums1[l1]
+                if (isEven && (l1 + l2 == count || l1 + l2 == count - 1)) tmp += nums1[l1]
+                l1++
+            } else {
+                if (!isEven && l1 + l2 == count) tmp += nums2[l2]
+                if (isEven && (l1 + l2 == count || l1 + l2 == count - 1)) tmp += nums2[l2]
+                l2++
+            }
+        }
+
+        return tmp / (if (isEven) 2.0 else 1.0)
+    }
+
+    fun findMedianSortedArrays1(nums1: IntArray, nums2: IntArray): Double {
+        var count = nums1.size + nums2.size
+        val isEven = count % 2 == 0
+        count = count / 2
+
+        var l1 = 0
+        var l2 = 0
+
+        var tmp = 0
+        while (count > 0) {
+            count--
+            if (l2 >= nums2.size || (l1 < nums1.size && nums1[l1] < nums2[l2])) {
+                tmp = nums1[l1]
+                l1++
+            } else { // l1 >= nums1.size || nums1[l1] > nums2[l2]
+                tmp = nums2[l2]
+                l2++
+            }
+        }
+
+        if (isEven) {
+            return (tmp + minOf(nums1.getOrElse(l1) { Int.MAX_VALUE }, nums2.getOrElse(l2) { Int.MAX_VALUE }).toDouble()) / 2
+        } else {
+            return minOf(nums1.getOrElse(l1) { Int.MAX_VALUE }, nums2.getOrElse(l2) { Int.MAX_VALUE }).toDouble()
+        }
+    }
+
+    fun findMedianSortedArrays(nums1: IntArray, nums2: IntArray): Double {
+        /// 找到第中位数，
+        /// 如果只有1个中位数 m1，则返回 (m1, m1)
+        /// 如果有左右2个中位数 m1、m2，则返回 (m1, m2)
+        fun findMiddle(): Pair<Int, Int> {
+            val n = nums1.size + nums2.size
+            val hasTwoNumbers = n % 2 == 0
+            var nth = (if (hasTwoNumbers) n / 2 else n / 2 + 1)
+
+            assert(nth <= 0 || nth > nums1.size + nums2.size)
+
+            var s1 = 0
+            var s2 = 0
+            while (nth > 1) {
+                val i1 = maxOf(minOf(s1 + nth / 2 - 1, nums1.size - 1), s1)
+                val i2 = maxOf(minOf(s2 + nth / 2 - 1, nums2.size - 1), s2)
+                val v1 = nums1.getOrElse(i1) { Int.MAX_VALUE }
+                val v2 = nums2.getOrElse(i2) { Int.MAX_VALUE }
+
+                if (v1 < v2) {
+                    nth -= (i1 - s1 + 1)
+                    s1 = i1 + 1
+                } else { // v1 > v2
+                    nth -= (i2 - s2 + 1)
+                    s2 = i2 + 1
+                }
+            }
+
+            var v1 = nums1.getOrElse(s1) { Int.MAX_VALUE }
+            var v2 = nums2.getOrElse(s2) { Int.MAX_VALUE }
+            if (v1 > v2) {
+                v1 = v2.also { v2 = v1 }
+            }
+            var v3 = minOf(nums1.getOrElse(s1 + 1) { Int.MAX_VALUE }, nums2.getOrElse(s2 + 1) { Int.MAX_VALUE })
+            if (v2 > v3) {
+                v2 = v3
+            }
+            return Pair(v1, (if (hasTwoNumbers) v2 else v1))
+        }
+
+        val (m1, m2) = findMiddle()
+        return (m1 + m2) / 2.0
+    }
+}
+
 /// 392. 判断子序列
 class Solution392 {
     // 判断字符串 s 是否是字符串 t 的子序列
@@ -6111,17 +6208,19 @@ class Solution994 {
 
         var rotted = LinkedList<Pair<Int, Int>>()
         var seen = Array(rowMax + 1) { BooleanArray(colMax + 1) }
-        var gridTmp = Array(rowMax + 1) { row -> IntArray(colMax + 1) { col ->
-            if (grid[row][col] == 2) {
-                rotted.add(Pair(row, col))
-                seen[row][col] = true
-                good--
-            } else if (grid[row][col] == 0) {
-                seen[row][col] = true
-                good--
+        var gridTmp = Array(rowMax + 1) { row ->
+            IntArray(colMax + 1) { col ->
+                if (grid[row][col] == 2) {
+                    rotted.add(Pair(row, col))
+                    seen[row][col] = true
+                    good--
+                } else if (grid[row][col] == 0) {
+                    seen[row][col] = true
+                    good--
+                }
+                0
             }
-            0
-        } }
+        }
 
         // 然后取最大值
         var max = 0
@@ -6218,3 +6317,28 @@ class Solution56 {
         return results.toTypedArray()
     }
 }
+
+/// 961. 在长度 2N 的数组中找出重复 N 次的元素
+class Solution961 {
+    fun repeatedNTimes_1(nums: IntArray): Int {
+        var seen = mutableMapOf<Int, Boolean>()
+        for (n in nums) {
+            if (seen.containsKey(n)) {
+                return n
+            }
+            seen[n] = true
+        }
+        return -1
+    }
+
+    fun repeatedNTimes(nums: IntArray): Int {
+        nums.sort()
+        for (i in 1 until nums.size) {
+            if (nums[i] == nums[i - 1]) {
+                return nums[i]
+            }
+        }
+        return -1
+    }
+}
+
