@@ -3,7 +3,7 @@ import com.cqmh.qgleetcode.*
 fun main() {
     while (true) {
         try {
-            println(Solution4_20220521().findMedianSortedArrays(intArrayOf(), intArrayOf(1, 3)))
+            println(Solution20220521().findMostCount(intArrayOf(4, 5, 1, 2, 3, 5), 6))
         } catch (e: java.lang.Exception) {
             println(e.stackTrace)
         }

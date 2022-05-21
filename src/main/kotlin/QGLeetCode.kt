@@ -6342,3 +6342,22 @@ class Solution961 {
     }
 }
 
+/// 查找数组中重复次数最多的数字
+/*
+给定一个大小为n的数组，该数组包含数字的范围在 [0...k-1]， k是一个正整数,k < = n。在这个数组找到重复次数最多的数字。
+要求时间复杂度为n，空间复杂度为1，可以使用原数组。
+ */
+class Solution20220521 {
+    fun findMostCount(nums: IntArray, k: Int): Int {
+        var maxCount = 0
+        var max = 0
+        for (n in nums) {
+            nums[n % k] += k // 通过 n % k 来找到 n 在 nums 中的次数缓存位置，+k
+            if (maxCount < nums[n % k]) {
+                maxCount = nums[n % k]
+                max = n % k
+            }
+        }
+        return max
+    }
+}
