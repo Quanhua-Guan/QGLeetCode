@@ -504,6 +504,34 @@ class Solution5 {
     }
 }
 
+
+/// 7. 整数翻转
+/*
+给你一个 32 位的有符号整数 x ，返回将 x 中的数字部分反转后的结果。
+
+如果反转后整数超过 32 位的有符号整数的范围[−(2^31), (2^31) − 1] ，就返回 0。
+
+假设环境不允许存储 64 位整数（有符号或无符号）。
+* */
+class Solution7_20220522 {
+    fun reverse(xx: Int): Int {
+        if (xx == Int.MIN_VALUE) return 0
+
+        var x = if (xx < 0) -xx else xx
+        var result = 0
+        while (x > 0) {
+            val n = x % 10
+            if (result * 10 / 10 != result) {return 0}
+            result *= 10
+            if (result + n < result) { return 0}
+            result += n
+
+            x /= 10
+        }
+        return if (xx < 0) -result else result
+    }
+}
+
 // 整数反转
 class Solution7 {
     fun reverse(x: Int): Int {
@@ -6786,5 +6814,51 @@ class Solution784 {
         val path = StringBuffer()
         dfs(s, 0, path)
         return result
+    }
+}
+
+/// 剑指 Offer 21. 调整数组顺序使奇数位于偶数前面
+class SolutionJZOffer21 {
+    fun exchange1(nums: IntArray): IntArray {
+        var l = 0
+        var r = nums.size - 1
+        // 目标： 左边奇数，右边偶数
+        while (l < r) {
+            while (l <= r && nums[l] % 2 == 1) {
+                l++
+            }
+            while (l <= r && nums[r] % 2 == 0) {
+                r--
+            }
+            if (l < r) {
+                nums[l] = nums[r].also { nums[r] = nums[l] }
+                l++
+                r--
+            }
+        }
+        return nums
+    }
+
+    /// 知识点判断整数奇偶，通过 and 1 判断
+    /// n and 1 == 1 => 奇数
+    /// n and 1 == 0 => 偶数
+    fun exchange(nums: IntArray): IntArray {
+        var l = 0
+        var r = nums.size - 1
+        // 目标： 左边奇数，右边偶数
+        while (l < r) {
+            while (l <= r && nums[l] and 1 == 1) {
+                l++
+            }
+            while (l <= r && nums[r] and 1 == 0) {
+                r--
+            }
+            if (l < r) {
+                nums[l] = nums[r].also { nums[r] = nums[l] }
+                l++
+                r--
+            }
+        }
+        return nums
     }
 }
