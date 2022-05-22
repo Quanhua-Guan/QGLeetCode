@@ -4,7 +4,6 @@ import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.collections.ArrayList
-import kotlin.math.max
 
 /// 二分查找
 class BinarySearch {
@@ -521,9 +520,13 @@ class Solution7_20220522 {
         var result = 0
         while (x > 0) {
             val n = x % 10
-            if (result * 10 / 10 != result) {return 0}
+            if (result * 10 / 10 != result) {
+                return 0
+            }
             result *= 10
-            if (result + n < result) { return 0}
+            if (result + n < result) {
+                return 0
+            }
             result += n
 
             x /= 10
@@ -2829,10 +2832,12 @@ class Solution464_20220522 {
     fun hasMem(desiredTotal: Int, remainNumberBits: Int): Boolean {
         return mem.containsKey(desiredTotal) && mem[desiredTotal]!!.containsKey(remainNumberBits)
     }
+
     fun getMem(desiredTotal: Int, remainNumberBits: Int): Boolean {
         assert(hasMem(desiredTotal, remainNumberBits))
         return mem[desiredTotal]!![remainNumberBits]!!
     }
+
     fun setMem(desiredTotal: Int, remainNumberBits: Int, canWin: Boolean) {
         var map: MutableMap<Int, Boolean>
         if (mem.containsKey(desiredTotal)) {
@@ -2858,7 +2863,12 @@ class Solution464_20220522 {
             if ((remainNumberBits and bit) > 0) {
                 // 数字 n 可选
                 // 我选 n 可以赢，或者我选 n 且后手不能赢
-                if (n >= desiredTotal || !canWin(desiredTotal - n, (remainNumberBits and bit.inv()), maxChoosableInteger)) {
+                if (n >= desiredTotal || !canWin(
+                        desiredTotal - n,
+                        (remainNumberBits and bit.inv()),
+                        maxChoosableInteger
+                    )
+                ) {
                     return true.also { setMem(desiredTotal, remainNumberBits, it) }
                 }
             }
@@ -2901,7 +2911,12 @@ class Solution464_20220522_1 {
             if ((remainNumberBits and bit) > 0) {
                 // 数字 n 可选
                 // 我选 n 可以赢，或者我选 n 且后手不能赢
-                if (n >= desiredTotal || !canWin(desiredTotal - n, (remainNumberBits and bit.inv()), maxChoosableInteger)) {
+                if (n >= desiredTotal || !canWin(
+                        desiredTotal - n,
+                        (remainNumberBits and bit.inv()),
+                        maxChoosableInteger
+                    )
+                ) {
                     return true.also { mem[remainNumberBits] = 1.toShort() }
                 }
             }
@@ -6860,5 +6875,96 @@ class SolutionJZOffer21 {
             }
         }
         return nums
+    }
+}
+
+/// 1931. 用三种不同颜色为网格涂色
+class Solution1931 {
+    fun colorTheGrid(m: Int, n: Int): Int {
+        val mod = 1000000007
+
+        // mxn，m 行，n 列。 因为题意限制 m 属于更小的数。
+        // 一行 m 个格子
+        // 一列 n 个格子
+
+        val validRows = mutableMapOf<Int, IntArray>()
+
+        // 在 [0, 3^m) 范围内美剧满足要求的 mask
+        // 用 0代表红色，1代表绿色，2代表蓝色
+        val maskMax = Math.pow(3.0, m.toDouble()).toInt()
+        for (mask in 0 until maskMax) {
+            val colors = IntArray(m)
+            var tmpMask = mask
+            for (i in 0 until m) {
+                colors[i] = tmpMask % 3
+                tmpMask /= 3
+            }
+            var isValid = true
+            for (i in 0 until m - 1) {
+                if (colors[i] == colors[i + 1]) {
+                    isValid = false
+                    break
+                }
+            }
+            if (isValid) {
+                validRows[mask] = colors
+            }
+        }
+
+        // 预处理所有的 (mask1, mask2) 二元组，满足 mask1 和 mask2 相邻时，同一列上相邻两格的颜色不同
+        val validRowRows = mutableMapOf<Int, MutableList<Int>>()
+        for ((mask1, colors1) in validRows) {
+            for ((mask2, colors2) in validRows) {
+                var isValid = true
+                for (i in 0 until m) {
+                    if (colors1[i] == colors2[i]) {
+                        isValid = false
+                        break
+                    }
+                }
+                if (isValid) {
+                    if (!validRowRows.containsKey(mask1)) {
+                        validRowRows[mask1] = mutableListOf(mask2)
+                    } else {
+                        validRowRows[mask1]!!.add(mask2)
+                    }
+                }
+            }
+        }
+
+        // count[i][mask] 表示第 0 到 i 行已经填上符合要求的颜色，且第 i 行的颜色与状态 mask 对应的情况下，总共的涂色方式数。
+        // count[i][mask] = count[i-1][mask'] {all i-1 row mask' valid with mask} ==> 由于 count[i][mask] 仅和
+        // count[i-1][mask'] 相关，可以仅用一维数组即可。
+        // 显然 count[0][mask] = 1
+        // 结果即为所有 mask 对应 count[n-1][mask] 的加和。
+
+        var count = IntArray(maskMax)
+        for ((mask, _) in validRows) {
+            // dp[0][mask] = 1
+            count[mask] = 1
+        }
+
+        for (i in 1 until n) {
+            val tmpCount = IntArray(maskMax)
+            for ((maskCurrentRow, _) in validRows) {
+                if (!validRowRows.containsKey(maskCurrentRow)) continue
+                for (maskPreviousRow in validRowRows[maskCurrentRow]!!) {
+                    tmpCount[maskCurrentRow] += count[maskPreviousRow]
+                    if (tmpCount[maskCurrentRow] >= mod) {
+                        tmpCount[maskCurrentRow] -= mod
+                    }
+                }
+            }
+            count = tmpCount
+        }
+
+        var totalCount = 0
+        count.forEach {
+            totalCount += it
+            if (totalCount >= mod) {
+                totalCount -= mod
+            }
+        }
+        return totalCount
     }
 }
