@@ -711,7 +711,9 @@ class Solution4_20220521 {
                 nums1.getOrElse(l1) { Int.MAX_VALUE },
                 nums2.getOrElse(l2) { Int.MAX_VALUE }).toDouble()) / 2
         } else {
-            return minOf(nums1.getOrElse(l1) { Int.MAX_VALUE }, nums2.getOrElse(l2) { Int.MAX_VALUE }).toDouble()
+            return minOf(
+                nums1.getOrElse(l1) { Int.MAX_VALUE },
+                nums2.getOrElse(l2) { Int.MAX_VALUE }).toDouble()
         }
     }
 
@@ -748,7 +750,8 @@ class Solution4_20220521 {
             if (v1 > v2) {
                 v1 = v2.also { v2 = v1 }
             }
-            var v3 = minOf(nums1.getOrElse(s1 + 1) { Int.MAX_VALUE }, nums2.getOrElse(s2 + 1) { Int.MAX_VALUE })
+            var v3 = minOf(nums1.getOrElse(s1 + 1) { Int.MAX_VALUE },
+                nums2.getOrElse(s2 + 1) { Int.MAX_VALUE })
             if (v2 > v3) {
                 v2 = v3
             }
@@ -1126,7 +1129,11 @@ class Solution10_20220521 { // 递归
         return (s.length == 1 && (pattern[0] == '.' || s[0] == pattern[0]))
     }
 
-    fun match(s: String, p: List<String>, mem: MutableMap<String, MutableMap<String, Boolean>>): Boolean {
+    fun match(
+        s: String,
+        p: List<String>,
+        mem: MutableMap<String, MutableMap<String, Boolean>>
+    ): Boolean {
         fun hasMem(s: String, p: String): Boolean {
             return mem.containsKey(s) && mem[s]!!.containsKey(p)
         }
@@ -6494,7 +6501,7 @@ class Solution39 {
             return results.toList()
         }
 
-        fun search(target: Int, selected:List<Int>) {
+        fun search(target: Int, selected: List<Int>) {
             for (i in 0 until to + 1) {
                 val candidate = candidates[i]
                 if (target == candidate) {
@@ -6531,7 +6538,14 @@ class Solution39 {
             return result
         }
 
-        fun dfs(candidates: IntArray, target: Int, from: Int, to: Int, path: ArrayDeque<Int>, result: ArrayList<ArrayList<Int>>) {
+        fun dfs(
+            candidates: IntArray,
+            target: Int,
+            from: Int,
+            to: Int,
+            path: ArrayDeque<Int>,
+            result: ArrayList<ArrayList<Int>>
+        ) {
             for (i in from until to + 1) {
                 val candidate = candidates[i]
                 if (candidate == target) {
@@ -6548,5 +6562,123 @@ class Solution39 {
                 }
             }
         }
+    }
+}
+
+/// 77. 组合
+class Solution77 {
+    fun dfs(
+        from: Int,
+        to: Int,
+        path: ArrayDeque<Int>,
+        targetLength: Int,
+        result: MutableList<List<Int>>
+    ) {
+        if (path.size == targetLength) {
+            result.add(ArrayList(path))
+            return
+        }
+
+        for (i in from until to + 1) {
+            path.addLast(i)
+            dfs(i + 1, to, path, targetLength, result)
+            path.removeLast()
+        }
+    }
+
+    fun combine(n: Int, k: Int): List<List<Int>> {
+        var result = mutableListOf<List<Int>>()
+        dfs(1, n, ArrayDeque<Int>(), k, result)
+        return result
+    }
+}
+
+/// 46. 全排列
+class Solution46 {
+    fun dfs(nums: MutableList<Int>, path: ArrayDeque<Int>, result: MutableList<List<Int>>) {
+        if (nums.isEmpty()) {
+            result.add(ArrayList(path))
+            return
+        }
+
+        for (i in 0 until nums.size) {
+            val num = nums[i]
+            path.addLast(num)
+            nums.removeAt(i)
+            dfs(nums, path, result)
+            nums.add(i, num)
+            path.removeLast()
+        }
+    }
+
+    fun permute(nums: IntArray): List<List<Int>> {
+        var result = mutableListOf<List<Int>>()
+        dfs(nums.toMutableList(), ArrayDeque<Int>(), result)
+        return result
+    }
+}
+
+class Solution46_1 {
+    val result = mutableListOf<List<Int>>()
+    fun dfs(nums: IntArray, path: ArrayDeque<Int>) {
+        if (path.size >= nums.size) {
+            result.add(ArrayList(path))
+            return
+        }
+
+        for (num in nums) {
+            if (!path.contains(num)) {
+                path.addLast(num)
+                dfs(nums, path)
+                path.removeLast()
+            }
+        }
+    }
+
+    fun permute(nums: IntArray): List<List<Int>> {
+        result.clear()
+        dfs(nums, ArrayDeque<Int>())
+        return result
+    }
+}
+
+/// 784. 字母大小写全排列
+class Solution784 {
+    val result = mutableListOf<String>()
+    fun dfs(s: String, from: Int, path: StringBuffer) {
+        if (from == s.length) {
+            result.add(path.toString())
+            return
+        }
+
+        var pathLength = path.length
+        for (i in from until s.length) {
+            val c = s[i]
+            if (c in 'a'..'z' || c in 'A'..'Z') {
+                path.append(c.toLowerCase())
+                dfs(s, i + 1, path)
+                path.deleteCharAt(path.length - 1)
+
+                path.append(c.toUpperCase())
+                dfs(s, i + 1, path)
+                path.deleteCharAt(path.length - 1)
+
+                path.delete(pathLength, path.length)
+
+                return
+            } else {
+                path.append(c)
+            }
+        }
+
+        result.add(path.toString())
+        path.delete(pathLength, path.length)
+    }
+
+    fun letterCasePermutation(s: String): List<String> {
+        result.clear()
+        val path = StringBuffer()
+        dfs(s, 0, path)
+        return result
     }
 }
