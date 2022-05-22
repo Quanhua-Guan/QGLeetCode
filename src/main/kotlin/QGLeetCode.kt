@@ -4,6 +4,7 @@ import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.collections.ArrayList
+import kotlin.math.max
 
 /// 二分查找
 class BinarySearch {
@@ -2794,6 +2795,111 @@ class Solution464 {
         }
     }
 }
+
+class Solution464_20220522 {
+    val mem = mutableMapOf<Int, MutableMap<Int, Boolean>>()
+    fun hasMem(desiredTotal: Int, remainNumberBits: Int): Boolean {
+        return mem.containsKey(desiredTotal) && mem[desiredTotal]!!.containsKey(remainNumberBits)
+    }
+    fun getMem(desiredTotal: Int, remainNumberBits: Int): Boolean {
+        assert(hasMem(desiredTotal, remainNumberBits))
+        return mem[desiredTotal]!![remainNumberBits]!!
+    }
+    fun setMem(desiredTotal: Int, remainNumberBits: Int, canWin: Boolean) {
+        var map: MutableMap<Int, Boolean>
+        if (mem.containsKey(desiredTotal)) {
+            map = mem[desiredTotal]!!
+        } else {
+            map = mutableMapOf<Int, Boolean>()
+            mem[desiredTotal] = map
+        }
+        map[remainNumberBits] = canWin
+    }
+
+    fun canWin(desiredTotal: Int, remainNumberBits: Int, maxChoosableInteger: Int): Boolean {
+        if (hasMem(desiredTotal, remainNumberBits)) {
+            return getMem(desiredTotal, remainNumberBits)
+        }
+
+        // remainNumberBits 不可能会等于 0，因为在调用前做了限制
+
+        for (n in maxChoosableInteger downTo 1) {
+            // n 即为数字 (从大到小遍历)
+            // 通过判断 remainNumberBits 中第 n - 1 位是否为 1，来判断数字 n 是否被使用过
+            val bit = 1 shl (n - 1)
+            if ((remainNumberBits and bit) > 0) {
+                // 数字 n 可选
+                // 我选 n 可以赢，或者我选 n 且后手不能赢
+                if (n >= desiredTotal || !canWin(desiredTotal - n, (remainNumberBits and bit.inv()), maxChoosableInteger)) {
+                    return true.also { setMem(desiredTotal, remainNumberBits, it) }
+                }
+            }
+        }
+
+        return false.also { setMem(desiredTotal, remainNumberBits, it) }
+    }
+
+    fun canIWin(maxChoosableInteger: Int, desiredTotal: Int): Boolean {
+        // 处理特殊情况，保证调用 canWin 时如果选完所有数字必然能满足 desiredTotal
+        // 特殊情况1处理
+        if (desiredTotal <= maxChoosableInteger) {
+            return true
+        }
+        // 特殊情况2处理
+        if (desiredTotal > ((maxChoosableInteger * (maxChoosableInteger + 1)) ushr 1)) {
+            return false
+        }
+
+        // 一个 Int 共 32 bit，由于 1 <= maxChoosableInteger <= 20, 所以 1 个 bit 代表一位数的下标，足够用
+        // 1代表还可以使用，0代表无法使用，maxChoosableInteger 个数都还可以使用可以用 2^(maxChoosableInteger) - 1 来标识
+        return canWin(desiredTotal, (1 shl maxChoosableInteger) - 1, maxChoosableInteger)
+    }
+}
+
+/// 464. 我能赢吗
+class Solution464_20220522_1 {
+    lateinit var mem: ShortArray
+    fun canWin(desiredTotal: Int, remainNumberBits: Int, maxChoosableInteger: Int): Boolean {
+        if (mem[remainNumberBits] != 0.toShort()) {
+            return mem[remainNumberBits] == 1.toShort()
+        }
+
+        // remainNumberBits 不可能会等于 0，因为在调用前做了限制
+
+        for (n in maxChoosableInteger downTo 1) {
+            // n 即为数字 (从大到小遍历)
+            // 通过判断 remainNumberBits 中第 n - 1 位是否为 1，来判断数字 n 是否被使用过
+            val bit = 1 shl (n - 1)
+            if ((remainNumberBits and bit) > 0) {
+                // 数字 n 可选
+                // 我选 n 可以赢，或者我选 n 且后手不能赢
+                if (n >= desiredTotal || !canWin(desiredTotal - n, (remainNumberBits and bit.inv()), maxChoosableInteger)) {
+                    return true.also { mem[remainNumberBits] = 1.toShort() }
+                }
+            }
+        }
+
+        return false.also { mem[remainNumberBits] = 2.toShort() }
+    }
+
+    fun canIWin(maxChoosableInteger: Int, desiredTotal: Int): Boolean {
+        // 处理特殊情况，保证调用 canWin 时如果选完所有数字必然能满足 desiredTotal
+        // 特殊情况1处理
+        if (desiredTotal <= maxChoosableInteger) {
+            return true
+        }
+        // 特殊情况2处理
+        if (desiredTotal > ((maxChoosableInteger * (maxChoosableInteger + 1)) ushr 1)) {
+            return false
+        }
+
+        mem = ShortArray(1 shl maxChoosableInteger)
+        // 一个 Int 共 32 bit，由于 1 <= maxChoosableInteger <= 20, 所以 1 个 bit 代表一位数的下标，足够用
+        // 1代表还可以使用，0代表无法使用，maxChoosableInteger 个数都还可以使用可以用 2^(maxChoosableInteger) - 1 来标识
+        return canWin(desiredTotal, (1 shl maxChoosableInteger) - 1, maxChoosableInteger)
+    }
+}
+
 
 /// 944. 删列造序
 class Solution944 {
