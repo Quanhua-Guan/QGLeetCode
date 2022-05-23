@@ -7114,3 +7114,67 @@ class Solution128 {
         return max
     }
 }
+
+
+/// 675. 为高尔夫比赛砍树
+class Solution675 {
+    fun cutOffTree(forest: List<List<Int>>): Int {
+        // forest[i][j] = 0阻隔，1地面（可通行），>1树木（可通行，树木高度）
+        // distance[i][j] 代表从 (0, 0) 走到 (i, j) 的距离
+        val rowCount = forest.size
+        val colCount = forest[0]!!.size
+        val directions = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+
+        fun search(fromRow: Int, fromCol: Int, toRow: Int, toCol: Int): Int {
+            if (fromRow == toRow && fromCol == toCol) return 0
+
+            val tmpForest = forest.map { it.toIntArray() }
+            val willSearchPoints = LinkedList(listOf(Triple(fromRow, fromCol, 0)))
+            while (willSearchPoints.isNotEmpty()) {
+                val (row, col, step) = willSearchPoints.pollFirst()
+                for (direction in directions) {
+                    val r = row + direction.first
+                    val c = col + direction.second
+                    if (r in 0 until rowCount && c in 0 until colCount) {
+                        val height = tmpForest[r][c]
+                        if (height > 0) {
+                            if (r == toRow && c == toCol) {
+                                return step + 1
+                            }
+                            tmpForest[r][c] = 0
+                            willSearchPoints.offerLast(Triple(r, c, step + 1))
+                        }
+                    }
+                }
+            }
+
+            return -1 // 不可达
+        }
+
+
+        var trees = PriorityQueue<Triple<Int, Int, Int>>() { (_, _, h1), (_, _, h2) -> h1 - h2 }
+        for (row in 0 until rowCount) {
+            for (col in 0 until colCount) {
+                val height = forest[row]!![col]!!
+                if (height > 1) {
+                    trees.add(Triple(row, col, height))
+                }
+            }
+        }
+
+        var (preRow, preCol, _) = trees.poll()
+        var minDistance = search(0, 0, preRow, preCol)
+        if (minDistance == -1) return -1
+
+        while (trees.isNotEmpty()) {
+            val (row, col, _) = trees.poll()
+            val distance = search(preRow, preCol, row, col)
+            if (distance == -1) return -1
+            minDistance += distance
+            preRow = row
+            preCol = col
+        }
+
+        return minDistance
+    }
+}
