@@ -927,6 +927,18 @@ class Solution70 {
     }
 }
 
+class Solution70_20220523 {
+    fun climbStairs(n: Int): Int {
+        val count = IntArray(n + 1)
+        count[0] = 1
+        count[1] = 1
+        for (i in 2 until n + 1) {
+            count[i] = count[i - 1] + count[i - 2]
+        }
+        return count[n]
+    }
+}
+
 // 62. 不同路径
 class Solution62 {
     fun uniquePaths(m: Int, n: Int): Int {
@@ -4694,6 +4706,25 @@ class Solution198 {
     }
 }
 
+class Solution198_20220523 {
+    fun rob(nums: IntArray): Int {
+        // amount[i] 代表偷第0到第i家的最大金额，所以所求即为 amount[nums.size - 1]
+        // amount[i] = max(amount[i - 1], amount[i - 2] + nums[i])
+        val amount = IntArray(nums.size)
+        amount[0] = nums[0]
+        if (nums.size >= 2) {
+            amount[1] = maxOf(amount[0], nums[1])
+        }
+
+        for (i in 2 until nums.size) {
+            amount[i] = maxOf(amount[i - 1], amount[i - 2] + nums[i])
+        }
+
+        return amount[nums.size - 1]
+    }
+}
+
+
 /// 213. 打家劫舍 II
 class Solution213 {
     fun rob(nums: IntArray): Int {
@@ -6966,5 +6997,120 @@ class Solution1931 {
             }
         }
         return totalCount
+    }
+}
+
+/// 120. 三角形最小路径和
+class Solution120 {
+    fun minimumTotal1(triangle: List<List<Int>>): Int {
+        // sum[i] = min(sum[i], sum[i - 1])
+        val sum = IntArray(triangle.last()!!.size + 1) { Int.MAX_VALUE }
+        sum[0] = triangle[0]!![0]!!
+        for (i in 1 until triangle.size) {
+            val nums = triangle[i]!!
+            var sumJ_1 = sum[0] // 保存一下 sum[j] 的状态
+            sum[0] += nums[0]
+            for (j in 1 until nums.size) {
+                var sumJ_1Tmp = sum[j] // 保存一下 sum[j] 的状态, 因为下一行代码会将 sum[j] 更新
+                sum[j] = minOf(sum[j], sumJ_1) + nums[j]
+                sumJ_1 = sumJ_1Tmp // 接住 sum[j] 的值，下一次遍历时使用
+            }
+        }
+
+        var min = sum[0]
+        for (i in 1 until sum.size) {
+            if (sum[i] < min) {
+                min = sum[i]
+            }
+        }
+        return min
+    }
+
+    fun minimumTotal(triangle: List<List<Int>>): Int {
+        // sum[i] = min(sum[i], sum[i - 1])
+        val sum = IntArray(triangle.last()!!.size + 1) { Int.MAX_VALUE }
+        sum[0] = triangle[0]!![0]!!
+        for (i in 1 until triangle.size) {
+            val nums = triangle[i]!!
+            for (j in nums.size - 1 downTo 1) {
+                sum[j] = minOf(sum[j], sum[j - 1]) + nums[j]
+            }
+            sum[0] += nums[0]
+        }
+
+        var min = sum[0]
+        for (i in 1 until sum.size) {
+            if (sum[i] < min) {
+                min = sum[i]
+            }
+        }
+        return min
+    }
+}
+
+/// 128. 最长连续序列
+class Solution128 {
+    fun longestConsecutive(nums: IntArray): Int {
+        val numsSet = mutableSetOf<Int>()
+        for (n in nums) {
+            numsSet.add(n)
+        }
+
+        var maxLength = 0
+        for (n in nums) {
+            if (!numsSet.contains(n - 1)) {
+                var currentNum = n
+                var currentLength = 1
+                while (numsSet.contains(currentNum + 1)) {
+                    currentLength += 1
+                    currentNum += 1
+                }
+                maxLength = maxOf(maxLength, currentLength)
+            }
+        }
+
+        return maxLength
+    }
+
+    fun longestConsecutive1(nums: IntArray): Int {
+        var max = 0
+        val indexNumbers = mutableMapOf<Int, LinkedList<Int>>()
+        for (n in nums) {
+            if (indexNumbers.containsKey(n)) {
+                continue
+            }
+
+            val hasNMinus1 = indexNumbers.containsKey(n - 1)
+            val hasNPlus1 = indexNumbers.containsKey(n + 1)
+            if (hasNMinus1 && hasNPlus1) {
+                val numbersNMinus1 = indexNumbers[n - 1]!!
+                numbersNMinus1.addLast(n)
+                indexNumbers[n] = numbersNMinus1
+
+                val numbersNPlus1 = indexNumbers[n + 1]!!
+                numbersNMinus1.addAll(numbersNPlus1)
+                numbersNMinus1.forEach { indexNumbers[it] = numbersNMinus1 }
+
+                max = maxOf(max, numbersNMinus1.size)
+            } else if (hasNMinus1) {
+                val numbersNMinus1 = indexNumbers[n - 1]!!
+                numbersNMinus1.addLast(n)
+                indexNumbers[n] = numbersNMinus1
+
+                max = maxOf(max, numbersNMinus1.size)
+            } else if (hasNPlus1) {
+                val numbersNPlus1 = indexNumbers[n + 1]!!
+                numbersNPlus1.addFirst(n)
+                indexNumbers[n] = numbersNPlus1
+
+                max = maxOf(max, numbersNPlus1.size)
+            } else {
+                indexNumbers[n] = LinkedList(listOf(n))
+
+                max = maxOf(max, 1)
+            }
+        }
+
+        return max
     }
 }
