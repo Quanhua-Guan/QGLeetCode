@@ -7178,3 +7178,29 @@ class Solution675 {
         return minDistance
     }
 }
+
+/// 23. 合并K个升序链表
+class Solution23 {
+    fun mergeKLists(lists: Array<ListNode?>): ListNode? {
+        val prehead = ListNode(0)
+        var current = prehead
+
+        val queue = PriorityQueue<ListNode> { a, b -> a.`val` - b.`val` }
+        lists.forEach {
+            if (it != null) queue.add(it!!)
+        }
+
+        while (queue.isNotEmpty()) {
+            val node = queue.poll()
+            if (node.next != null) {
+                queue.add(node.next!!)
+                node.next = null
+            }
+
+            current.next = node
+            current = node
+        }
+
+        return prehead.next
+    }
+}
