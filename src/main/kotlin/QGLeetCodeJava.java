@@ -1,6 +1,5 @@
-package com.cqmh.qgleetcode;
-
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class QGLeetCodeJava {
 
@@ -142,5 +141,62 @@ class SolutionMs0406 {
         }
 
         return theAncestor;
+    }
+}
+
+/// 407 接雨水 II
+class Solution407_java {
+    public int trapRainWater(int[][] heightMap) {
+        int rowCount = heightMap.length;
+        int colCount = heightMap[0].length;
+        int[] dirs = {-1, 0, 1, 0, -1};
+        int maxHeight = 0;
+
+        for (int row = 0; row < rowCount; ++row) {
+            for (int col = 0; col < colCount; ++col) {
+                maxHeight = Math.max(maxHeight, heightMap[row][col]);
+            }
+        }
+        int[][] water = new int[rowCount][colCount];
+        for (int i = 0; i < rowCount; ++i) {
+            for (int j = 0; j < colCount; ++j){
+                water[i][j] = maxHeight;
+            }
+        }
+
+        LinkedList<int[]> qu = new LinkedList<>();
+        for (int i = 0; i < rowCount; ++i) {
+            for (int j = 0; j < colCount; ++j) {
+                if (i == 0 || i == rowCount - 1 || j == 0 || j == colCount - 1) {
+                    if (water[i][j] > heightMap[i][j]) {
+                        water[i][j] = heightMap[i][j];
+                        qu.offer(new int[]{i, j});
+                    }
+                }
+            }
+        }
+        while (!qu.isEmpty()) {
+            int[] curr = qu.poll();
+            int row = curr[0];
+            int col = curr[1];
+            for (int i = 0; i < 4; ++i) {
+                int r = row + dirs[i], c = col + dirs[i + 1];
+                if (r < 0 || r >= rowCount || c < 0 || c >= colCount) {
+                    continue;
+                }
+                if (water[row][col] < water[r][c] && water[r][c] > heightMap[r][c]) {
+                    water[r][c] = Math.max(water[row][col], heightMap[r][c]);
+                    qu.offer(new int[]{r, c});
+                }
+            }
+        }
+
+        int res = 0;
+        for (int i = 0; i < rowCount; ++i) {
+            for (int j = 0; j < colCount; ++j) {
+                res += water[i][j] - heightMap[i][j];
+            }
+        }
+        return res;
     }
 }

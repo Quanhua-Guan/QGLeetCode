@@ -4648,6 +4648,74 @@ class Solution42 {
     }
 }
 
+class Solution42_20220524 {
+    fun trap(walls: IntArray): Int {
+        var highestWall = 0
+        var highestWallIndex = -1
+        var waterTotal = 0
+        var wallTotal = 0
+
+        for (i in walls.indices) {
+            if (walls[i] >= highestWall) {
+                waterTotal += (i - highestWallIndex - 1) * highestWall
+                waterTotal -= wallTotal
+
+                highestWallIndex = i
+                highestWall = walls[i]
+                wallTotal = 0
+            } else {
+                wallTotal += walls[i]
+            }
+        }
+
+        val theHighestWallIndex = highestWallIndex
+        highestWall = 0
+        highestWallIndex = walls.size
+        wallTotal = 0
+        for (i in walls.size - 1 downTo theHighestWallIndex) {
+            if (walls[i] >= highestWall) {
+                waterTotal += (highestWallIndex - i - 1) * highestWall
+                waterTotal -= wallTotal
+
+                highestWallIndex = i
+                highestWall = walls[i]
+                wallTotal = 0
+            } else {
+                wallTotal += walls[i]
+            }
+        }
+
+        return waterTotal
+    }
+
+    /// 记录左右边界最高的墙, 让低的一方先移动, 因为水即使漫过低的边界也不可能漫过高的边界.
+    /// 每次迭代统计一次可接水量: leftMax - leftCurrent, rightMax - rightCurrent
+    fun trap_twoPointers(walls: IntArray): Int {
+        var left = 0
+        var right = walls.size - 1
+        var leftMax = 0
+        var rightMax = 0
+
+        var total = 0
+
+        while (left < right) {
+            val wallLeft = walls[left]
+            val wallRight = walls[right]
+            if (wallLeft > leftMax) leftMax = wallLeft
+            if (wallRight > rightMax) rightMax = wallRight
+            if (wallLeft < wallRight) {
+                total += leftMax - wallLeft
+                left++
+            } else {
+                total += rightMax - wallRight
+                right--
+            }
+        }
+
+        return total
+    }
+}
+
 /// 198. 打家劫舍
 class Solution198 {
     fun rob(nums: IntArray): Int {
@@ -7202,5 +7270,195 @@ class Solution23 {
         }
 
         return prehead.next
+    }
+}
+
+/// 965. 单值二叉树
+class Solution965 {
+    class TreeNode(var `val`: Int) {
+        var left: TreeNode? = null
+        var right: TreeNode? = null
+    }
+
+    fun isUnivalTree(root: TreeNode?): Boolean {
+        if (root == null) return true
+
+        return (root.left == null || root.left!!.`val` == root.`val`) && (root.right == null || root.right!!.`val` == root.`val`) && isUnivalTree(
+            root.left
+        ) && isUnivalTree(root.right)
+    }
+}
+
+/// 231. 2 的幂
+class Solution231 {
+    fun isPowerOfTwo(n: Int): Boolean {
+        // n & (n - 1) == 0  => n & (n - 1) 可以将 n 最低位的 1 移除
+        return n > 0 && (n and (n - 1)) == 0
+        // n & -n == n
+        //return n > 0 && (n and -n) == n
+        // n 为 2^30 的约数 (Int.SIZE_BITS-2 == 30)
+        //return n > 0 && (1 shl 30) % n == 0
+    }
+
+    fun isPowerOfTwo_For(n: Int): Boolean {
+        if (n <= 0) return false
+
+        var bitCount = 0
+        for (i in 0 until Int.SIZE_BITS) {
+            if ((n and (1 shl i)) > 0) {
+                bitCount++
+                if (bitCount > 1) {
+                    return false
+                }
+            }
+        }
+        return bitCount == 1
+    }
+
+    fun isPowerOfTwo_While(n: Int): Boolean {
+        if (n == 0) return false // 特殊判断, 0 非2的幂次方
+        if (n == 1) return true // 特殊情况判断, 2^0 等于 1
+        if ((n and 1) == 1) return false // 特殊情况判断, 除1之外的奇数不可能为2的幂次方
+        var value = n
+        while (((value shr 1) shl 1) == value) {
+            value = value shr 1
+        }
+        return value == 1
+    }
+}
+
+/// 191. 位1的个数
+class Solution191 {
+    // you need treat n as an unsigned value
+    fun hammingWeight(n: Int): Int {
+        var count = 0
+        for (i in 0 until Int.SIZE_BITS) {
+            if (n and (1 shl i) != 0) {
+                count++
+            }
+        }
+        return count
+    }
+
+    // you need treat n as an unsigned value
+    fun hammingWeight_NandN_1(n: Int): Int {
+        var count = 0
+        var n = n
+        while (n != 0) {
+            n = n and (n - 1)
+            count++
+        }
+        n.countOneBits()
+        return count
+    }
+}
+
+/// 407. 接雨水 II
+class Solution407 {
+    fun trapRainWater(walls: Array<IntArray>): Int {
+        val rowCount = walls.size
+        val colCount = walls[0].size
+
+        if (rowCount <= 2 || colCount <= 2) return 0
+
+        // 是否被访问过
+        val visited = Array(rowCount) { BooleanArray(colCount) }
+        val wallQueue = PriorityQueue<Triple<Int, Int, Int>> { h1, h2 -> h1.third - h2.third }
+
+        // 遍历方块四周
+        for (row in listOf(0, rowCount - 1)) {
+            for (col in 0 until colCount) {
+                visited[row][col] = true
+                wallQueue.offer(Triple(row, col, walls[row][col]))
+            }
+        }
+        for (col in listOf(0, colCount - 1)) {
+            for (row in 1 until rowCount - 1) {
+                visited[row][col] = true
+                wallQueue.offer(Triple(row, col, walls[row][col]))
+            }
+        }
+
+        var waterTotal = 0
+        val directions = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+        while (wallQueue.isNotEmpty()) {
+            val (row, col, height) = wallQueue.poll()
+            directions.forEach { (dr, dc) ->
+                val r = row + dr
+                var c = col + dc
+                if (r in 0 until rowCount && c in 0 until colCount && !visited[r][c]) {
+                    if (height > walls[r][c]) {
+                        /*
+                        (1) 假设装满水后的墙(可能包含水)的高度为 water[r][c], 原墙高度为 walls[r][c], 则水体的单位
+                        个数为 water[r][c] - walls[r][c].
+                        (2) 显然, 整个墙体的四周的墙是不可能蓄水的, 所以四周每个墙的 water[r][c] == walls[r][c],
+                        而且它们构成一个蓄水的联通墙体, 根据木桶原理, 我们可以从最矮的墙开始进行宽度优先搜索(上下左右),
+                        根据 (1) 的设定, 可以确定被搜索到的墙的蓄水量, 即 maxOf(0, 最矮墙蓄水后高度 - 当前遍历的墙的高度),
+                        根据以上流程继续遍历, 直到所有的墙都被扫描一遍.
+                         */
+                        waterTotal += height - walls[r][c]
+                    }
+                    wallQueue.offer(Triple(r, c, maxOf(height, walls[r][c])))
+                    visited[r][c] = true
+                }
+            }
+        }
+
+        return waterTotal
+    }
+
+    fun trapRainWater_BFS(walls: Array<IntArray>): Int {
+        val rowCount = walls.size
+        val colCount = walls[0].size
+
+        if (rowCount <= 2 || colCount <= 2) return 0
+
+        var highest = 0 // 最高墙高度
+        for (row in 0 until rowCount) {
+            for (col in 0 until colCount) {
+                highest = maxOf(highest, walls[row][col])
+            }
+        }
+
+        /*
+        假设来个一个魔法师能让所有柱子凭空装满到达 highest 高度的水, 然后再从外到内一个柱子一个柱子解除魔法.
+        可以知道, 四周的墙上的水最终都会流失, 我们可以从 walls[0][0] 开始, 将其四周的墙上的水
+        都下降到 maxOf(它本身墙高度, walls[0][0]), 下降过程中记录流失的水.
+        最终总流失水量 + 所有墙高度总和 + 被留下来的水 = m * n * highest
+        runAwayWaterTotal + allTotal
+        */
+        val waters = Array(rowCount) { IntArray(colCount) { highest } }
+        var willSearchWalls = LinkedList<Pair<Int, Int>>()
+        for (row in 0 until rowCount) {
+            for (col in 0 until colCount) {
+                if ((row == 0 || row == rowCount - 1 || col == 0 || col == colCount - 1) && waters[row][col] > walls[row][col]) {
+                    willSearchWalls.offer(Pair(row, col))
+                    waters[row][col] = walls[row][col]
+                }
+            }
+        }
+
+        val directions = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+        while (willSearchWalls.isNotEmpty()) {
+            val (row, col) = willSearchWalls.poll()
+            for ((dr, dc) in directions) {
+                val r = row + dr
+                val c = col + dc
+
+                if (r in 0 until rowCount && c in 0 until colCount && (waters[row][col] < waters[r][c] && waters[r][c] > walls[r][c])) {
+                    waters[r][c] = maxOf(walls[r][c], waters[row][col])
+                    willSearchWalls.offer(Pair(r, c))
+                }
+            }
+        }
+
+        var res = 0
+        for (row in 0 until rowCount) {
+            for (col in 0 until colCount) {
+                res += waters[row][col] - walls[row][col]
+            }
+        }
+
+        return res
     }
 }
