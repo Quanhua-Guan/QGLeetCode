@@ -7462,3 +7462,245 @@ class Solution407 {
         return res
     }
 }
+
+/// 190. 颠倒二进制位
+class Solution190 {
+    fun reverseEvery2Bits(i: Int): Int {
+        // 0b10101010101010101010101010101010
+        // 0b01010101010101010101010101010101 0x55555555
+        return ((i and 0x55555555) shl 1) or ((i ushr 1) and 0x55555555)
+    }
+
+    fun reverseEvery4Bits(i: Int): Int {
+        // 0b11001100110011001100110011001100
+        // 0b00110011001100110011001100110011 0x33333333
+        return ((i and 0x33333333) shl 2) or ((i ushr 2) and 0x33333333)
+    }
+
+    fun reverseEvery8Bits(i: Int): Int {
+        // 0b11110000111100001111000011110000
+        // 0b00001111000011110000111100001111 0x0F0F0F0F
+        return ((i and 0x0F0F0F0F) shl 4) or ((i ushr 4) and 0x0F0F0F0F)
+    }
+
+    fun reverseBytes(i: Int): Int {
+        return (i ushr 24) or (i shl 24) or ((i ushr 8) and 0xFF00) or ((i and 0xFF00) shl 8)
+    }
+
+    fun reverseBits(n: Int): Int {
+        return reverseBytes(reverseEvery8Bits(reverseEvery4Bits(reverseEvery2Bits(n))))
+    }
+
+    ////// 有符号右移, 高位补符号位, 低位丢弃; 无符号右移, 高位补0, 低位丢弃
+    ////// 左移没有有符号与无符号区分 (why? 定义如此), 高位丢弃, 低位补0
+
+    // you need treat n as an unsigned value
+    fun reverseBits2(n: Int): Int {
+        var n = n
+        var res = 0
+        for (i in 0 until Int.SIZE_BITS) {
+            if (n and 1 == 1) {
+                res = res or (1 shl (Int.SIZE_BITS - i - 1))
+            }
+            n = n ushr 1
+        }
+        return res
+    }
+
+    fun reverseBits2Better(n: Int): Int {
+        var res = 0
+        for (i in 0 until Int.SIZE_BITS) {
+            if (n and (1 shl i) != 0) {
+                res = res or (1 shl (Int.SIZE_BITS - i - 1))
+            }
+        }
+        return res
+    }
+
+    // you need treat n as an unsigned value
+    fun reverseBits1(n: Int): Int {
+        var n = n
+        var low = 1
+        var high = Int.SIZE_BITS - 2
+        while (low < high) {
+            val lowBitIs1 = n and (1 shl low) != 0
+            val highBitIs1 = (n and (1 shl high)) != 0
+            // update lowBit
+            if (highBitIs1) {
+                n = (n or (1 shl low))
+            } else {
+                n = (n or (1 shl low).inv())
+            }
+            n.toString(2)
+            // update highBit
+            if (lowBitIs1) {
+                n = (n or (1 shl high))
+            } else {
+                n = (n or (1 shl high).inv())
+            }
+
+            low++
+            high--
+        }
+        return n
+    }
+
+    /// 双指针, 高低位互换
+
+    // you need treat n as an unsigned value
+    fun reverseBits_TwoPointers(n:Int):Int {
+        var n = n
+        var low = 0
+        var high = Int.SIZE_BITS - 1
+        while (low < high) {
+            val lowBitIs1 = (n and (1 shl low)) != 0
+            val highBitIs1 = (n and (1 shl high)) != 0
+
+            // low bit
+            if (highBitIs1) {
+                // 低位设置为1
+                n = n or (1 shl low)
+            } else {
+                // 低位设置为0
+                n = n and (1 shl low).inv()
+            }
+
+            // high bit
+            if (lowBitIs1) {
+                // 高位设置为1
+                n = n or (1 shl high)
+            } else {
+                // 高位设置为0
+                n = n and (1 shl high).inv()
+            }
+
+            low++
+            high--
+        }
+        return n
+    }
+
+    //// byte flip 2,4,8,16,32
+
+    // you need treat n as an unsigned value
+    fun reverseBits_BITS(n:Int):Int {
+        var i = n
+        // 0x11111111111111111111111111111111
+
+        // 0x01010101010101010101010101010101 0x55555555
+        i = ((i and 0x55555555) shl 1) or ((i ushr 1) and 0x55555555)
+
+        // 0x00110011001100110011001100110011 0x33333333
+        i = ((i and 0x33333333) shl 2) or ((i ushr 2) and 0x33333333)
+
+        // 0x00001111000011110000111100001111 0x0f0f0f0f
+        i = ((i and 0x0f0f0f0f) shl 4) or ((i ushr 4) and 0x0f0f0f0f)
+
+        i = (i ushr 24) or (i shl 24) or ((i and 0xff00) shl 8) or ((i ushr 8) and 0xff00)
+
+        return i
+    }
+}
+
+/// 467. 环绕字符串中唯一的子字符串
+class Solution467 {
+    /// 暴力搜索, 超时.
+    fun findSubstringInWraproundString_0(p: String): Int {
+        // 找到 p 的所有非空子串, 逐一检查是否属于 s
+        fun nextChar(c: Char): Char {
+            if (c == 'z') return 'a'
+            return c + 1
+        }
+
+        var mem = mutableMapOf<String, Boolean>()
+        fun check(p: String): Boolean {
+            if (mem.containsKey(p)) return mem[p]!!
+
+            if (p.length == 1) return true.also { mem[p] = it }
+            if (p.length == 2) return (nextChar(p[0]) == p[1]).also { mem[p] = it }
+            return ((nextChar(p[0]) == p[1]) && check(p.substring(1))).also { mem[p] = it }
+        }
+
+        var allSubs = mutableSetOf<String>()
+        for (length in 1..p.length) {
+            for (start in 0..(p.length - length)) {
+                allSubs.add(p.substring(start, start + length))
+            }
+        }
+
+        var count = 0
+        for (sub in allSubs) {
+            if (check(sub)) count++
+        }
+        return count
+    }
+
+    /////
+
+    fun findSubstringInWraproundString(p: String): Int {
+        // dp[0] => dp['a']
+        // dp[25] => dp['z']
+        // dp[c]代表p的连续子串中以字符c结尾的个数.
+        val dp = IntArray(26)
+        var k = 1
+        dp[p[0] - 'a'] = 1
+        for (i in 1 until p.length) {
+            val cur = p[i]
+            val pre = p[i - 1]
+            if (pre + 1 == cur || (pre == 'z' && cur == 'a')) {
+                k++
+            } else {
+                k = 1
+            }
+            dp[cur - 'a'] = maxOf(dp[cur - 'a'], k)
+        }
+        return dp.sum()
+    }
+}
+
+/// 55. 跳跃游戏
+class Solution55 {
+    fun canJump(nums: IntArray): Boolean {
+        val n = nums.size
+        var maxReachableIndex = 0
+
+        for (i in nums.indices) {
+            if (maxReachableIndex >= i) {
+                maxReachableIndex = maxOf(maxReachableIndex, i + nums[i])
+            }
+
+            if (maxReachableIndex < i || maxReachableIndex >= n - 1) {
+                break
+            }
+        }
+
+        return maxReachableIndex >= n - 1
+    }
+}
+
+/// 48. 旋转图像
+class Solution48 {
+    fun rotate(matrix: Array<IntArray>): Unit {
+        val n = matrix.size
+
+        var start = 0
+        var end = n - 1
+
+        while (start < end) {
+            // 顶边 -> 右边, 右边存放到顶边
+            for (i in start until end) {
+                matrix[start][i] = matrix[i][end].also { matrix[i][end] = matrix[start][i] }
+            }
+            // 右边 -> 底边, 底边存放到顶边
+            for (i in start until end) {
+                matrix[start][i] = matrix[end][end - (i - start)].also { matrix[end][end - (i - start)] = matrix[start][i] }
+            }
+            // 底边 -> 左边, 左边 -> 顶边
+            for (i in start until end) {
+                matrix[start][i] = matrix[end - (i - start)][start].also { matrix[end - (i - start)][start] = matrix[start][i] }
+            }
+            start++
+            end--
+        }
+    }
+}
