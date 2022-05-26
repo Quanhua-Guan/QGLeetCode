@@ -3,7 +3,7 @@ package com.cqmh.qgleetcode
 import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
-import kotlin.collections.ArrayList
+
 
 /// 二分查找
 class BinarySearch {
@@ -7680,6 +7680,7 @@ class Solution55 {
 
 /// 48. 旋转图像
 class Solution48 {
+    /// 顺时针旋转, 以顶边为暂存, 依次 顶=>右, 右=>下, 下=>左
     fun rotate(matrix: Array<IntArray>): Unit {
         val n = matrix.size
 
@@ -7702,5 +7703,177 @@ class Solution48 {
             start++
             end--
         }
+    }
+}
+
+/// 34. 在排序数组中查找元素的第一个和最后一个位置
+class Solution34 {
+    fun searchFirst(nums: IntArray, target: Int, from: Int = 0, to: Int = nums.size - 1): Int {
+        var left = from
+        var right = to
+        while (left <= right) {
+            val mid = (left + right) ushr 1
+            if (nums[mid] == target && (mid == from || nums[mid - 1] != target)) {
+                return mid
+            } else if (target <= nums[mid]) {
+                right = mid - 1
+            } else { // target > nums[mid]
+                left = mid + 1
+            }
+        }
+        return -1
+    }
+
+    fun searchLast(nums: IntArray, target: Int, from: Int = 0, to: Int = nums.size - 1): Int {
+        var left = from
+        var right = to
+
+        while (left <= right) {
+            val mid = (left + right) ushr 1
+            if (nums[mid] == target && (mid == to || nums[mid + 1] != target)) {
+                return mid
+            } else if (nums[mid] <= target) {
+                left = mid + 1
+            } else { // nums[mid] > target
+                right = mid - 1
+            }
+        }
+        return -1
+    }
+
+    fun searchRange(nums: IntArray, target: Int): IntArray {
+        return intArrayOf(searchFirst(nums, target), searchLast(nums, target))
+    }
+}
+
+/// 33. 搜索旋转排序数组
+class Solution33 {
+    fun bsearch(nums: IntArray, target: Int, from: Int = 0, to: Int = nums.size - 1): Int {
+        var left = from
+        var right = to
+        while (left < right) {
+            val mid = (left + right) ushr 1
+            if (nums[mid] < target) {
+                left = mid + 1
+            } else {
+                right = mid
+            }
+        }
+
+        if (left <= to && nums[left] == target) {
+            return left
+        }
+        return -1
+    }
+
+    fun search(nums: IntArray, target: Int): Int {
+        // 每次找 mid, mid可以将数组分成一个 "排序数组" 和一个 "旋转排序数组", 根据数组首尾可以判断区分.
+        var left = 0
+        var right = nums.size - 1
+        while (left <= right) {
+            val mid = (left + right) ushr 1
+            if (nums[left] <= nums[mid]) {
+                // left..mid 为排序数组, mid+1..right 为旋转排序数组
+                if (nums[left] <= target && target <= nums[mid]) {
+                    return bsearch(nums, target, left, mid)
+                } else {
+                    left = mid + 1
+                }
+            } else { // nums[left] > nums[mid]
+                // left..mid 为旋转排序数组, mid+1..right 为排序数组
+                if (nums[mid + 1] <= target && target <= nums[right]) {
+                    return bsearch(nums, target, mid + 1, right)
+                } else {
+                    right = mid
+                }
+            }
+        }
+        return -1
+    }
+}
+
+class Solution33_1 {
+    fun search(nums: IntArray, target: Int): Int {
+        // 每次找 mid, mid可以将数组分成一个 "排序数组" 和一个 "旋转排序数组", 根据数组首尾可以判断区分.
+        val first = nums[0]
+        val last = nums[nums.size - 1]
+
+        var left = 0
+        var right = nums.size - 1
+        while (left <= right) {
+            val mid = (left + right) ushr 1
+            if (nums[mid] == target) {
+                return mid
+            }
+            if (first <= nums[mid]) {
+                // left..mid 为排序数组, mid+1..right 为旋转排序数组
+                if (first <= target && target < nums[mid]) {
+                    right = mid - 1
+                } else {
+                    left = mid + 1
+                }
+            } else {
+                // left..mid 为旋转排序数组, mid+1..right 为排序数组
+                if (nums[mid] < target && target <= last) {
+                    left = mid + 1
+                } else {
+                    right = mid - 1
+                }
+            }
+        }
+        return -1
+    }
+}
+
+/// 74. 搜索二维矩阵
+class Solution74 {
+    fun searchMatrix(matrix: Array<IntArray>, target: Int): Boolean {
+        val rowCount = matrix.size
+        val colCount = matrix[0].size
+
+        var left = 0
+        var right = rowCount * colCount - 1
+
+        while (left <= right) {
+            val mid = (left + right) ushr 1
+            val row = mid / colCount
+            val col = mid % colCount
+            val midValue = matrix[row][col]
+            if (midValue == target) {
+                return true
+            }
+            if (midValue < target) {
+                left = mid + 1
+            } else {
+                right = mid - 1
+            }
+        }
+        return false
+    }
+}
+
+/// 699. 掉落的方块
+class Solution699 {
+    fun fallingSquares(positions: Array<IntArray>): List<Int> {
+        val n = positions.size
+        val heights: MutableList<Int> = ArrayList()
+        for (i in 0 until n) {
+            var curHeight = positions[i][1]
+            val curLeft = positions[i][0]
+            val curRight = curLeft + curHeight - 1
+            for (j in 0 until i) {
+                val preHeight = positions[j][1]
+                val preLeft = positions[j][0]
+                val preRight = preLeft + preHeight - 1
+                if (curRight >= preLeft && preRight >= curLeft) { // 判断重合
+                    curHeight = Math.max(curHeight, heights[j] + positions[i][1]) // positions[i][1]不能用curHeight代替, 因为curHeight会变换.
+                }
+            }
+            heights.add(curHeight)
+        }
+        for (i in 1 until n) {
+            heights[i] = Math.max(heights[i], heights[i - 1])
+        }
+        return heights
     }
 }
