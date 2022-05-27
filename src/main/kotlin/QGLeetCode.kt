@@ -4,6 +4,7 @@ import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.collections.ArrayList
+import kotlin.math.abs
 
 
 /// 二分查找
@@ -7943,5 +7944,34 @@ class Solution699 {
             ret.add(if (i > 0) maxOf(ret[i - 1], height) else height)
         }
         return ret
+    }
+}
+
+/// 面试题 17.11. 单词距离
+class SolutionMS17.11 {
+    fun findClosest(words: Array<String>, word1: String, word2: String): Int {
+        var word1Index: Int? = null
+        var word2Index: Int? = null
+        var min = Int.MAX_VALUE
+        for (i in words.indices) {
+            val isWord1 = words[i] == word1
+            val isWord2 = words[i] == word2
+            if (isWord1) {
+                word1Index = i
+            }
+            if (isWord2) {
+                word2Index = i
+            }
+            if ((isWord1 || isWord2) && word1Index != null && word2Index != null) {
+                if (word1Index < word2Index) {
+                    min = minOf(min, word2Index!! - word1Index!!)
+                    word1Index = null
+                } else {
+                    min = minOf(min, word1Index!! - word2Index!!)
+                    word2Index = null
+                }
+            }
+        }
+        return min
     }
 }
