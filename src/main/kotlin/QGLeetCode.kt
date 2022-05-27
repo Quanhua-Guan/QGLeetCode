@@ -7948,7 +7948,7 @@ class Solution699 {
 }
 
 /// 面试题 17.11. 单词距离
-class SolutionMS17.11 {
+class SolutionMS17_11 {
     fun findClosest(words: Array<String>, word1: String, word2: String): Int {
         var word1Index: Int? = null
         var word2Index: Int? = null
