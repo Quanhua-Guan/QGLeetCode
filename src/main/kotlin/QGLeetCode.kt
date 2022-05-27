@@ -4,7 +4,6 @@ import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.collections.ArrayList
-import kotlin.math.abs
 
 
 /// 二分查找
@@ -8053,5 +8052,108 @@ class Solution162 {
             }*/
         }
         return -1
+    }
+}
+
+/// 线段树
+class SegmentTree (val nums: IntArray) {
+
+    class Node (var start: Int, var end: Int) {
+        var data: Int = 0
+        var mark = 0
+
+        fun addMark(value: Int) {
+            mark += value
+        }
+
+        fun clearMark() {
+            mark = 0
+        }
+
+        override fun toString(): String {
+            return "${start} - ${end}"
+        }
+    }
+
+    var nodes: MutableList<Node?>
+    init {
+        nodes = MutableList<Node?>(nums.size) { null }
+        build(0)
+    }
+
+    /// 构建线段树
+    fun build(index: Int) {
+        var node = nodes[index]
+        if (node == null) {
+            // 构建根节点
+            node = Node(0, nodes.size - 1)
+            nodes[0] = node
+        }
+        assert(node != null)
+
+        if (node.start == node.end) {
+            // 如果这个线段你的左断电等于右端点，则这个点是叶子节点
+            node.data = nums[node.start]
+        } else {
+            // 否则递归构造左右子树
+            val mid = (node.start + node.end) ushr 1
+            val left = (index shl 1) + 1
+            val right = (index shl 1) + 2
+            nodes[left] = Node(node.start, mid)   // 左子节点线段
+            nodes[right] = Node(mid + 1, node.end) // 有子节点线段
+            build(left)  // 构造左孩子
+            build(right) // 构造右孩子
+            node.data = minOf(nodes[left]!!.data, nodes[right]!!.data)
+        }
+    }
+
+    /// 查询当前区间中待查询区间内的最小值
+    /// index: 当前区间下标
+    /// start: 待查询区间左端点
+    /// end: 待查询区间右端点
+    fun query(index: Int, start: Int, end: Int): Int {
+        val node = nodes[index]
+        if (node == null || node.start > end || node.end < start) return Int.MAX_VALUE // 当前区间和待查询区间没有交集，返回极大值
+
+        if (node.start >= start && node.end <= end) return node.data // 如果当前区间被包含在待查询区间中，直接返回当前区间的最小值，即node.data
+
+        pushDown(index)
+
+        // 递归查询左子树和右子树
+        return maxOf(query((index shl 1) + 1, start, end), query((index shl 1) + 2, start, end))
+    }
+
+    /// 将更新和标记信息扩展到左右子树
+    fun pushDown(index: Int) {
+        val node = nodes[index]
+        if (node != null && node.mark != 0) {
+            val left = (index shl 1) + 1
+            val right = (index shl 1) + 2
+            nodes[left]!!.addMark(node.mark)  // 更新左子树的标志
+            nodes[right]!!.addMark(node.mark) // 更新右子树的标志
+            nodes[left]!!.data += node.mark   // 左子树的值加上标志值
+            nodes[right]!!.data += node.mark  // 右子树的值加上标志值
+            node.clearMark() // 清除当前节点的标志值
+        }
+    }
+
+    fun update(index: Int, start: Int, end: Int, dataAdd: Int) {
+        val node = nodes[index]
+        if (node == null || node.start > end || node.end < start) return
+
+        if (node.start >= start && node.end <= end) {
+            // 如果当前区间被包含在待查询区间之内， 则当前区间需要更新data, 同时被标记data更新量
+            node.data += dataAdd
+            node.addMark(dataAdd)
+            return
+        }
+
+        pushDown(index) // 更新左右子树之前进行扩展操作
+
+        val left = (index shl 1) + 1
+        val right = (index shl 1) + 2
+        update(left, start, end, dataAdd)
+        update(right, start, end, dataAdd)
+        node.data = minOf(nodes[left]!!.data, nodes[right]!!.data)
     }
 }
