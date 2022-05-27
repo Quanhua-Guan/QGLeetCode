@@ -3,6 +3,7 @@ package com.cqmh.qgleetcode
 import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
+import kotlin.collections.ArrayList
 
 
 /// 二分查找
@@ -7852,6 +7853,29 @@ class Solution74 {
     }
 }
 
+/// 933. 最近的请求次数
+class Solution933 {
+    class RecentCounter() {
+        /**
+         * Your RecentCounter object will be instantiated and called as such:
+         * var obj = RecentCounter()
+         * var param_1 = obj.ping(t)
+         */
+        val timeIntervals = LinkedList<Int>()
+        val capacity = 3001
+
+        fun ping(t: Int): Int {
+            val target = t - 3000
+            timeIntervals.offerLast(t)
+            while (timeIntervals.peekFirst() < target) {
+                timeIntervals.removeFirst()
+            }
+            return timeIntervals.size
+        }
+    }
+}
+
+
 /// 699. 掉落的方块
 class Solution699 {
     fun fallingSquares(positions: Array<IntArray>): List<Int> {
@@ -7875,5 +7899,49 @@ class Solution699 {
             heights[i] = Math.max(heights[i], heights[i - 1])
         }
         return heights
+    }
+
+    /// 有序集合
+    fun fallingSquares_SortedMap(positions: Array<IntArray>): List<Int> {
+        val n = positions.size
+        val ret = ArrayList<Int>()
+        val heightMap = TreeMap<Int, Int>() // SortedMap 对 key 值进行排序的 Map
+        heightMap[0] = 0
+
+        for (i in 0 until n) {
+            val size = positions[i][1]
+            val left = positions[i][0]
+            val right = left + size - 1
+            val lp = heightMap.higherKey(left)  // 大于 left 的最小 key 值
+            val rp = heightMap.higherKey(right) // 大于 right 的最小 key 值
+            val prevRightKey = if (rp != null) heightMap.lowerKey(rp) else heightMap.lastKey()
+            // 记录 right + 1 对应的堆叠高度 (如果 right + 1 不在 heightMap 中)
+            var rHeight = if (prevRightKey != null) heightMap[prevRightKey]!! else 0
+
+            // 更新第 i 个掉落的访客的堆叠高度
+            var height = 0
+            val prevLeftKey = if (lp != null) heightMap.lowerKey(lp) else heightMap.lastKey()
+
+            val tail = if (prevLeftKey != null) heightMap.tailMap(prevLeftKey) else heightMap
+            for (entry in tail.entries) {
+                if (entry.key == rp) break
+                height = maxOf(height, entry.value + size)
+            }
+
+            // 清除 heightMap 中位于 (left, right] 内的点
+            val keySet = TreeSet(tail.keys)
+            for (tmp in keySet) {
+                if (lp == null || tmp < lp) continue
+                if (rp != null && tmp >= rp) break
+                heightMap.remove(tmp)
+            }
+
+            heightMap[left] = height
+            if (rp == null || rp != right + 1) {
+                heightMap[right + 1] = rHeight
+            }
+            ret.add(if (i > 0) maxOf(ret[i - 1], height) else height)
+        }
+        return ret
     }
 }
