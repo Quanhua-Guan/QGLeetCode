@@ -7975,3 +7975,83 @@ class SolutionMS17_11 {
         return min
     }
 }
+
+/// 153. 寻找旋转排序数组中的最小值
+class Solution153 {
+    fun findMin_(nums: IntArray, from: Int = 0, to: Int = nums.size - 1): Int {
+        var left = from
+        var right = to
+        if (left < right) {
+            val mid = (left + right) ushr 1
+            val midValue = nums[mid]
+            if (midValue >= nums[from]) {
+                // from..mid 有序, mid+1..to 旋转
+                val leftMin = nums[from]
+                val rightMin = findMin_(nums, mid + 1, to)
+                return minOf(leftMin, rightMin)
+            } else{ // midValue < nums[from]
+                // from..mid 旋转, mid+1..to 有序
+                val leftMin = findMin_(nums, from, mid)
+                val rightMin = nums[mid + 1]
+                return minOf(leftMin, rightMin)
+            }
+        }
+        return nums[left]
+    }
+
+    fun findMin(nums: IntArray): Int {
+        return findMin_(nums)
+    }
+
+    fun findMin_FastBinary(nums: IntArray): Int {
+        val first = nums[0]
+        val last = nums[nums.size - 1]
+        if (first <= last) return first
+
+        // first > last
+        var left = 0
+        var right = nums.size - 1
+        while (left < right) {
+            val mid = (left + right) ushr 1
+            val midVal = nums[mid]
+            if (midVal >= first) {
+                // 前半部分 有序, 后半部分 [mid + 1, to] 旋转, 最小值在 后半部分
+                left = mid + 1
+            } else /* if (midVal < last)*/ { // midVal < first && midVal < last
+                // 前半部分 [from, mid] 翻转, 后半部分 有序, 最小值在 前半部分
+                right = mid
+            } /*else { // midVal < first && midVal > last
+                //(1) midVal < first, 说明 [0..mid] 是旋转数组
+                //(2) midVal > last, 说明 [mid..nums.size-1] 是旋转数组
+                //(1)和(2)是互相冲突的, 所以此处不可能被执行到.
+            }*/
+        }
+        return nums[left]
+    }
+}
+
+/// 162. 寻找峰值
+class Solution162 {
+    fun findPeakElement(nums: IntArray): Int {
+        var left = 0
+        var right = nums.size - 1
+
+        while (left <= right) {
+            var mid = (left + right) ushr 1
+            val midVal = nums[mid]
+            val leftLessThanMid = (mid == 0 || (mid - 1 >= 0 && nums[mid - 1] < midVal))
+            val rightLessThanMid = (mid == nums.size - 1 || (mid + 1 < nums.size && nums[mid + 1] < midVal))
+            if (leftLessThanMid && rightLessThanMid) {
+                return mid
+            } else if (leftLessThanMid) {
+                left = mid + 1
+            } else /* if (rightLessThanMid) */ {
+                right = mid - 1
+            } /* else { // mid 是低谷, 往左或往右都行
+                left = mid + 1
+                // right = mid - 1
+            }*/
+        }
+        return -1
+    }
+}
