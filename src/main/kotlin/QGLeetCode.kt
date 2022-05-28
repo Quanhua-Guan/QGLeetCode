@@ -7549,7 +7549,7 @@ class Solution190 {
     /// 双指针, 高低位互换
 
     // you need treat n as an unsigned value
-    fun reverseBits_TwoPointers(n:Int):Int {
+    fun reverseBits_TwoPointers(n: Int): Int {
         var n = n
         var low = 0
         var high = Int.SIZE_BITS - 1
@@ -7584,7 +7584,7 @@ class Solution190 {
     //// byte flip 2,4,8,16,32
 
     // you need treat n as an unsigned value
-    fun reverseBits_BITS(n:Int):Int {
+    fun reverseBits_BITS(n: Int): Int {
         var i = n
         // 0x11111111111111111111111111111111
 
@@ -7695,11 +7695,15 @@ class Solution48 {
             }
             // 右边 -> 底边, 底边存放到顶边
             for (i in start until end) {
-                matrix[start][i] = matrix[end][end - (i - start)].also { matrix[end][end - (i - start)] = matrix[start][i] }
+                matrix[start][i] = matrix[end][end - (i - start)].also {
+                    matrix[end][end - (i - start)] = matrix[start][i]
+                }
             }
             // 底边 -> 左边, 左边 -> 顶边
             for (i in start until end) {
-                matrix[start][i] = matrix[end - (i - start)][start].also { matrix[end - (i - start)][start] = matrix[start][i] }
+                matrix[start][i] = matrix[end - (i - start)][start].also {
+                    matrix[end - (i - start)][start] = matrix[start][i]
+                }
             }
             start++
             end--
@@ -7890,7 +7894,10 @@ class Solution699 {
                 val preLeft = positions[j][0]
                 val preRight = preLeft + preHeight - 1
                 if (curRight >= preLeft && preRight >= curLeft) { // 判断重合
-                    curHeight = Math.max(curHeight, heights[j] + positions[i][1]) // positions[i][1]不能用curHeight代替, 因为curHeight会变换.
+                    curHeight = Math.max(
+                        curHeight,
+                        heights[j] + positions[i][1]
+                    ) // positions[i][1]不能用curHeight代替, 因为curHeight会变换.
                 }
             }
             heights.add(curHeight)
@@ -7988,7 +7995,7 @@ class Solution153 {
                 val leftMin = nums[from]
                 val rightMin = findMin_(nums, mid + 1, to)
                 return minOf(leftMin, rightMin)
-            } else{ // midValue < nums[from]
+            } else { // midValue < nums[from]
                 // from..mid 旋转, mid+1..to 有序
                 val leftMin = findMin_(nums, from, mid)
                 val rightMin = nums[mid + 1]
@@ -8039,7 +8046,8 @@ class Solution162 {
             var mid = (left + right) ushr 1
             val midVal = nums[mid]
             val leftLessThanMid = (mid == 0 || (mid - 1 >= 0 && nums[mid - 1] < midVal))
-            val rightLessThanMid = (mid == nums.size - 1 || (mid + 1 < nums.size && nums[mid + 1] < midVal))
+            val rightLessThanMid =
+                (mid == nums.size - 1 || (mid + 1 < nums.size && nums[mid + 1] < midVal))
             if (leftLessThanMid && rightLessThanMid) {
                 return mid
             } else if (leftLessThanMid) {
@@ -8056,9 +8064,9 @@ class Solution162 {
 }
 
 /// 线段树
-class SegmentTree (val nums: IntArray) {
+class SegmentTree(val nums: IntArray) {
 
-    class Node (var start: Int, var end: Int) {
+    class Node(var start: Int, var end: Int) {
         var data: Int = 0
         var mark = 0
 
@@ -8076,6 +8084,7 @@ class SegmentTree (val nums: IntArray) {
     }
 
     var nodes: MutableList<Node?>
+
     init {
         nodes = MutableList<Node?>(nums.size) { null }
         build(0)
@@ -8155,5 +8164,101 @@ class SegmentTree (val nums: IntArray) {
         update(left, start, end, dataAdd)
         update(right, start, end, dataAdd)
         node.data = minOf(nodes[left]!!.data, nodes[right]!!.data)
+    }
+}
+
+/**
+ * Example:
+ * var li = ListNode(5)
+ * var v = li.`val`
+ * Definition for singly-linked list.
+ * class ListNode(var `val`: Int) {
+ *     var next: ListNode? = null
+ * }
+ */
+/// 83. 删除排序链表中的重复元素 II
+class Solution83 {
+    fun deleteDuplicates(head: ListNode?): ListNode? {
+        var prehead = ListNode(-1000)
+        prehead.next = head
+        var current = prehead
+        while (current.next != null) {
+            val next = current.next!!
+            if (current.`val` == next.`val`) {
+                // 删除 next
+                current.next = next.next
+            } else {
+                current = current.next!!
+            }
+        }
+        return prehead.next
+    }
+}
+
+/// 82. 删除排序链表中的重复元素 II
+class Solution82 {
+    fun deleteDuplicates(head: ListNode?): ListNode? {
+        val prehead = ListNode(-1000)
+        prehead.next = head
+        var current: ListNode? = prehead
+        while (current?.next != null) {
+            var next = current!!.next
+            while (next != null && next!!.`val` == next!!.next?.`val`) {
+                next = next!!.next
+            }
+            if (current!!.next != next) {
+                current!!.next = next?.next
+            } else {
+                current = current!!.next
+            }
+        }
+        return prehead.next
+    }
+
+    fun deleteDuplicates1(head: ListNode?): ListNode? {
+        val prehead = ListNode(-1000)
+        prehead.next = head
+        var current: ListNode? = prehead
+
+        while (current?.next != null) {
+            var next = current!!.next
+            while (next != null && next!!.`val` == next!!.next?.`val`) next = next!!.next
+
+            if (current!!.next == next) {
+                current = next
+            } else {
+                current!!.next = next?.next
+            }
+        }
+
+        return prehead.next
+    }
+}
+
+/// 1021. 删除最外层的括号
+class Solution1021 {
+    fun removeOuterParentheses(s: String): String {
+        val result = StringBuffer()
+
+        var leftCount = 0
+        var rightCount = 0
+        var start = 0
+        for (c in s) {
+            if (c == '(') {
+                leftCount++
+            } else {
+                rightCount++
+            }
+            if (leftCount == rightCount) {
+                val end = start + leftCount + rightCount
+                result.append(s.substring(start + 1, end - 1))
+
+                leftCount = 0
+                rightCount = 0
+                start = end
+            }
+        }
+
+        return result.toString()
     }
 }
