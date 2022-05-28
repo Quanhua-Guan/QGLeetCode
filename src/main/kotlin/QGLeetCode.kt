@@ -8262,3 +8262,60 @@ class Solution1021 {
         return result.toString()
     }
 }
+
+/// 300. 最长递增子序列
+class Solution300 {
+    fun lengthOfLIS_dp(nums: IntArray): Int {
+        val n = nums.size
+        var dp = IntArray(n)
+        dp[0] = 1
+
+        var max = dp[0]
+        for (i in 1 until n) {
+            dp[i] = 1
+            for (j in 0 until i) {
+                if (nums[j] < nums[i]) {
+                    dp[i] = maxOf(dp[i], dp[j] + 1)
+                }
+            }
+            max = maxOf(max, dp[i])
+        }
+
+        return max
+    }
+
+    // 二分
+    fun lengthOfLIS(nums: IntArray): Int {
+        val n = nums.size
+
+        var min = IntArray(n + 1) // min[i] 代表长度为i的严格递增子序列最小的最后一位数字
+        min[1] = nums[0]
+        var len = 1
+
+        for (i in 1 until nums.size) {
+            if (nums[i] > min[len]) {
+                min[++len] = nums[i]
+            } else {
+                val target = nums[i]
+                var l = 1
+                var r = len
+                var pos = 0
+                // 找到第一个小于target的最大值（越大对应的长度越长）
+                while (l <= r) {
+                    val mid = (l + r) ushr 1
+                    if (min[mid] < target && (mid == len || min[mid + 1] >= target)) {
+                        pos = mid
+                        break
+                    }
+                    if (min[mid] < target) {
+                        l = mid + 1
+                    } else { // min[mid] >= target
+                        r = mid - 1
+                    }
+                }
+                min[pos + 1] = target
+            }
+        }
+        return len
+    }
+}
