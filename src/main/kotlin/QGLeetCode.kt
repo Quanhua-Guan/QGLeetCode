@@ -8827,3 +8827,41 @@ class Solution1049 {
         return summ - maxValue * 2
     }
 }
+
+/**
+ * Example:
+ * var ti = TreeNode(5)
+ * var v = ti.`val`
+ * Definition for a binary tree node.
+ * class TreeNode(var `val`: Int) {
+ *     var left: TreeNode? = null
+ *     var right: TreeNode? = null
+ * }
+ */
+/// 1022. 从根到叶的二进制数之和
+class Solution1022 {
+    var numbers = mutableListOf<Int>()
+    fun travel(cur: Int, node: TreeNode?) {
+        if (node == null) {
+            return
+        }
+
+        var cur = (cur shl 1) + node!!.`val`
+        if (node!!.left == null && node!!.right == null) {
+            numbers.add(cur)
+            return
+        }
+
+        if (node!!.left != null) {
+            travel(cur, node!!.left)
+        }
+        if (node!!.right != null) {
+            travel(cur, node!!.right)
+        }
+    }
+
+    fun sumRootToLeaf(root: TreeNode?): Int {
+        travel(0, root)
+        return numbers.sum()
+    }
+}
