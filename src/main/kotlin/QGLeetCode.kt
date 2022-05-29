@@ -8543,3 +8543,20 @@ class SolutionLCP55 {
         return totalTime
     }
 }
+
+/// 2279. 装满石头的背包的最大数量
+class Solution2279 {
+    fun maximumBags(capacity: IntArray, rocks: IntArray, additionalRocks: Int): Int {
+        var remains = capacity.mapIndexed { i, c -> c - rocks[i]}.toMutableList()
+        remains.sort()
+        var fullBagCount = 0
+        var rocksCount = additionalRocks
+        for (r in remains) {
+            if (r <= rocksCount) {
+                rocksCount -= r
+                fullBagCount++
+            }
+        }
+        return fullBagCount
+    }
+}
