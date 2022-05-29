@@ -8319,3 +8319,85 @@ class Solution300 {
         return len
     }
 }
+
+/// 468. 验证IP地址
+class Solution468 {
+    fun isValidIPv4Segment(segment: String): Boolean {
+        // 空，长度小于1或大于3，无效
+        if (segment == null || segment.isEmpty() || segment.length > 3) {
+            return false
+        }
+        // 前导0（长度大于1），无效
+        if (segment.length > 1 && segment[0] == '0') return false
+        // 包含非0~9字符，无效
+        var value = 0
+        for (i in segment.indices) {
+            val c = segment[i]
+            if (c in '0'..'9') {
+                value = value * 10 + (c - '0')
+            } else {
+                return false
+            }
+        }
+        // 数字范围 0~255，有效，否则无效
+        return value in 0..255
+    }
+
+    fun isValidIPv6Segment(segment: String): Boolean {
+        // 空，长度小于1或大于4，无效
+        if (segment == null || segment.isEmpty() || segment.length > 4) {
+            return false
+        }
+        // 包含非 0~9，a~f 的字符，无效
+        var value = 0
+        for (i in segment.indices) {
+            val c = segment[i]
+            if (c in '0'..'9') {
+                value = value * 16 + (c - '0')
+            } else if (c in 'a'..'f') {
+                value = value * 16 + (c - 'a' + 10)
+            } else if (c in 'A'..'F') {
+                value = value * 16 + (c - 'A' + 10)
+            } else {
+                return false
+            }
+        }
+        // 数字范围 0~0xFFFF
+        return value in 0..0xFFFF
+    }
+
+    fun validIPAddress(queryIP: String): String {
+        if (queryIP.contains('.')) {
+            // 可能是IPv4
+            val segments = queryIP.split(".")
+            if (segments.size == 4) {
+                var valid = true
+                for (segment in segments) {
+                    if (!isValidIPv4Segment(segment)) {
+                        valid = false
+                        break
+                    }
+                }
+                if (valid) {
+                    return "IPv4"
+                }
+            }
+        } else if (queryIP.contains(':')) {
+            // 可能是IPv6
+            val segments = queryIP.split(":")
+            if (segments.size == 8) {
+                var valid = true
+                for (segment in segments) {
+                    if (!isValidIPv6Segment(segment)) {
+                        valid = false
+                        break
+                    }
+                }
+                if (valid) {
+                    return "IPv6"
+                }
+            }
+        }
+        return "Neither"
+    }
+}
