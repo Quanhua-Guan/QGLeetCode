@@ -4367,6 +4367,26 @@ class Solution11 {
     }
 }
 
+class Solution11_20220529 {
+    fun maxArea(height: IntArray): Int {
+        var left = 0
+        var right = height.size - 1
+
+        var max = 0
+        while (left < right) {
+            if (height[left] < height[right]) {
+                max = maxOf(max, (right - left) * height[left])
+                left++
+            } else {
+                max = maxOf(max, (right - left) * height[right])
+                right--
+            }
+        }
+
+        return max
+    }
+}
+
 /// 344. 反转字符串
 class Solution344 {
     fun reverseString(s: CharArray): Unit {
@@ -8461,5 +8481,65 @@ class Solution844 {
         }
 
         return true
+    }
+}
+
+/// 986. 区间列表的交集
+class Solution986 {
+    /// 暴力
+    fun intervalIntersection_Force(firstList: Array<IntArray>, secondList: Array<IntArray>): Array<IntArray> {
+        var result = mutableListOf<IntArray>()
+
+        for (second in secondList) {
+            for (first in firstList) {
+                if (first[0] <= second[1] && first[1] >= second[0]) {
+                    result.add(intArrayOf(maxOf(first[0], second[0]), minOf(first[1], second[1])))
+                }
+                if (first[0] > second[1]) {
+                    break
+                }
+            }
+        }
+
+        return result.toTypedArray()
+    }
+
+    // 双指针
+    fun intervalIntersection_TwoPointers(firstList: Array<IntArray>, secondList: Array<IntArray>): Array<IntArray> {
+        var result = mutableListOf<IntArray>()
+
+        var i = 0
+        var j = 0
+        while (j < secondList.size) {
+            while (i < firstList.size) {
+                val first = firstList[i]
+                val second = secondList[j]
+                if (first[0] <= second[1] && first[1] >= second[0]) {
+                    result.add(intArrayOf(maxOf(first[0], second[0]), minOf(first[1], second[1])))
+                }
+                if (first[1] >= second[1]) {
+                    break
+                }
+                i++
+            }
+            j++
+        }
+
+        return result.toTypedArray()
+    }
+}
+
+/// LCP 55. 采集果实
+class SolutionLCP55 {
+    fun getMinimumTime(time: IntArray, fruits: Array<IntArray>, limit: Int): Int {
+        var totalTime = 0
+
+        for (fruit in fruits) {
+            val type = fruit[0]
+            val count = fruit[1]
+            totalTime += Math.ceil(count * 1.0 / limit).toInt() * time[type]
+        }
+
+        return totalTime
     }
 }
