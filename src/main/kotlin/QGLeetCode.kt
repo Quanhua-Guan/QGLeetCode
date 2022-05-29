@@ -8500,7 +8500,10 @@ class Solution844 {
 /// 986. 区间列表的交集
 class Solution986 {
     /// 暴力
-    fun intervalIntersection_Force(firstList: Array<IntArray>, secondList: Array<IntArray>): Array<IntArray> {
+    fun intervalIntersection_Force(
+        firstList: Array<IntArray>,
+        secondList: Array<IntArray>
+    ): Array<IntArray> {
         var result = mutableListOf<IntArray>()
 
         for (second in secondList) {
@@ -8518,7 +8521,10 @@ class Solution986 {
     }
 
     // 双指针
-    fun intervalIntersection_TwoPointers(firstList: Array<IntArray>, secondList: Array<IntArray>): Array<IntArray> {
+    fun intervalIntersection_TwoPointers(
+        firstList: Array<IntArray>,
+        secondList: Array<IntArray>
+    ): Array<IntArray> {
         var result = mutableListOf<IntArray>()
 
         var i = 0
@@ -8560,7 +8566,7 @@ class SolutionLCP55 {
 /// 2279. 装满石头的背包的最大数量
 class Solution2279 {
     fun maximumBags(capacity: IntArray, rocks: IntArray, additionalRocks: Int): Int {
-        var remains = capacity.mapIndexed { i, c -> c - rocks[i]}.toMutableList()
+        var remains = capacity.mapIndexed { i, c -> c - rocks[i] }.toMutableList()
         remains.sort()
         var fullBagCount = 0
         var rocksCount = additionalRocks
@@ -8590,9 +8596,9 @@ class SolutionBag01 {
 
         mem[i][cw] = true
 
-        recall(i+1, cw) // 选择不装入第i个物品
+        recall(i + 1, cw) // 选择不装入第i个物品
         if (cw + weight[i] <= w) {
-            recall(i+1, cw + weight[i]) // 选择装入第i个物品
+            recall(i + 1, cw + weight[i]) // 选择装入第i个物品
         }
     }
 
@@ -8613,7 +8619,7 @@ class SolutionBag01 {
                     states[i][j] = true
                 }
             }
-            for (j in 0..(w-weight[i])) {
+            for (j in 0..(w - weight[i])) {
                 // 把第i个物品房屋背包
                 if (states[i - 1][j]) {
                     states[i][j + weight[i]] = true
@@ -8641,7 +8647,7 @@ class SolutionBag01 {
             states[weight[0]] = true
         }
         for (i in 1 until weight.size) {
-            for (j in (w-weight[i]) downTo 0) {
+            for (j in (w - weight[i]) downTo 0) {
                 // 把第i个物品房屋背包
                 if (states[j]) {
                     states[j + weight[i]] = true
@@ -8727,7 +8733,7 @@ class Solution416 {
             for (j in 0 until sum + 1) {
                 if (states[i - 1][j]) states[i][j] = true // 不选择第i个数
             }
-            for (j in (sum-nums[i]) downTo 0) {
+            for (j in (sum - nums[i]) downTo 0) {
                 if (states[i - 1][j]) states[i][j + nums[i]] = true
             }
         }
@@ -8748,10 +8754,76 @@ class Solution416 {
             states[nums[0]] = true
         }
         for (i in 1 until n) { // 一次迭代决定是否需要选择一个数，第i次即nums[i]
-            for (j in (sum-nums[i]) downTo 0) {
+            for (j in (sum - nums[i]) downTo 0) {
                 if (states[j]) states[j + nums[i]] = true
             }
         }
         return states[sum]
+    }
+}
+
+/// 1049. 最后一块石头的重量 II
+class Solution1049 {
+    fun lastStoneWeightII(stones: IntArray): Int {
+        val summ = stones.sum()
+        var sum = summ / 2
+        val n = stones.size
+
+        // states[i][j] 代表从stones[0..i] 中选出若干石头，满足它们的重量和为j，states[i][j]记录此时的重量和。
+        val states = Array(n) { IntArray(sum + 1) { -1 } }
+        states[0][0] = 0
+        if (stones[0] <= sum) {
+            states[0][stones[0]] = stones[0]
+        }
+        for (i in 1 until n) {
+            // 不选择第 i 个石头
+            for (j in 0 until sum + 1) {
+                if (states[i - 1][j] >= 0) states[i][j] = states[i - 1][j]
+            }
+
+            // 选择第 i 个石头，则目标重量为 0..sum-stones[i]
+            for (j in sum - stones[i] downTo 0) {
+                if (states[i - 1][j] >= 0) {
+                    val v = states[i - 1][j] + stones[i]
+                    if (v > states[i][j + stones[i]]) {
+                        states[i][j + stones[i]] = v
+                    }
+                }
+            }
+        }
+        var maxValue = 0
+        for (j in sum downTo 0) {
+            if (states[n - 1][j] > maxValue) maxValue = states[n - 1][j]
+        }
+        return summ - maxValue * 2
+    }
+
+    fun lastStoneWeightII_op(stones: IntArray): Int {
+        val summ = stones.sum()
+        var sum = summ / 2
+        val n = stones.size
+
+        // states[i][j] 代表从stones[0..i] 中选出若干石头，满足它们的重量和为j，states[i][j]记录此时的重量和。
+        val states = IntArray(sum + 1) { -1 }
+        states[0] = 0
+        if (stones[0] <= sum) {
+            states[stones[0]] = stones[0]
+        }
+        for (i in 1 until n) {
+            // 选择第 i 个石头，则目标重量为 0..sum-stones[i]
+            for (j in sum - stones[i] downTo 0) {
+                if (states[j] >= 0) {
+                    val v = states[j] + stones[i]
+                    if (v > states[j + stones[i]]) {
+                        states[j + stones[i]] = v
+                    }
+                }
+            }
+        }
+        var maxValue = 0
+        for (j in sum downTo 0) {
+            if (states[j] > maxValue) maxValue = states[j]
+        }
+        return summ - maxValue * 2
     }
 }
