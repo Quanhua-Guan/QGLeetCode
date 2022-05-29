@@ -8707,3 +8707,51 @@ class SolutionBag01 {
         return maxValue
     }
 }
+
+/// 416. 分割等和子集
+class Solution416 {
+    fun canPartition(nums: IntArray): Boolean {
+        /// 先计算总和 sum，然后问题转化为从 nums 中选出若干个数，使它们的和为 sum/2
+        var sum = nums.sum()
+        if (sum and 1 == 1) return false // 奇数，必然无法等分为2份
+        sum = sum ushr 1 // 确定目标值
+
+        val n = nums.size
+        // states[i][j] 代表从 nums[0..i] 中选出若干数字，且保证它们的和为 j 是否可能。
+        val states = Array(n) { BooleanArray(sum + 1) }
+        states[0][0] = true
+        if (nums[0] <= sum) {
+            states[0][nums[0]] = true
+        }
+        for (i in 1 until n) { // 一次迭代决定是否需要选择一个数，第i次即nums[i]
+            for (j in 0 until sum + 1) {
+                if (states[i - 1][j]) states[i][j] = true // 不选择第i个数
+            }
+            for (j in (sum-nums[i]) downTo 0) {
+                if (states[i - 1][j]) states[i][j + nums[i]] = true
+            }
+        }
+        return states[n - 1][sum]
+    }
+
+    fun canPartition_op(nums: IntArray): Boolean {
+        /// 先计算总和 sum，然后问题转化为从 nums 中选出若干个数，使它们的和为 sum/2
+        var sum = nums.sum()
+        if (sum and 1 == 1) return false // 奇数，必然无法等分为2份
+        sum = sum ushr 1 // 确定目标值
+
+        val n = nums.size
+        // states[i][j] 代表从 nums[0..i] 中选出若干数字，且保证它们的和为 j 是否可能。
+        val states = BooleanArray(sum + 1)
+        states[0] = true
+        if (nums[0] <= sum) {
+            states[nums[0]] = true
+        }
+        for (i in 1 until n) { // 一次迭代决定是否需要选择一个数，第i次即nums[i]
+            for (j in (sum-nums[i]) downTo 0) {
+                if (states[j]) states[j + nums[i]] = true
+            }
+        }
+        return states[sum]
+    }
+}
