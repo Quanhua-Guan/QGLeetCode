@@ -4814,6 +4814,19 @@ class Solution198_20220523 {
     }
 }
 
+class Solution198_20220529 {
+    fun rob(nums: IntArray): Int {
+        var amount = IntArray(nums.size)
+        amount[0] = nums[0]
+        if (nums.size > 1) {
+            amount[1] = maxOf(nums[0], nums[1])
+        }
+        for (i in 2 until nums.size) {
+            amount[i] = maxOf(amount[i - 1], amount[i - 2] + nums[i])
+        }
+        return amount[nums.size - 1]
+    }
+}
 
 /// 213. 打家劫舍 II
 class Solution213 {
