@@ -1,5 +1,6 @@
 package com.cqmh.qgleetcode
 
+import java.lang.StringBuilder
 import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
@@ -8399,5 +8400,66 @@ class Solution468 {
             }
         }
         return "Neither"
+    }
+}
+
+/// 844. 比较含退格的字符串
+class Solution844 {
+    fun backspaceCompare1(left: String, right: String): Boolean {
+        fun process(s: String): String {
+            var sb = StringBuilder()
+            for (c in s) {
+                if (c == '#') {
+                    if (sb.isNotEmpty()) {
+                        sb.delete(sb.length - 1, sb.length)
+                    }
+                } else {
+                    sb.append(c)
+                }
+            }
+            return sb.toString()
+        }
+        return process(left) == process(right)
+    }
+
+    fun backspaceCompare(left: String, right: String): Boolean {
+        var l = left.length - 1
+        var r = right.length - 1
+        while (l >= 0 || r >= 0) { // 从后往前遍历
+            var hashCount = 0
+            while (l >= 0 && left[l] == '#') { // 判断是否可以继续统计 # 号个数和删除左侧非 # 号的字符
+                while (l >= 0 && left[l] == '#') { // 记录当前 # 号个数，下标左移
+                    hashCount++
+                    l--
+                }
+                while (hashCount > 0 && l >= 0 && left[l] != '#') { // 用 # 号抵消非 # 号字符
+                    hashCount--
+                    l--
+                }
+            }
+            val lc = if (hashCount > 0 || l < 0) null else left[l] // 取字符
+
+            hashCount = 0
+            while (r >= 0 && right[r] == '#') {
+                while (r >= 0 && right[r] == '#') {
+                    hashCount++
+                    r--
+                }
+                while (hashCount > 0 && r >= 0 && right[r] != '#') {
+                    hashCount--
+                    r--
+                }
+            }
+            val rc = if (hashCount > 0 || r < 0) null else right[r]
+
+            if (lc != rc) {
+                return false
+            } else {
+                l--
+                r--
+            }
+        }
+
+        return true
     }
 }
