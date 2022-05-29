@@ -8573,3 +8573,137 @@ class Solution2279 {
         return fullBagCount
     }
 }
+
+class SolutionBag01 {
+    var maxW = Int.MIN_VALUE
+    val weight = intArrayOf(2, 2, 4, 6, 3)
+    val n = weight.size
+    val w = 9
+    var mem = Array(n) { BooleanArray(9 + 1) }
+    fun recall(i: Int, cw: Int) {
+        if (cw == w || i == n) { // cw==w表示装满了，i==n表示物品都考察完了
+            if (cw > maxW) maxW = cw
+            return
+        }
+
+        if (mem[i][cw]) return
+
+        mem[i][cw] = true
+
+        recall(i+1, cw) // 选择不装入第i个物品
+        if (cw + weight[i] <= w) {
+            recall(i+1, cw + weight[i]) // 选择装入第i个物品
+        }
+    }
+
+    /// 求最大重量
+    fun knapsack01(weight: IntArray, w: Int): Int {
+        // states[i][j] 代表从第0~i个物品中选出若干物品装入背包，且要保证背包重量为j，这种情况是否可行，
+        // 可行则 states[i][j] = true, 不可行则 states[i][j] = false
+        // 显然，state[0][0] = true, 如果 weight[0] <= w, 则 state[0][weight[0]]=true
+        val states = Array(weight.size) { BooleanArray(w + 1) }
+        states[0][0] = true
+        if (weight[0] <= w) {
+            states[0][weight[0]] = true
+        }
+        for (i in 1 until weight.size) {
+            for (j in 0 until w + 1) {
+                // 不把第i个物品放入背包
+                if (states[i - 1][j]) {
+                    states[i][j] = true
+                }
+            }
+            for (j in 0..(w-weight[i])) {
+                // 把第i个物品房屋背包
+                if (states[i - 1][j]) {
+                    states[i][j + weight[i]] = true
+                }
+            }
+        }
+        for (j in w downTo 0) {
+            if (states[n - 1][j]) return j
+        }
+        return 0
+    }
+
+    /// 求最大重量
+    fun knapsack01_op(weight: IntArray, w: Int): Int {
+        // states[j] 代表从第所有物品中选出若干物品装入背包，且要保证背包重量为j，这种情况是否可行，
+        // 可行则 states[j] = true, 不可行则 states[j] = false
+        // 显然，state[0] = true, 如果 weight[0] <= w, 则 state[weight[0]]=true
+        //
+        // 按照 knapsack01 的思路，可以从第一个物品开始处理，逐步扩大使用到的物品的个数，实际的思路和 knapsack01 是
+        // 一致的，只是进行了空间优化。
+        //
+        val states = BooleanArray(w + 1)
+        states[0] = true
+        if (weight[0] <= w) {
+            states[weight[0]] = true
+        }
+        for (i in 1 until weight.size) {
+            for (j in (w-weight[i]) downTo 0) {
+                // 把第i个物品房屋背包
+                if (states[j]) {
+                    states[j + weight[i]] = true
+                }
+            }
+        }
+        for (j in w downTo 0) {
+            if (states[j]) return j
+        }
+        return 0
+    }
+
+    /// 求最大价值
+    fun knapsack01Plus(weight: IntArray, value: IntArray, w: Int): Int {
+        val n = weight.size
+        val states = Array(n) { IntArray(w + 1) { -1 } }
+        states[0][0] = 0
+        if (weight[0] < w) {
+            states[0][weight[0]] = value[0]
+        }
+
+        for (i in 1 until n) {
+            for (j in 0..w) {
+                if (states[i - 1][j] >= 0) states[i][j] = states[i - 1][j]
+            }
+            for (j in 0..(w - weight[i])) {
+                if (states[i - 1][j] >= 0) {
+                    val v = states[i - 1][j] + value[i]
+                    if (v > states[i - 1][j + weight[i]]) states[i - 1][j + weight[i]] = v
+                }
+            }
+        }
+
+        var maxValue = -1
+        for (j in 0 until w + 1) {
+            if (states[n - 1][j] > maxValue) maxValue = states[n - 1][j]
+        }
+        return maxValue
+    }
+
+    /// 求最大价值
+    fun knapsack01Plus_op(weight: IntArray, value: IntArray, w: Int): Int {
+        val n = weight.size
+        val states = IntArray(w + 1) { -1 }
+        states[0] = 0
+        if (weight[0] < w) {
+            states[weight[0]] = value[0]
+        }
+
+        for (i in 1 until n) {
+            for (j in (w - weight[i]) downTo 0) {
+                if (states[j] >= 0) {
+                    val v = states[j] + value[i]
+                    if (v > states[j + weight[i]]) states[j + weight[i]] = v
+                }
+            }
+        }
+
+        var maxValue = -1
+        for (j in 0 until w + 1) {
+            if (states[j] > maxValue) maxValue = states[j]
+        }
+        return maxValue
+    }
+}
