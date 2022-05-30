@@ -8902,3 +8902,36 @@ class Solution438 {
         return results
     }
 }
+
+/// 713. 乘积小于 K 的子数组
+class Solution713 {
+    fun numSubarrayProductLessThanK(nums: IntArray, k: Int): Int {
+        var count = 0
+        for (i in 0 until nums.size) {
+            var product = nums[i]
+            var j = i + 1
+            while (product < k) {
+                count++
+                if (j >= nums.size) break
+                product *= nums[j++]
+            }
+        }
+        return count
+    }
+
+    fun numSubarrayProductLessThanK_SlideWin(nums: IntArray, k: Int): Int {
+        val n = nums.size
+        var count = 0
+        var product = 1
+        var l = 0
+        for (r in 0 until n) {
+            product *= nums[r]
+            while (product >= k && l <= r) {
+                product /= nums[l]
+                l++
+            }
+            count += r - l + 1 // 字符串 abcd 以 d 结尾的子串个数为字符串 abcd 的长度
+        }
+        return count
+    }
+}
