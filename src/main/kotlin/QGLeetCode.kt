@@ -8865,3 +8865,40 @@ class Solution1022 {
         return numbers.sum()
     }
 }
+
+/// 438. 找到字符串中所有字母异位词
+class Solution438 {
+    fun findAnagrams(s: String, p: String): List<Int> {
+        if (p.length > s.length) return listOf()
+
+        val currentChars = IntArray(26)
+        val chars = IntArray(26)
+        fun isEqual(): Boolean {
+            for (i in currentChars.indices) {
+                if (chars[i] != currentChars[i]) return false
+            }
+            return true
+        }
+
+        for (c in p) {
+            chars[c - 'a'] += 1
+        }
+
+        val results = mutableListOf<Int>()
+        for (i in 0 until p.length - 1) {
+            currentChars[s[i] - 'a'] += 1
+        }
+        currentChars[s[p.length - 1] - 'a'] += 1
+        if (isEqual()) {
+            results.add(0)
+        }
+        for (i in p.length until s.length) {
+            currentChars[s[i - p.length] - 'a'] -= 1
+            currentChars[s[i] - 'a'] += 1
+            if (isEqual()) {
+                results.add(i - p.length + 1)
+            }
+        }
+        return results
+    }
+}
