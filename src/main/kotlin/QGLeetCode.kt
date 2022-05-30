@@ -8935,3 +8935,24 @@ class Solution713 {
         return count
     }
 }
+
+/// 209. 长度最小的子数组
+class Solution209 {
+    fun minSubArrayLen(target: Int, nums: IntArray): Int {
+        // 以nums中第i个数结尾的子数组，其中子数组和大于等于target长度最小的，记录下长度 （总是取最小）
+        var length = Int.MAX_VALUE
+
+        var sum = 0
+        var left = 0
+        for (right in 0 until nums.size) {
+            sum += nums[right]
+            while (sum >= target && left <= right) {
+                length = minOf(length, right - left + 1)
+                sum -= nums[left]
+                left++
+            }
+        }
+
+        return if (length == Int.MAX_VALUE) 0 else length
+    }
+}
