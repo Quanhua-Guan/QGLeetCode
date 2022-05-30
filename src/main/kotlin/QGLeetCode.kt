@@ -9008,3 +9008,30 @@ class Solution525 {
         return maxLen
     }
 }
+
+/// 325. 和等于 k 的最长子数组长度
+class Solution325 {
+    fun maxSubArrayLen(nums: IntArray, k: Int): Int {
+        val n = nums.size
+        /// 记录前缀和，遍历到 nums[i]，则计算 nums[0..i] 和为 sumBig,
+        /// 只需要在之前已经记录的前缀和中找到值为 sumBig - k 的，则说明可以构成目标和为 k 的连续子数组。
+        val sumIndices = mutableMapOf<Int, Int>()
+        sumIndices[0] = -1
+        var maxLen = 0
+        var sum = 0
+
+        for (i in 0 until n) {
+            sum += nums[i]
+
+            if (sumIndices.containsKey(sum - k)) {
+                val prevIndex = sumIndices[sum - k]!!
+                maxLen = maxOf(maxLen, i - prevIndex)
+            }
+
+            if (!sumIndices.containsKey(sum)) {
+                sumIndices[sum] = i
+            }
+        }
+        return maxLen
+    }
+}
