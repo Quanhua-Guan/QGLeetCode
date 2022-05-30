@@ -8956,3 +8956,55 @@ class Solution209 {
         return if (length == Int.MAX_VALUE) 0 else length
     }
 }
+
+/// 525. 连续数组
+class Solution525 {
+    fun findMaxLength(nums: IntArray): Int {
+        // 以 nums[i] 结尾的子数组中，含有相同0和1的，且长度最长的，获取其长度
+
+        val n = nums.size
+
+        // sum[i] 代表 nums[0..i] 特殊统计和（特殊统计和：将0视为-1，1不变）
+        val sum = IntArray(n)
+        sum[0] = if (nums[0] == 0) -1 else 1
+        for (i in 1 until n) {
+            sum[i] = sum[i - 1] + (if (nums[i] == 0) -1 else 1)
+        }
+
+        for (len in (if (n and 1 == 1) n - 1 else n) downTo 1 step 2) {
+            for (i in 0..(n - len)) {
+                val b = sum.getOrElse(i - 1) { 0 }
+                val a = sum[i + len - 1]
+                if (a - b == 0) {
+                    return len
+                }
+            }
+        }
+
+        return 0
+    }
+
+    /// 前缀和+哈希表
+    fun findMaxLength_preSum(nums: IntArray): Int {
+        val counterIndices = mutableMapOf<Int, Int>()
+        var counter = 0
+        counterIndices[counter] = -1 // 下标0坐标那个位置
+        var maxLen = 0
+
+        for (i in nums.indices) {
+            if (nums[i] == 1) {
+                counter++
+            } else {
+                counter--
+            }
+            if (counterIndices.containsKey(counter)) {
+                val prevIndex = counterIndices[counter]!!
+                maxLen = maxOf(maxLen, i - prevIndex)
+            } else {
+                counterIndices[counter] = i
+            }
+        }
+
+        return maxLen
+    }
+}
