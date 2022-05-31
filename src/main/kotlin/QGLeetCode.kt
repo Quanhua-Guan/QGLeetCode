@@ -6024,6 +6024,32 @@ class Solution695 {
     }
 }
 
+class Solution695_20220531 {
+    fun maxAreaOfIsland(grid: Array<IntArray>): Int {
+        val rowCount = grid.size
+        val colCount = grid[0].size
+
+        fun wipeAndCount(row: Int, col: Int): Int {
+            if (row < 0 || row >= rowCount || col < 0 || col >= colCount || grid[row][col] == 0) return 0
+
+            grid[row][col] = 0
+            return 1 + wipeAndCount(row + 1, col) + wipeAndCount(row - 1, col) + wipeAndCount(
+                row,
+                col + 1
+            ) + wipeAndCount(row, col - 1)
+        }
+
+        var maxCount = 0
+        for (r in 0 until rowCount) {
+            for (c in 0 until colCount) {
+                maxCount = maxOf(maxCount, wipeAndCount(r, c))
+            }
+        }
+
+        return maxCount
+    }
+}
+
 /// 215. 数组中的第K个最大元素
 class Solution215 {
     /*
@@ -6326,6 +6352,34 @@ class Solution200 {
         for (row in 0 until rowMax + 1) {
             for (col in 0 until colMax + 1) {
                 count += wipe(row, col)
+            }
+        }
+
+        return count
+    }
+}
+
+class Solution200_20220531 {
+    fun numIslands(grid: Array<CharArray>): Int {
+        val rowCount = grid.size
+        val colCount = grid[0].size
+
+        val dirs = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+        fun wipe(row: Int, col: Int): Int {
+            if (row in 0 until rowCount && col in 0 until colCount && grid[row][col] == '1') {
+                grid[row][col] = '0'
+                dirs.forEach { (dr, dc) ->
+                    wipe(row + dr, col + dc)
+                }
+                return 1
+            }
+            return 0
+        }
+
+        var count = 0
+        for (r in 0 until rowCount) {
+            for (c in 0 until colCount) {
+                count += wipe(r, c)
             }
         }
 
@@ -9033,5 +9087,117 @@ class Solution325 {
             }
         }
         return maxLen
+    }
+}
+
+/// 547. 省份数量
+class Solution547 {
+    fun findCircleNum(isConnected: Array<IntArray>): Int {
+        val rowCount = isConnected.size
+        val colCount = isConnected[0].size
+
+        fun wipe(row: Int): Int {
+            var count = 0
+            if (isConnected[row][row] == 1) {
+                isConnected[row][row] = 0
+                count = 1
+            }
+            for (col in 0 until colCount) {
+                if (isConnected[row][col] == 1) {
+                    isConnected[row][col] = 0
+                    isConnected[col][row] = 0
+                    wipe(col)
+                }
+            }
+            return count
+        }
+
+        var count = 0
+        for (row in 0 until rowCount) {
+            if (isConnected[row][row] == 1)
+                count += wipe(row)
+        }
+
+        return count
+    }
+}
+
+/// 269. 火星词典
+class Solution269 {
+    /// 提取所有字符 => 搜索字符与字符之前是否存在前后关系（构造有向图矩阵）=> 拓扑排序（找到环则说明无解）=> 输出拓扑排序结果字符串
+    fun alienOrder(words: Array<String>): String {
+        // wordRelation[i][j] 代表字母 'a'+i 和字母 'a'+j 的关系是否是小于关系，即是否 'a'+i < 'a'+j
+        // 默认 wordRelations[i][i] = false
+        var wordRelation = Array(26) { BooleanArray(26) }
+        var charSet = mutableSetOf<Char>()
+
+        val sortedWordsList = LinkedList(listOf(words))
+        while (sortedWordsList.isNotEmpty()) {
+            val sortedWords = sortedWordsList.pollFirst()
+            if (sortedWords.isEmpty()) continue
+
+            var suffixWords = mutableListOf<String>()
+
+            var hasNonempty = false
+            var prev: Char? = null
+            for (word in sortedWords) {
+                if (word.isEmpty()) {
+                    if (hasNonempty) {
+                        // ""(空串)排在非空串后面，比非空串大，不符合排序要求
+                        return ""
+                    }
+                    continue
+                }
+                hasNonempty = true
+                val c = word[0]
+                charSet.add(c)
+                if (prev == null) {
+                    prev = c
+                    suffixWords.add(word.substring(1))
+                } else if (prev != c) {
+                    wordRelation[prev - 'a'][c - 'a'] = true
+                    prev = c
+
+                    if (suffixWords.size >= 1) {
+                        sortedWordsList.offerLast(suffixWords.toTypedArray())
+                    }
+
+                    suffixWords.clear()
+                    suffixWords.add(word.substring(1))
+                } else {
+                    suffixWords.add(word.substring(1))
+                }
+            }
+            if (suffixWords.size >= 1) {
+                sortedWordsList.offerLast(suffixWords.toTypedArray())
+            }
+        }
+
+        val chars = mutableListOf<Char>()
+        while (charSet.isNotEmpty()) {
+            var lookFor: Char? = null
+            for (ci in charSet) {
+                var inDegree = 0
+                for (cj in charSet) {
+                    if (wordRelation[cj - 'a'][ci - 'a']) {
+                        inDegree++
+                    }
+                }
+                if (inDegree == 0) {
+                    lookFor = ci
+                    break
+                }
+            }
+
+            if (lookFor != null) {
+                charSet.remove(lookFor)
+                // 找到一个前驱节点 i
+                chars.add(lookFor)
+            } else {
+                return "" // 存在环
+            }
+        }
+
+        return chars.joinToString("")
     }
 }
