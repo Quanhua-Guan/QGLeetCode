@@ -6520,6 +6520,31 @@ class Solution116 {
     }
 }
 
+class Solution116_20220601 {
+
+    class Node(var `val`: Int) {
+        var left: Node? = null
+        var right: Node? = null
+        var next: Node? = null
+    }
+
+    fun conn(root: Node?) {
+        if (root == null || root.left == null) return
+
+        // root.left != null && root.right != null
+        root.left!!.next = root.right!!
+        root.right!!.next = root.next?.left
+
+        conn(root.left!!)
+        conn(root.right!!)
+    }
+
+    fun connect(root: Node?): Node? {
+        conn(root)
+        return root
+    }
+}
+
 /// 462. 最少移动次数使数组元素相等 II
 class Solution462 {
     /// 排序
@@ -9199,5 +9224,247 @@ class Solution269 {
         }
 
         return chars.joinToString("")
+    }
+}
+
+/// 473. 火柴拼正方形
+class Solution473 {
+    /// 内存超过限制
+    fun makesquare__(matchsticks: IntArray): Boolean {
+        if (matchsticks.size < 4) return false
+
+        var sum = matchsticks.sum()
+        val target = sum / 4
+        if (sum != target * 4) return false
+
+        // 从 matchsticks 中选出若干个，使得它们的和为 target
+        fun match(matchsticks: IntArray, target: Int): List<Int> {
+            val n = matchsticks.size
+            val NOT_CHOOSE: Byte = 1
+            val CHOOSE: Byte = 2
+            // states[i][j] = 1/2 代表从 matchsticks[0..i] 中选出若干个，它们的长度和等于 j，其中1代表不选择第i个火柴，2代表选择第i个火柴；否则 state[i][j] = 0
+            val states = Array(n) { ByteArray(target + 1) }
+            states[0][0] = NOT_CHOOSE
+            if (matchsticks[0] <= target) {
+                states[0][matchsticks[0]] = CHOOSE
+            }
+
+            for (i in 1 until n) {
+                // 不选第i个火柴
+                for (j in 0 until target) { // 遍历火柴长度，从 0 到目标值 target
+                    if (states[i - 1][j] > 0) states[i][j] = NOT_CHOOSE
+                }
+                // 选第i个火柴
+                for (j in target - matchsticks[i] downTo 0) {
+                    if (states[i - 1][j] > 0) {
+                        states[i][j + matchsticks[i]] = CHOOSE
+                    }
+                }
+            }
+
+            val results = mutableListOf<Int>()
+            for (ii in n - 1 downTo 0) {
+                if (states[ii][target] > 0) {
+                    // 从 matchsticks 中选出若干个火柴可以构造长度为 target 的边，关键问题是怎么知道选了那几个？
+                    var indexState = 0
+                    var t = target
+                    for (i in ii downTo 0) {
+                        if (states[i][t] == CHOOSE) {
+                            indexState = indexState or (1 shl i)
+                            t -= matchsticks[i]
+                        }
+                    }
+                    results.add(indexState)
+                }
+            }
+
+            return results
+        }
+
+        var selectedList1 = match(matchsticks, target)
+        for (selected1 in selectedList1) {
+            var sticks2: IntArray? =
+                matchsticks.filterIndexed { i, v -> (1 shl i) and selected1 == 0 }
+                    .toIntArray() // 取出没有被选中的
+            if (sticks2!!.size < 3) continue
+
+            val selectedList2 = match(sticks2!!, target)
+            sticks2 = null
+            if (selectedList2.isEmpty()) continue
+
+            for (selected2 in selectedList2) {
+                var sticks3: IntArray? =
+                    matchsticks.filterIndexed { i, v -> (1 shl i) and (selected1 and selected2) == 0 }
+                        .toIntArray()
+                if (sticks3!!.size < 2) continue
+
+                val selectedList3 = match(sticks3!!, target)
+                sticks3 = null
+                if (selectedList3.isEmpty()) continue
+
+                return true
+            }
+        }
+        return false
+    }
+
+    /// 回溯
+    fun makesquare_Recall(matchsticks: IntArray): Boolean {
+        if (matchsticks.size < 4) return false
+
+        var sum = matchsticks.sum()
+        val target = sum / 4
+
+        if (sum != target * 4) return false
+
+        matchsticks.sort()
+
+        val edges = intArrayOf(0, 0, 0, 0)
+        fun dfs(index: Int): Boolean {
+            if (index == -1) return true // index == matchsticks.size 无对应的火柴，无需操作，所以直接返回true
+            for (i in edges.indices) { // 时间复杂度 O(4^n)
+                edges[i] += matchsticks[index]
+                if (edges[i] <= target && dfs(index - 1)) { // 深度优先搜索，为了减少深度搜索，可以让 edges[i] <= target 尽快为 false => 可以想到的是让 matchsticks 排序，然后从后往前去搜索。
+                    return true
+                }
+                edges[i] -= matchsticks[index] // 回溯
+            }
+            return false // 搜索完成仍没发现可能的解，返回 false
+        }
+
+        return dfs(matchsticks.size - 1)
+    }
+
+    /// 状态压缩+动态规划
+    fun makesquare_DP(matchsticks: IntArray): Boolean {
+        if (matchsticks.size < 4) return false
+        val sum = matchsticks.sum()
+        if (sum % 4 != 0) return false
+
+        val target = sum / 4
+        val n = matchsticks.size
+        val stateCount = 1 shl n // 总共有 2^n 个状态
+        // dp[s]默认为-1，代表状态s不符合要求，一开始只有 dp[0] 符合要求（初始设定）
+        // dp[s]代表状态s下，已选火柴长度 % target，所求结果为 dp[stateCount - 1] == 0 (代表选上了所有火柴后)
+        // 选择火柴 i 时会保证 dp[s1] + matchstick[i] <= target，否则不选火柴 i
+        val dp = IntArray(stateCount) { -1 }
+        dp[0] = 0 // 所有火柴都不选，长度为0
+        for (s1 in 1 until stateCount) {
+            for (i in 0 until n) {
+                if ((1 shl i) and s1 == 0) continue
+                // 去除状态 s 中的第 i 个二进制位（从低到高），得到状态 s0
+                val s0 = s1 and (1 shl i).inv()
+                if (dp[s0] >= 0 && dp[s0] + matchsticks[i] <= target) {
+                    dp[s1] = (dp[s0] + matchsticks[i]) % target
+                    break // ???只需要找打一个s0即可
+                }
+            }
+        }
+        return dp[stateCount - 1] == 0
+    }
+}
+
+/// 572. 另一棵树的子树
+class Solution572 {
+    fun isEqual(n1: TreeNode?, n2: TreeNode?): Boolean {
+        if (n1 == n2) return true
+        if (n1 == null || n2 == null) return false
+        return n1!!.`val` == n2!!.`val` && isEqual(n1!!.left, n2!!.left) && isEqual(
+            n1!!.right,
+            n2!!.right
+        )
+    }
+
+    fun isSubtree(root: TreeNode?, subRoot: TreeNode?): Boolean {
+        return isEqual(root, subRoot) || (root?.left != null && isSubtree(
+            root!!.left,
+            subRoot
+        )) || (root?.right != null && isSubtree(root!!.right, subRoot))
+    }
+}
+
+/// 117. 填充每个节点的下一个右侧节点指针 II
+class Solution117 {
+    class Node(var `val`: Int) {
+        var left: Node? = null
+        var right: Node? = null
+        var next: Node? = null
+    }
+
+    fun conn(root: Node?) {
+        if (root == null || (root.left == null && root.right == null)) return
+
+        if (root.right != null) {
+            val right = root.right!!
+            var next = root.next
+            while (right.next == null && next != null) {
+                right.next = next!!.left ?: next!!.right
+                next = next!!.next
+            }
+        }
+
+        if (root.left != null) {
+            val left = root.left!!
+            left.next = root.right
+            var next = root.next
+            while (left.next == null && next != null) {
+                left.next = next!!.left ?: next!!.right
+                next = next!!.next
+            }
+        }
+
+        conn(root!!.right)
+        conn(root!!.left)
+    }
+    fun connect(root: Node?): Node? {
+        conn(root)
+        return root
+    }
+
+    fun connect_UseNextPointer(root: Node?): Node? {
+        var theroot = root
+        var lastUpdated = false
+        var last: Node? = null
+
+        var root = root
+        while (root != null) {
+            if (root.left != null) {
+                if (!lastUpdated) {
+                    last = root.left
+                    lastUpdated = true
+                }
+
+                val left = root.left!!
+                left.next = root.right
+                var next = root.next
+                while (left.next == null && next != null) {
+                    left.next = next!!.left ?: next!!.right
+                    next = next!!.next
+                }
+            }
+
+            if (root.right != null) {
+                if (!lastUpdated) {
+                    last = root.right
+                    lastUpdated = true
+                }
+
+                val right = root.right!!
+                var next = root.next
+                while (right.next == null && next != null) {
+                    right.next = next!!.left ?: next!!.right
+                    next = next!!.next
+                }
+            }
+
+            root = root.next
+            if (root == null) {
+                lastUpdated = false
+                root = last
+                last = null
+            }
+        }
+
+        return theroot
     }
 }

@@ -4,7 +4,7 @@ fun main() {
     while (true) {
         try {
             println(
-                Solution525().findMaxLength_preSum(intArrayOf(0,1,0,1,1,0,1,0))
+                Solution473().makesquare__(intArrayOf(1,1,2,2,2))
             )
         } catch (e: java.lang.Exception) {
             println(e.stackTrace)
