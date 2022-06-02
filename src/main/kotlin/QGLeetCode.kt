@@ -9632,3 +9632,224 @@ class Solution {
         return distance[rowCount - 1][colCount - 1]
     }
 }
+
+/// 130. 被围绕的区域
+class Solution130 {
+    fun solve(board: Array<CharArray>): Unit {
+        val rowCount = board.size
+        val colCount = board[0].size
+
+        val excludeO = mutableSetOf<Pair<Int, Int>>()
+        val queue = LinkedList<Pair<Int, Int>>()
+        val visited = Array(rowCount) { BooleanArray(colCount) }
+
+        for (row in setOf(0, rowCount - 1)) {
+            for (col in 0 until colCount) {
+                visited[row][col] = true
+                if (board[row][col] == 'O') {
+                    val p = Pair(row, col)
+                    excludeO.add(p)
+                    queue.offer(p)
+                }
+            }
+        }
+        for (col in setOf(0, colCount - 1)) {
+            for (row in 1 until rowCount - 1) {
+                visited[row][col] = true
+                if (board[row][col] == 'O') {
+                    val p = Pair(row, col)
+                    excludeO.add(p)
+                    queue.offer(p)
+                }
+            }
+        }
+
+        val directions = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+        while (queue.isNotEmpty()) {
+            val (row, col) = queue.poll()
+            for ((dr, dc) in directions) {
+                val r = row + dr
+                val c = col + dc
+                if (r < 0 || r >= rowCount || c < 0 || c >= colCount || visited[r][c]) continue
+
+                visited[r][c] = true
+
+                if (board[r][c] == 'X') continue
+
+                val pp = Pair(r, c)
+                excludeO.add(pp)
+                queue.offer(pp)
+            }
+        }
+
+        for (row in 0 until rowCount) {
+            for (col in 0 until colCount) {
+                if (board[row][col] == 'O' && !excludeO.contains(Pair(row, col))) {
+                    board[row][col] = 'X'
+                }
+            }
+        }
+    }
+
+    fun solve_dfs(board: Array<CharArray>): Unit {
+        val rowCount = board.size
+        val colCount = board[0].size
+
+        fun dfs(row: Int, col: Int) {
+            if (row < 0 || row >= rowCount || col < 0 || col >= colCount || board[row][col] != 'O') return
+
+            board[row][col] = 'M'
+            dfs(row + 1, col)
+            dfs(row - 1, col)
+            dfs(row, col + 1)
+            dfs(row, col - 1)
+        }
+
+        for (col in 0 until colCount) {
+            dfs(0, col)
+            dfs(rowCount - 1, col)
+        }
+        for (row in 1 until rowCount - 1) {
+            dfs(row, 0)
+            dfs(row, colCount - 1)
+        }
+        for (row in 0 until rowCount) {
+            for (col in 0 until colCount) {
+                if (board[row][col] == 'M') {
+                    board[row][col] = 'O'
+                } else if (board[row][col] == 'O') {
+                    board[row][col] = 'X'
+                }
+            }
+        }
+    }
+}
+
+/// 797. 所有可能的路径
+class Solution797 {
+    fun allPathsSourceTarget(graph: Array<IntArray>): List<List<Int>> {
+        val n = graph.size
+        var results = mutableListOf<List<Int>>()
+
+        fun dfs(i: Int, current: MutableList<Int>) {
+            if (i == n - 1) {
+                results.add(current.toList())
+                return
+            }
+
+            for (j in graph[i]) {
+                current.add(j)
+                dfs(j, current)
+                current.removeAt(current.size - 1)
+            }
+        }
+
+        dfs(0, mutableListOf<Int>(0))
+        return results
+    }
+}
+
+/// 85. 最大矩形
+class Solution85 {
+    /// 暴力遍历
+    fun maximalRectangle_V(matrix: Array<CharArray>): Int {
+        val rowCount = matrix.size
+        val colCount = matrix[0].size
+
+        /// 构造left矩阵，left[i][j]代表点(i, j)左侧连续1的个数（包括它自己的1），如果matrix[i][j]=0，则left[i][j]=0
+        val left = Array(rowCount) { IntArray(colCount) }
+        for (r in 0 until rowCount) {
+            for (c in 0 until colCount) {
+                if (c == 0) {
+                    left[r][c] = matrix[r][c] - '0'
+                } else if (matrix[r][c] == '1') {
+                    left[r][c] = left[r][c - 1] + 1
+                }
+            }
+        }
+
+        var maxArea = 0
+        for (r in 0 until rowCount) {
+            for (c in 0 until colCount) {
+                if (matrix[r][c] == '0') continue
+
+                var width = left[r][c]
+                for (k in r downTo 0) {
+                    if (matrix[k][c] == '0') break
+                    width = minOf(width, left[k][c])
+                    maxArea = maxOf(maxArea, width * (r - k + 1))
+                }
+
+            }
+        }
+        return maxArea
+    }
+
+    /// 单调栈
+    fun maximalRectangle(matrix: Array<CharArray>): Int {
+        val rowCount = matrix.size
+        val colCount = matrix[0].size
+        var maxArea = 0
+
+        val heights = IntArray(colCount + 2)
+        for (r in 0 until rowCount) {
+            for (c in 0 until colCount) {
+                if (matrix[r][c] == '1') {
+                    heights[c + 1] += 1
+                } else {
+                    heights[c + 1] = 0
+                }
+            }
+            maxArea = maxOf(maxArea, largestRectangleArea(heights))
+        }
+
+        return maxArea
+    }
+
+    fun largestRectangleArea(heights: IntArray): Int {
+        var maxArea = 0
+        val stack = Stack<Int>()
+        for (i in heights.indices) {
+            if (stack.isEmpty() || heights[stack.peek()] <= heights[i]) {
+                stack.push(i)
+            } else {
+                var top = -1
+                while (stack.isNotEmpty() && heights[stack.peek()] > heights[i]) {
+                    top = stack.pop()
+                    maxArea = maxOf(maxArea, heights[top] * (i - 1 - stack[stack.size - 1]))
+                }
+                stack.push(i)
+            }
+        }
+
+        return maxArea
+    }
+}
+
+/// 84. 柱状图中最大的矩形
+class Solution84 {
+    fun largestRectangleArea(heights: IntArray): Int {
+        var maxArea = 0
+        val stack = LinkedList<Int>()
+        for (i in heights.indices) {
+            if (stack.isEmpty() || heights[stack.peekLast()] < heights[i]) {
+                stack.offerLast(i)
+            } else {
+                var top = -1
+                while (stack.isNotEmpty() && heights[stack.peekLast()] >= heights[i]) {
+                    top = stack.pollLast()
+                    maxArea = maxOf(maxArea, heights[top] * (i - top))
+                }
+                heights[top] = heights[i]
+                stack.offerLast(top)
+            }
+        }
+
+        while (stack.isNotEmpty()) {
+            var top = stack.pollLast()
+            maxArea = maxOf(maxArea, heights[top] * (heights.size - top))
+        }
+
+        return maxArea
+    }
+}
