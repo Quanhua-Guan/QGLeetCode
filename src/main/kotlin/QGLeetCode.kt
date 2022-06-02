@@ -9853,3 +9853,104 @@ class Solution84 {
         return maxArea
     }
 }
+
+/// 75. 颜色分类
+class Solution75 {
+    fun sortColors(nums: IntArray): Unit {
+        var left = 0 // 从左往右第一个非0的数的下标
+        var right = nums.size - 1 // 从右往左第一个非2的数的下标
+
+        while (left < right) {
+            while (left < nums.size && nums[left] == 0) left++
+            while (right >= 0 && nums[right] == 2) right--
+
+            if (left >= right) break
+
+            // nums[left] 可能是 1 或 2
+            // nums[right] 可能是 1 或 0
+            if (nums[left] == 2) {
+                if (nums[right] == 1) {
+                    nums[left] = nums[right].also { nums[right] = nums[left] }
+                    right--
+                } else { // nums[right] == 0
+                    nums[left] = nums[right].also { nums[right] = nums[left] }
+                    left++
+                    right--
+                }
+            } else { // nums[left] == 1
+                if (nums[right] == 1) {
+                    var moved = false
+                    var r = right - 1
+                    while (r > left) {
+                        if (nums[r] == 2) {
+                            nums[r] = nums[right].also { nums[right] = nums[r] }
+                            right--
+                            moved = true
+                            break
+                        }
+                        r -= 1
+                    }
+
+                    var l = left + 1
+                    while (l < right) {
+                        if (nums[l] == 0) {
+                            nums[l] = nums[left].also { nums[left] = nums[l] }
+                            left++
+                            moved = true
+                            break
+                        }
+                        l += 1
+                    }
+
+                    if (!moved) {
+                        break
+                    }
+                } else { // nums[right] == 0
+                    nums[left] = nums[right].also { nums[right] = nums[left] }
+                    left++
+                }
+            }
+        }
+    }
+
+    fun sortColors_OnePointer(nums: IntArray): Unit {
+        var index = 0
+        for (i in nums.indices) {
+            if (nums[i] == 0) {
+                nums[i] = nums[index].also { nums[index] = nums[i] }
+                index++
+            }
+        }
+        index = nums.size - 1
+        for (i in nums.indices.reversed()) {
+            if (nums[i] == 2) {
+                nums[i] = nums[index].also { nums[index] = nums[i] }
+                index--
+            }
+        }
+    }
+
+    fun sortColors_TwoPointers(nums: IntArray): Unit {
+        val n = nums.size
+        var p0 = 0
+        var p2 = n - 1
+        var i = 0
+        while (i <= p2) {
+            while (i <= p2 && nums[i] == 2) {
+                if (i != p2)
+                    nums[i] = nums[p2].also { nums[p2] = nums[i] }
+                p2--
+            }
+            if (nums[i] == 0) {
+                if (i != p0) {
+                    nums[i] = nums[p0].also { nums[p0] = nums[i] }
+                }
+                p0++
+            }
+
+            i++
+        }
+    }
+
+}
+

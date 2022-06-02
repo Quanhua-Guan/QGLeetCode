@@ -4,7 +4,7 @@ fun main() {
     while (true) {
         try {
             println(
-                Solution473().makesquare__(intArrayOf(1,1,2,2,2))
+                Solution75().sortColors_TwoPointers(intArrayOf(2,0,2,1,1,0,1))
             )
         } catch (e: java.lang.Exception) {
             println(e.stackTrace)
