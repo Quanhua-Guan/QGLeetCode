@@ -9416,6 +9416,7 @@ class Solution117 {
         conn(root!!.right)
         conn(root!!.left)
     }
+
     fun connect(root: Node?): Node? {
         conn(root)
         return root
@@ -9463,6 +9464,121 @@ class Solution117 {
                 root = last
                 last = null
             }
+        }
+
+        return theroot
+    }
+}
+
+/// 338. 比特位计数
+class Solution338 {
+    // DP
+    fun countBits(n: Int): IntArray {
+        val results = IntArray(n + 1)
+        var highBits = 0
+        for (i in 1..n) {
+            if (i and (i - 1) == 0) {
+                highBits = i
+            }
+            results[i] = results[i - highBits] + 1
+        }
+        return results
+    }
+
+    fun countBits_Shift(n: Int): IntArray {
+        val results = IntArray(n + 1)
+        for (i in 1..n) {
+            results[i] = results[i ushr 1] + (i and 1)
+        }
+        return results
+    }
+
+    fun countBits_NandN_1(n: Int): IntArray {
+        val results = IntArray(n + 1)
+        for (i in 1..n) {
+            results[i] = results[i and (i - 1)] + 1
+        }
+        return results
+    }
+}
+
+/// 450. 删除二叉搜索树中的节点
+class Solution450 {
+    class TreeNode(var `val`: Int) {
+        var left: TreeNode? = null
+        var right: TreeNode? = null
+    }
+
+    fun search(root: TreeNode?, key: Int): Pair<TreeNode?, TreeNode?> {
+        if (root == null) return Pair(null, null)
+
+        var current = root
+        if (current.`val` == key) {
+            return Pair(null, current)
+        }
+
+        while (current != null) {
+            if (current!!.left?.`val` == key) {
+                return Pair(current, current!!.left)
+            }
+            if (current!!.right?.`val` == key) {
+                return Pair(current, current!!.right)
+            }
+            if (current.`val` < key) {
+                current = current!!.right
+            } else {
+                current = current!!.left
+            }
+        }
+
+        return Pair(null, null)
+    }
+
+    fun findMin(root: TreeNode?): TreeNode? {
+        if (root == null) return null
+        var current = root!!
+        while (current.left != null) {
+            current = current.left!!
+        }
+        return current
+    }
+
+    fun deleteNode(root: TreeNode?, key: Int): TreeNode? {
+        var theroot = root
+
+        // 找到目标节点和它的父节点
+        val (father, node) = search(root, key)
+        // 没有找到目标节点，直接不处理
+        if (node == null) return theroot
+
+        // node != null，是根节点
+        if (father == null) {
+            theroot = node.right
+            if (theroot == null) {
+                theroot = node.left
+            } else {
+                findMin(node.right)!!.left = node.left
+            }
+            return theroot
+        }
+        // node != null，非根节点
+        // node 是 father 的左节点
+        if (father.left == node) {
+            father.left = node.right
+            if (father.left == null) {
+                father.left = node.left
+            } else {
+                findMin(node.right)!!.left = node.left
+            }
+            return theroot
+        }
+        // node 是 father 的右节点
+        // father.right == node
+        father.right = node.right
+        if (father.right == null) {
+            father.right = node.left
+        } else {
+            findMin(node.right)!!.left = node.left
         }
 
         return theroot
