@@ -9952,5 +9952,43 @@ class Solution75 {
         }
     }
 
+    /// 计数排序
+    fun sortColors_CountSort(nums: IntArray): Unit {
+        var count0 = 0
+        var count1 = 0
+        var count2 = 0
+        for (n in nums) {
+            when (n) {
+                0 -> count0++
+                1 -> count1++
+                2 -> count2++
+            }
+        }
+        for (i in 0 until count0) {
+            nums[i] = 0
+        }
+        for (i in count0 until count0 + count1) {
+            nums[i] = 1
+        }
+        for (i in count0 + count1 until count0 + count1 + count2) {
+            nums[i] = 2
+        }
+    }
+
+    fun sortColors_CountSort2(nums: IntArray): Unit {
+        val count = intArrayOf(0, 0, 0)
+        for (n in nums) {
+            count[n]++
+        }
+        for (i in 0 until count[0]) {
+            nums[i] = 0
+        }
+        for (i in count[0] until count[0] + count[1]) {
+            nums[i] = 1
+        }
+        for (i in count[0] + count[1] until count[0] + count[1] + count[2]) {
+            nums[i] = 2
+        }
+    }
 }
 
