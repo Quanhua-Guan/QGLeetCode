@@ -9584,3 +9584,51 @@ class Solution450 {
         return theroot
     }
 }
+
+/// 1091. 二进制矩阵中的最短路径
+class Solution {
+    fun shortestPathBinaryMatrix(grid: Array<IntArray>): Int {
+        val rowCount = grid.size
+        val colCount = grid[0].size
+
+        if (grid[0][0] == 1 || grid[rowCount - 1][colCount - 1] == 1) return -1
+
+        val directions = listOf(
+            Pair(1, 1),
+            Pair(1, 0),
+            Pair(0, 1),
+            Pair(1, -1),
+            Pair(-1, 1),
+            Pair(-1, 0),
+            Pair(0, -1),
+            Pair(-1, -1)
+        )
+
+        val distance = Array(rowCount) { IntArray(colCount) { Int.MAX_VALUE } }
+        val willSearch = LinkedList<Pair<Int, Int>>()
+
+
+        distance[0][0] = 1 // 从 (0,0) 到 (0,0) 经过了它自己，即1个节点
+        willSearch.offer(Pair(0, 0))
+
+        theWhile@ while (willSearch.isNotEmpty()) {
+            val (row, col) = willSearch.poll()
+
+            for ((dr, dc) in directions) {
+                val r = row + dr
+                val c = col + dc
+                if (r < 0 || r >= rowCount || c < 0 || c >= colCount || grid[r][c] == 1 || distance[r][c] != Int.MAX_VALUE) continue
+                distance[r][c] = minOf(distance[r][c], distance[row][col] + 1)
+
+                if (r == rowCount - 1 && c == colCount - 1) {
+                    break@theWhile
+                }
+
+                willSearch.offer(Pair(r, c))
+            }
+        }
+
+        if (distance[rowCount - 1][colCount - 1] == Int.MAX_VALUE) return -1
+        return distance[rowCount - 1][colCount - 1]
+    }
+}
