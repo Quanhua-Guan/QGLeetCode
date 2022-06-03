@@ -10181,3 +10181,191 @@ class Solution124 {
         return max
     }
 }
+
+/// 226. 翻转二叉树
+class Solution226 {
+    fun invertTree(root: TreeNode?): TreeNode? {
+        if (root == null) return root
+        root.left = root.right.also { root.right = root.left }
+        invertTree(root.left)
+        invertTree(root.right)
+        return root
+    }
+}
+
+/// 94. 二叉树的中序遍历
+class Solution94 {
+    fun inorderTraversal(root: TreeNode?): List<Int> {
+        val results = mutableListOf<Int>()
+        fun traversal(root: TreeNode?) {
+            if (root == null) return
+            traversal(root.left)
+            results.add(root.`val`)
+            traversal(root.right)
+        }
+        traversal(root)
+        return results
+    }
+}
+
+/// 155. 最小栈
+class MinStack() {
+    class Node(val value: Int, var min: Int)
+
+    val datas = LinkedList<Node>()
+
+    fun push(value: Int) {
+        var min = datas.peekLast()?.min ?: value
+        min = minOf(min, value)
+        datas.offer(Node(value, min))
+    }
+
+    fun pop() {
+        datas.pollLast()
+    }
+
+    fun top(): Int {
+        return datas.peekLast().value
+    }
+
+    fun getMin(): Int {
+        return datas.peekLast()?.min ?: -Int.MIN_VALUE
+    }
+
+}
+
+/// 101. 对称二叉树
+class Solution101 {
+    // 考虑中序遍历，然后检测结果数组是否是对称的
+    fun isSymmetric(root: TreeNode?): Boolean {
+        if (root?.left?.`val` != root?.right?.`val`) return false
+
+        val list = mutableListOf<Int>()
+        fun travel(root: TreeNode?) {
+            if (root == null) return
+
+            if (root.left != null && root.right != null) {
+                travel(root.left)
+                list.add(root.`val`)
+                travel(root.right)
+            } else if (root.left == null && root.right != null) {
+                list.add(Int.MIN_VALUE)
+                list.add(root.`val`)
+                travel(root.right)
+            } else if (root.left != null && root.right == null) {
+                travel(root.left)
+                list.add(root.`val`)
+                list.add(Int.MIN_VALUE)
+            } else {
+                list.add(root.`val`)
+            }
+        }
+        travel(root)
+        var left = 0
+        var right = list.size - 1
+        while (left < right) {
+            if (list[left] != list[right]) {
+                return false
+            }
+            left++
+            right--
+        }
+        return true
+    }
+}
+
+class Solution101_Recursive {
+    fun check(p: TreeNode?, q: TreeNode?): Boolean {
+        if (p == null && q == null) return true
+        if (p == null || q == null) return false
+        return p.`val` == q.`val` && check(p.left, q.right) && check(p.right, q.left)
+    }
+
+    fun isSymmetric(root: TreeNode?): Boolean {
+        return check(root?.left, root?.right)
+        // return check(root, root)
+    }
+}
+
+class Solution101_Iteration {
+    fun isSymmetric(root: TreeNode?): Boolean {
+        if (root == null) return true
+
+        // 左子树 和 右子树 镜像对称
+        val queue = LinkedList<Pair<TreeNode?, TreeNode?>>()
+        queue.offer(Pair(root, root))
+        while (queue.isNotEmpty()) {
+            val (left, right) = queue.poll()
+
+            if (left == null && right == null) continue
+            if (left == null || right == null) return false
+            if (left!!.`val` != right.`val`) return false
+
+            queue.offer(Pair(left!!.left, right!!.right))
+            queue.offer(Pair(left!!.right, right!!.left))
+        }
+
+        return true
+    }
+}
+
+/// 169. 多数元素
+class Solution169 {
+    fun majorityElement(nums: IntArray): Int {
+        var counts = mutableMapOf<Int, Int>()
+
+        for (n in nums) {
+            counts[n] = 0
+        }
+        for (n in nums) {
+            counts[n] = counts[n]!! + 1
+            if (counts[n]!! > nums.size / 2) return n
+        }
+        return Int.MIN_VALUE
+    }
+
+    fun majorityElement_BM(nums: IntArray): Int {
+        var count = 0
+        var candidate: Int? = null
+        for (n in nums) {
+            if (count == 0) candidate = n
+            count += (if (n == candidate) 1 else -1)
+        }
+        return candidate!!
+    }
+}
+
+/// 543. 二叉树的直径
+class Solution543 {
+    fun diameterOfBinaryTree(root: TreeNode?): Int {
+        var max = 0
+        fun dfs(root: TreeNode?): Int {
+            if (root == null) return 0
+
+            val leftmax = dfs(root.left)
+            val rightmax = dfs(root.right)
+
+            max = maxOf(max, leftmax + rightmax +1)
+            return maxOf(leftmax, rightmax) + 1
+        }
+        dfs(root)
+        return max - 1
+    }
+}
+
+/// 104. 二叉树的最大深度
+class Solution104 {
+    fun maxDepth(root: TreeNode?): Int {
+        var max = 0
+        fun dfs(root: TreeNode?, depth: Int) {
+            if (root == null) {
+                max = maxOf(max, depth)
+                return
+            }
+            dfs(root.left, depth+1)
+            dfs(root.right, depth+1)
+        }
+        dfs(root, 0)
+        return max
+    }
+}
