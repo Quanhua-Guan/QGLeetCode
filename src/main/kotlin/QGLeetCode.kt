@@ -10132,3 +10132,31 @@ class Solution90 {
         return results
     }
 }
+
+/// 829. 连续整数求和
+class Solution829 {
+    fun consecutiveNumbersSum(n: Int): Int {
+        /*
+        设连续 k 个正整数加和为 n，且第一个正整数为 x，则有
+        (x + (x + k - 1)) * k / 2 = n
+        (x + (x + k - 1)) * k = 2n
+        (2x + k - 1) * k = 2n         => 已知 x >= 1, k >= 1, 所以 2x >= 2 => 2x - 1 >= 1 => 2x - 1 + k >= k + 1 => 2x - 1 + k > k => k*k < 2n (即所有k需要满足 k 的平方小于 2n)
+        (2x + k - 1) = 2n / k => k必须是2n的约数，且存在 x 满足此表达式
+
+        x = (2n / k - (k - 1)) / 2 => x必须为正整数，即 (2n / k - (k - 1)) 必须可以被2整除（最低二进制位为0）
+        */
+        var count = 0
+        // k 从 1 开始
+        var k = 1
+        while (k * k < 2 * n) {
+            if (2 * n % k != 0) {
+                k++
+                continue // 2n必须可以整除k, 即k必须是2n的约数
+            }
+            if ((2 * n / k - k + 1) and 1 == 0) count++
+
+            k++
+        }
+        return count
+    }
+}
