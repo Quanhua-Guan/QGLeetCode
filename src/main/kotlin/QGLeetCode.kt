@@ -10422,3 +10422,64 @@ class Solution76 {
         return s.substring(start..(start + len - 1))
     }
 }
+
+/// 239. 滑动窗口最大值
+class Solution239 {
+    fun maxSlidingWindow_(nums: IntArray, k: Int): IntArray {
+        val n = nums.size
+        val results = IntArray(n - (k - 1))
+        val priorityQueue = PriorityQueue<Int> { n1, n2 -> n2 - n1 }
+
+        for (i in 0 until k - 1) {
+            priorityQueue.add(nums[i])
+        }
+        for (i in k - 1 until n) {
+            priorityQueue.add(nums[i])
+            results[i - (k - 1)] = priorityQueue.peek()
+            priorityQueue.remove(nums[i - (k - 1)])
+        }
+        return results
+    }
+
+    fun maxSlidingWindow_PQ(nums: IntArray, k: Int): IntArray {
+        val n = nums.size
+        val results = IntArray(n - (k - 1))
+        val priorityQueue = PriorityQueue<Pair<Int, Int>> { n1, n2 -> n2.first - n1.first }
+
+        for (i in 0 until k - 1) {
+            priorityQueue.add(Pair(nums[i], i))
+        }
+        for (i in k - 1 until n) {
+            priorityQueue.add(Pair(nums[i], i))
+            while (priorityQueue.peek().second < i - (k - 1)) priorityQueue.poll()
+            // 从 nums 中第 i-(k-1)..i 共 k 个数中选择最大的值
+            results[i - (k - 1)] = priorityQueue.peek()!!.first
+        }
+        return results
+    }
+
+    fun maxSlidingWindow_PQ_OP(nums: IntArray, k: Int): IntArray {
+        val n = nums.size
+        val results = IntArray(n - (k - 1))
+        val queue = LinkedList<Int>()
+
+        for (i in 0 until k - 1) {
+            while (queue.isNotEmpty() && nums[i] >= nums[queue.peekLast()!!]) {
+                queue.pollLast()
+            }
+            queue.offerLast(i)
+        }
+        for (i in k - 1 until n) {
+            while (queue.isNotEmpty() && nums[i] >= nums[queue.peekLast()!!]) {
+                queue.pollLast()
+            }
+            queue.offerLast(i)
+            while (queue.peekFirst() < i - (k - 1)) {
+                queue.pollFirst()
+            }
+            // 从 nums 中第 i-(k-1)..i 共 k 个数中选择最大的值
+            results[i - (k - 1)] = nums[queue.peekFirst()!!]
+        }
+        return results
+    }
+}
