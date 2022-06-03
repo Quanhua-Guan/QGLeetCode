@@ -10345,7 +10345,7 @@ class Solution543 {
             val leftmax = dfs(root.left)
             val rightmax = dfs(root.right)
 
-            max = maxOf(max, leftmax + rightmax +1)
+            max = maxOf(max, leftmax + rightmax + 1)
             return maxOf(leftmax, rightmax) + 1
         }
         dfs(root)
@@ -10362,10 +10362,63 @@ class Solution104 {
                 max = maxOf(max, depth)
                 return
             }
-            dfs(root.left, depth+1)
-            dfs(root.right, depth+1)
+            dfs(root.left, depth + 1)
+            dfs(root.right, depth + 1)
         }
         dfs(root, 0)
         return max
+    }
+}
+
+/// 76. 最小覆盖子串
+class Solution76 {
+    fun minWindow(s: String, t: String): String {
+        if (t.isEmpty()) return ""
+
+        val need = mutableMapOf<Char, Int>()
+        for (c in t) {
+            need[c] = need.getOrDefault(c, 0) + 1
+        }
+
+        val window = mutableMapOf<Char, Int>()
+        var left = 0
+        var right = 0
+        var valid = 0
+
+        // 结果子串信息
+        var start = 0
+        var len = Int.MAX_VALUE
+
+        while (right < s.length) {
+            val c = s[right]
+            right++
+            if (need.containsKey(c)) {
+                window[c] = window.getOrDefault(c, 0) + 1
+                if (need[c]!! == window[c]!!) {
+                    valid++
+                }
+            }
+
+            while (valid == need.size) {
+                if (right - left < len) {
+                    start = left
+                    len = right - left
+                }
+                val c = s[left]
+                if (need.containsKey(c)) {
+                    if (window[c]!! == need[c]!!) {
+                        valid--
+                    }
+                    // 先做判断，再减去数量
+                    window[c] = window[c]!! - 1
+                }
+                left++
+            }
+        }
+
+        if (len == Int.MAX_VALUE) {
+            return ""
+        }
+        return s.substring(start..(start + len - 1))
     }
 }
