@@ -10160,3 +10160,24 @@ class Solution829 {
         return count
     }
 }
+
+/// 124. 二叉树中的最大路径和
+class Solution124 {
+    var max = Int.MIN_VALUE
+    val maxPathSumStartNode = mutableMapOf<TreeNode, Int>()
+    fun travel(root: TreeNode?): Int {
+        if (root == null) return 0
+
+        val leftSum = maxOf(travel(root.left), 0)
+        val rightSum = maxOf(travel(root.right), 0) // 0代表可以不选择右子树中对应的路径
+
+        max = maxOf(max, root.`val` + leftSum + rightSum)
+
+        return maxOf(leftSum, rightSum) + root.`val`
+    }
+
+    fun maxPathSum(root: TreeNode?): Int {
+        travel(root)
+        return max
+    }
+}
