@@ -6079,6 +6079,21 @@ class Solution215 {
         return i
     }
 
+    /// 给 nums 范围 [start, end] 进行升序分块，返回分区点下标
+    fun partitionAssend_20220603(nums: IntArray, start: Int = 0, end: Int = nums.size - 1): Int {
+        val pivot = nums[end]
+        var i = 0
+        for (j in start until end) {
+            if (nums[j] < pivot) {
+                if (i != j) nums[i] = nums[j].also { nums[j] = nums[i] }
+                i++
+            }
+        }
+        // 此时下标i对应的数字应该是大于或等于 pivot 的，所以做一次交换
+        if (i != end) nums[i] = nums[end].also { nums[end] = nums[i] }
+        return i
+    }
+
     val rand = Random()
     fun partitionDescend(nums: IntArray, start: Int, end: Int): Int {
         fun swap(i: Int, j: Int) {
@@ -9990,5 +10005,130 @@ class Solution75 {
             nums[i] = 2
         }
     }
+
+    fun sortColors_QuickSortPartition(nums: IntArray): Unit {
+        var pivot = 2
+        var i = 0
+        for (j in nums.indices) { // 下标i走的总是比j慢
+            if (nums[j] < pivot) {
+                if (i != j) nums[j] = nums[i].also { nums[i] = nums[j] }
+                i++
+            }
+        }
+        var end = i
+        pivot = 1
+        i = 0
+        for (j in 0 until end) {
+            if (nums[j] < pivot) {
+                if (i != j) nums[j] = nums[i].also { nums[i] = nums[j] }
+                i++
+            }
+        }
+    }
 }
 
+/// 78. 子集
+class Solution78 {
+    fun subsets(nums: IntArray): List<List<Int>> {
+        val results = mutableListOf<List<Int>>()
+        fun dfs(index: Int, current: MutableList<Int>) {
+            if (index == nums.size) {
+                results.add(current.toList())
+                return
+            }
+            // 不选
+            dfs(index + 1, current)
+            // 选
+            current.add(nums[index])
+            dfs(index + 1, current)
+            current.removeAt(current.size - 1)
+        }
+        dfs(0, mutableListOf<Int>())
+        return results
+    }
+
+    fun subsets_bits(nums: IntArray): List<List<Int>> {
+        val results = mutableListOf<List<Int>>()
+        val stateCount = 1 shl nums.size
+        for (s in 0 until stateCount) {
+            val set = mutableListOf<Int>()
+            for (bit in 0 until nums.size) {
+                if (s and (1 shl bit) != 0) {
+                    set.add(nums[bit])
+                }
+            }
+            results.add(set)
+        }
+        return results
+    }
+}
+
+/// 90. 子集 II
+class Solution90 {
+    fun subsetsWithDup_(nums: IntArray): List<List<Int>> {
+        val results = mutableSetOf<List<Int>>()
+        val stateCount = 1 shl nums.size
+        for (s in 0 until stateCount) {
+            val set = mutableListOf<Int>()
+            for (bit in 0 until nums.size) {
+                if (s and (1 shl bit) != 0) {
+                    set.add(nums[bit])
+                }
+            }
+            set.sort()
+            results.add(set)
+        }
+        return results.toList()
+    }
+
+    fun subsetsWithDup_BinaryStates(nums: IntArray): List<List<Int>> {
+        nums.sort()
+        val results = mutableListOf<List<Int>>()
+        val stateCount = 1 shl nums.size
+        for (s in 0 until stateCount) {
+            val set = mutableListOf<Int>()
+            var ignore = false
+            for (bit in 0 until nums.size) {
+                if (s and (1 shl bit) != 0) {
+                    if (bit > 0 && (s shr (bit - 1)) and 1 == 0 && nums[bit] == nums[bit - 1]) {
+                        // 选择了第 bit 个数，但是没有选择第 bit-1 个数，且这两个数相等。
+                        ignore = true
+                        break
+                    }
+                    set.add(nums[bit])
+                }
+            }
+            if (!ignore) {
+                results.add(set)
+            }
+        }
+        return results
+    }
+
+    fun subsetsWithDup_Recall(nums: IntArray): List<List<Int>> {
+        nums.sort()
+        val results = mutableListOf<List<Int>>()
+
+        fun dfs(index: Int, choosePre: Boolean, current: MutableList<Int>) {
+            if (index == nums.size) {
+                results.add(current.toList())
+                return
+            }
+            // 不选
+            dfs(index + 1, false, current)
+
+            // 选
+            // 选择了当前的数，且没选择前一个数，且这两个数相当，这这个分支可以丢弃，因为会有其它分支覆盖本分支的情况
+            if (!choosePre && nums[index] == nums[index - 1]) {
+                return
+            }
+            // 正常选择当前这个数
+            current.add(nums[index])
+            dfs(index + 1, true, current)
+            current.removeAt(current.size - 1) // 遍历完选择当前数的情况，将当前数删除，回溯到之前的状态
+        }
+
+        dfs(0, true, mutableListOf<Int>())
+        return results
+    }
+}
