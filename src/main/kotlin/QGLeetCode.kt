@@ -6942,6 +6942,30 @@ class Solution39 {
     }
 }
 
+/// 39. 组合总和
+class Solution39_20220604 {
+    fun combinationSum(candidates: IntArray, target: Int): List<List<Int>> {
+        val results = mutableListOf<List<Int>>()
+        fun dfs(selection: LinkedList<Int>, sum: Int, index: Int) {
+            if (sum > target) {
+                return
+            }
+            if (sum == target) {
+                results.add(selection.toList())
+                return
+            }
+            for (i in index until candidates.size) {
+                selection.offerLast(candidates[i])
+                dfs(selection, sum + candidates[i], i)
+                selection.pollLast()
+            }
+        }
+
+        dfs(LinkedList<Int>(), 0, 0)
+        return results
+    }
+}
+
 /// 77. 组合
 class Solution77 {
     fun dfs(
@@ -10543,7 +10567,7 @@ class Solution929 {
                     prefix = prefix.substring(0 until indexOfPlusSign)
                 }
                 prefix = prefix.replace(".", "")
-                realEmails.add(prefix+suffix)
+                realEmails.add(prefix + suffix)
             }
         }
         return realEmails.size
@@ -10578,6 +10602,39 @@ class Solution47 {
         }
         nums.sort()
         dfs(LinkedList<Int>())
+        return results
+    }
+}
+
+/// 40. 组合总和 II
+class Solution40 {
+    fun combinationSum2(candidates: IntArray, target: Int): List<List<Int>> {
+        if (candidates.sum() < target) return emptyList()
+
+        val n = candidates.size
+        val results = mutableListOf<List<Int>>()
+        fun dfs(selection: LinkedList<Int>, target:Int, from: Int) {
+            for (i in from until n) {
+                if (i > from && candidates[i] == candidates[i - 1]) {
+                    continue
+                }
+                if (target == candidates[i]) {
+                    selection.offerLast(candidates[i])
+                    results.add(selection.toList())
+                    selection.pollLast()
+                    break
+                } else if (target > candidates[i]) {
+                    selection.offerLast(candidates[i])
+                    dfs(selection, target - candidates[i], i + 1)
+                    selection.pollLast()
+                } else {
+                    break
+                }
+            }
+        }
+
+        candidates.sort()
+        dfs(LinkedList<Int>(), target, 0)
         return results
     }
 }
