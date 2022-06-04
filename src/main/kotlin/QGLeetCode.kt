@@ -6995,6 +6995,51 @@ class Solution46 {
     }
 }
 
+class Solution46_20220604 {
+    fun permute(nums: IntArray): List<List<Int>> {
+        val results = mutableListOf<List<Int>>()
+        val used = BooleanArray(nums.size)
+
+        fun dfs(path: LinkedList<Int>) {
+            if (path.size == nums.size) {
+                results.add(path.toList())
+                return
+            }
+            for (i in nums.indices) {
+                if (!used[i]) {
+                    val num = nums[i]
+                    path.offerLast(num)
+                    used[i] = true
+                    dfs(path)
+                    used[i] = false
+                    path.pollLast()
+                }
+            }
+        }
+
+        dfs(LinkedList<Int>())
+        return results
+    }
+
+    fun permute_NoUsed(nums: IntArray): List<List<Int>> {
+        val results = mutableListOf<List<Int>>()
+        fun dfs(index: Int) {
+            if (index == nums.size) {
+                results.add(nums.toList())
+                return
+            }
+            for (i in index until nums.size) {
+                nums[index] = nums[i].also { nums[i] = nums[index] }
+                dfs(index + 1)
+                nums[index] = nums[i].also { nums[i] = nums[index] }
+            }
+        }
+
+        dfs(0)
+        return results
+    }
+}
+
 class Solution46_1 {
     val result = mutableListOf<List<Int>>()
     fun dfs(nums: IntArray, path: ArrayDeque<Int>) {
@@ -10480,6 +10525,59 @@ class Solution239 {
             // 从 nums 中第 i-(k-1)..i 共 k 个数中选择最大的值
             results[i - (k - 1)] = nums[queue.peekFirst()!!]
         }
+        return results
+    }
+}
+
+/// 929. 独特的电子邮件地址
+class Solution929 {
+    fun numUniqueEmails(emails: Array<String>): Int {
+        val realEmails = mutableSetOf<String>()
+        for (email in emails) {
+            val indexOfAtSign = email.indexOf('@')
+            if (indexOfAtSign != -1) {
+                var prefix = email.substring(0 until indexOfAtSign)
+                var suffix = email.substring(indexOfAtSign)
+                val indexOfPlusSign = prefix.indexOf('+')
+                if (indexOfPlusSign != -1) {
+                    prefix = prefix.substring(0 until indexOfPlusSign)
+                }
+                prefix = prefix.replace(".", "")
+                realEmails.add(prefix+suffix)
+            }
+        }
+        return realEmails.size
+    }
+}
+
+/// 47. 全排列 II
+class Solution47 {
+    fun permuteUnique(nums: IntArray): List<List<Int>> {
+        val results = mutableListOf<List<Int>>()
+        val used = BooleanArray(nums.size)
+        fun dfs(path: LinkedList<Int>) {
+            if (path.size == nums.size) {
+                results.add(path.toList())
+                return
+            }
+            var lastUnused: Int? = null
+            for (i in nums.indices) {
+                if (!used[i]) {
+                    if (nums[i] == lastUnused) {
+                        continue // 本次迭代使用过了 nums[i]
+                    }
+                    lastUnused = nums[i]
+
+                    path.offerLast(nums[i])
+                    used[i] = true
+                    dfs(path)
+                    used[i] = false
+                    path.pollLast()
+                }
+            }
+        }
+        nums.sort()
+        dfs(LinkedList<Int>())
         return results
     }
 }
