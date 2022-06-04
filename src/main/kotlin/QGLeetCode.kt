@@ -10638,3 +10638,65 @@ class Solution40 {
         return results
     }
 }
+
+/// 312. 戳气球
+class Solution312 {
+    fun maxCoins_Recursive(nums: IntArray): Int {
+        val n = nums.size
+        val values = IntArray(n + 2) { i ->
+            var value = 1
+            if (i >= 1 && i <= n) {
+                value = nums[i - 1]
+            }
+            value
+        }
+
+        val mem = Array(n + 2) { IntArray(n + 2) { -1 } }
+        /// 戳破 i 和 j 之间的气球，注意不会戳位置 i 和 j 的气球，i 和 j 仅仅作为一个边界使用。
+        fun poke(i: Int, j: Int): Int {
+            if (i >= j - 1) {
+                return 0
+            }
+            if (mem[i][j] != -1) {
+                return mem[i][j]
+            }
+            for (k in i + 1 until j) {
+                // 戳破区间 (i,j) 内的气球所得金币最大值为：戳破 (i,k) 内气球得到的金币值 + 戳破 (k,j) 内气球得到的金币值 + 戳破气球 k 得到的金币值(因为 i~k 和 k~j 内的气球都被戳破了，
+                // 所以，戳破气球 k 得到的金币值为 values[i] * values[k] * values[j]， 即气球 k 左边为球球 i，右边为气球 j)
+                // !! 这个过程中始终不会去动气球 i 和 j
+                mem[i][j] =
+                    maxOf(mem[i][j], poke(i, k) + poke(k, j) + values[i] * values[k] * values[j])
+            }
+            return mem[i][j]
+        }
+        // 假设按任意顺序去戳破气球，然后统计所有顺序下获得的金币值，取最大保留。
+        //
+        // 假设找到了最大金币值对应的戳气球顺序，在戳破 values 中最后一个气球 k 时，比如已经将 values[1 until k] 和 values[k until n+2] 这两个区间内的所有气球戳破了，对应已经得到了 coinCount[1,k] 和 coinCount[k,n+2],
+        // 再加上戳破气球 k 的金币数 values[0] * values[k] * values[n+1] 即为 coinCount[0,n+1]
+        // 将以上过程递归地应用到开区间 (0, k) 和 (k, n+1) 中.
+        return poke(0, n + 1)
+    }
+
+    fun maxCoins_DP(nums: IntArray): Int {
+        val n = nums.size
+        val values = IntArray(n + 2) { i ->
+            var value = 1
+            if (i >= 1 && i <= n) {
+                value = nums[i - 1]
+            }
+            value
+        }
+
+        // dp[i][j]代表戳破开区间 (i, j) 中所有气球（开区间，所以不包括气球i和j）获得的金币数
+        val dp = Array(n + 2) { IntArray(n + 2) }
+        for (len in 3..(n + 2)) {
+            for (start in 0..(n + 2 - len)) {
+                val end = start + len - 1
+                for (middle in start + 1 until end) {
+                    dp[start][end] = maxOf(dp[start][end], dp[start][middle] + dp[middle][end] + values[start] * values[middle] * values[end])
+                }
+            }
+        }
+        return dp[0][n + 1]
+    }
+}
