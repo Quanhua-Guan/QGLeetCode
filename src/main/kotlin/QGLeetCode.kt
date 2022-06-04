@@ -10613,7 +10613,7 @@ class Solution40 {
 
         val n = candidates.size
         val results = mutableListOf<List<Int>>()
-        fun dfs(selection: LinkedList<Int>, target:Int, from: Int) {
+        fun dfs(selection: LinkedList<Int>, target: Int, from: Int) {
             for (i in from until n) {
                 if (i > from && candidates[i] == candidates[i - 1]) {
                     continue
@@ -10652,6 +10652,7 @@ class Solution312 {
         }
 
         val mem = Array(n + 2) { IntArray(n + 2) { -1 } }
+
         /// 戳破 i 和 j 之间的气球，注意不会戳位置 i 和 j 的气球，i 和 j 仅仅作为一个边界使用。
         fun poke(i: Int, j: Int): Int {
             if (i >= j - 1) {
@@ -10693,10 +10694,59 @@ class Solution312 {
             for (start in 0..(n + 2 - len)) {
                 val end = start + len - 1
                 for (middle in start + 1 until end) {
-                    dp[start][end] = maxOf(dp[start][end], dp[start][middle] + dp[middle][end] + values[start] * values[middle] * values[end])
+                    dp[start][end] = maxOf(
+                        dp[start][end],
+                        dp[start][middle] + dp[middle][end] + values[start] * values[middle] * values[end]
+                    )
                 }
             }
         }
         return dp[0][n + 1]
+    }
+}
+
+/// 1000. 合并石头的最低成本
+class Solution1000 {
+    /// 搓石头
+    fun mergeStones(stones: IntArray, k: Int): Int {
+        val MAX = 99999999
+        val n = stones.size
+        if (n == 1) return 0
+        // 合并 m 次后，m > 0，合并1次石头堆数减少 K-1 堆，最终剩下 n - (K - 1) * m = 1 才能保证最终合并成了1堆
+        // 只要找得到整数 m 则可行。
+        if ((n - 1) % (k - 1) != 0) return -1
+
+        val sum = IntArray(n + 1) // 前缀和
+        for (i in 1..n) {
+            sum[i] = sum[i - 1] + stones[i - 1]
+        }
+
+        // dp[i][j][k] 代表将 stones[i] ~ stones[j] 合并成 k 堆的最小成本
+        val dp = Array(n + 1) { Array(n + 1) { IntArray(k + 1) } }
+        for (i in 1..n) {
+            for (j in i..n) {
+                for (m in 2..k) dp[i][j][m] = MAX
+            }
+            dp[i][i][1] = 0 // 每一堆石头合并成1堆的成本为0
+        }
+
+        for (len in 2..n) { // 枚举区间长度
+            for (i in 1..(n + 1 - len)) { // 枚举区间起点
+                val j = i + len - 1 // 确定区间终点
+                for (m in 2..k) { // 枚举合并堆数
+                    for (p in i until j step k - 1) { // 枚举分界点
+                        // 找到一个分界点 p, 让 dp[i][p][1] + dp[p + 1][j][m - 1]) 最小
+                        // 将 [i..p] 合成 1 堆，然后将 [p+1, j] 合成 k-1 堆
+                        dp[i][j][m] =
+                            minOf(dp[i][j][m], dp[i][p][1] + dp[p + 1][j][m - 1])
+                    }
+                }
+                // dp[i][j][k] 对应 stones[i-1..j-1] 合并成 k 堆的最小成本
+                // sum[j] 为 stones[0..j-1] 的和
+                // sum[i-1] 为 stones[0..i-2] 的和
+                dp[i][j][1] = dp[i][j][k] + sum[j] - sum[i - 1] // 将 K 堆合成 1 堆
+            }
+        }
+        return dp[1][n][1]
     }
 }
