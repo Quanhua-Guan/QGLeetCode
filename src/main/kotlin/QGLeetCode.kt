@@ -10750,3 +10750,74 @@ class Solution1000 {
         return dp[1][n][1]
     }
 }
+
+/// 478. 在圆内随机生成点
+class Solution478(val radius: Double, val x_center: Double, val y_center: Double) {
+
+    var rand = Random()
+
+    fun randPoint(): DoubleArray {
+        while (true) {
+            val x = rand.nextDouble() * 2 * radius - radius
+            val y = rand.nextDouble() * 2 * radius - radius
+            if (x * x + y * y <= radius * radius) {
+                return doubleArrayOf(x_center + x, y_center + y)
+            }
+        }
+    }
+}
+
+/// 79. 单词搜索
+class Solution79 {
+    fun exist(board: Array<CharArray>, word: String): Boolean {
+        val rowCount = board.size
+        val colCount = board[0].size
+
+        val locations = LinkedList<Triple<Int, Int, Int>>()
+        // 找到所有word首字母在board中的位置
+        for (r in 0 until rowCount) {
+            for (c in 0 until colCount) {
+                if (board[r][c] == word[0]) {
+                    locations.offerLast(Triple(r, c, 0))
+                }
+            }
+        }
+
+        // word 只有一个字符
+        if (word.length == 1) return locations.isNotEmpty()
+
+        // word.length > 1
+        val directions = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+        val visited = Array(rowCount) { BooleanArray(colCount) }
+
+        fun dfs(row: Int, col: Int, index: Int): Boolean {
+            if (!(row in 0 until rowCount) || !(col in 0 until colCount) || visited[row][col]) return false
+            if (index == word.length - 1) return board[row][col] == word[index]
+            if (board[row][col] != word[index]) return false
+
+            visited[row][col] = true
+            var found = false
+            for ((dr, dc) in directions) {
+                val r = row + dr
+                val c = col + dc
+                if (dfs(r, c, index + 1)) {
+                    found = true
+                    break
+                }
+            }
+            visited[row][col] = false
+            return found
+        }
+
+        while (locations.isNotEmpty()) {
+            val (row, col, index) = locations.pollFirst()
+            visited.forEach { for (i in it.indices) { it[i] = false } }
+            if (dfs(row, col, index)) {
+                return true
+            }
+        }
+
+
+        return false
+    }
+}
