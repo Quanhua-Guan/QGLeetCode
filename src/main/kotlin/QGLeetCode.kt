@@ -5744,6 +5744,26 @@ class Solution22_3 {
     }
 }
 
+class Solution22_20220605 {
+    fun generateParenthesis(n: Int): List<String> {
+        val results = mutableListOf<String>()
+        fun dfs(left: Int, right: Int, path:String) {
+            if (left == 0 && right == 0) {
+                results.add(path)
+            }
+
+            if (left > 0) {
+                dfs(left - 1, right, path + "(")
+            }
+            if (left < right) {
+                dfs(left, right - 1, path + ")")
+            }
+        }
+        dfs(n, n, "")
+        return results
+    }
+}
+
 /// 136. 只出现一次的数字
 class Solution136 {
     fun singleNumber(nums: IntArray): Int {
