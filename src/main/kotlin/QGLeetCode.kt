@@ -5744,6 +5744,26 @@ class Solution22_3 {
     }
 }
 
+class Solution22_20220605 {
+    fun generateParenthesis(n: Int): List<String> {
+        val results = mutableListOf<String>()
+        fun dfs(left: Int, right: Int, path:String) {
+            if (left == 0 && right == 0) {
+                results.add(path)
+            }
+
+            if (left > 0) {
+                dfs(left - 1, right, path + "(")
+            }
+            if (left < right) {
+                dfs(left, right - 1, path + ")")
+            }
+        }
+        dfs(n, n, "")
+        return results
+    }
+}
+
 /// 136. 只出现一次的数字
 class Solution136 {
     fun singleNumber(nums: IntArray): Int {
@@ -6942,6 +6962,30 @@ class Solution39 {
     }
 }
 
+/// 39. 组合总和
+class Solution39_20220604 {
+    fun combinationSum(candidates: IntArray, target: Int): List<List<Int>> {
+        val results = mutableListOf<List<Int>>()
+        fun dfs(selection: LinkedList<Int>, sum: Int, index: Int) {
+            if (sum > target) {
+                return
+            }
+            if (sum == target) {
+                results.add(selection.toList())
+                return
+            }
+            for (i in index until candidates.size) {
+                selection.offerLast(candidates[i])
+                dfs(selection, sum + candidates[i], i)
+                selection.pollLast()
+            }
+        }
+
+        dfs(LinkedList<Int>(), 0, 0)
+        return results
+    }
+}
+
 /// 77. 组合
 class Solution77 {
     fun dfs(
@@ -6992,6 +7036,51 @@ class Solution46 {
         var result = mutableListOf<List<Int>>()
         dfs(nums.toMutableList(), ArrayDeque<Int>(), result)
         return result
+    }
+}
+
+class Solution46_20220604 {
+    fun permute(nums: IntArray): List<List<Int>> {
+        val results = mutableListOf<List<Int>>()
+        val used = BooleanArray(nums.size)
+
+        fun dfs(path: LinkedList<Int>) {
+            if (path.size == nums.size) {
+                results.add(path.toList())
+                return
+            }
+            for (i in nums.indices) {
+                if (!used[i]) {
+                    val num = nums[i]
+                    path.offerLast(num)
+                    used[i] = true
+                    dfs(path)
+                    used[i] = false
+                    path.pollLast()
+                }
+            }
+        }
+
+        dfs(LinkedList<Int>())
+        return results
+    }
+
+    fun permute_NoUsed(nums: IntArray): List<List<Int>> {
+        val results = mutableListOf<List<Int>>()
+        fun dfs(index: Int) {
+            if (index == nums.size) {
+                results.add(nums.toList())
+                return
+            }
+            for (i in index until nums.size) {
+                nums[index] = nums[i].also { nums[i] = nums[index] }
+                dfs(index + 1)
+                nums[index] = nums[i].also { nums[i] = nums[index] }
+            }
+        }
+
+        dfs(0)
+        return results
     }
 }
 
@@ -10172,5 +10261,678 @@ class Solution829 {
             k++
         }
         return count
+    }
+}
+
+/// 124. 二叉树中的最大路径和
+class Solution124 {
+    var max = Int.MIN_VALUE
+    val maxPathSumStartNode = mutableMapOf<TreeNode, Int>()
+    fun travel(root: TreeNode?): Int {
+        if (root == null) return 0
+
+        val leftSum = maxOf(travel(root.left), 0)
+        val rightSum = maxOf(travel(root.right), 0) // 0代表可以不选择右子树中对应的路径
+
+        max = maxOf(max, root.`val` + leftSum + rightSum)
+
+        return maxOf(leftSum, rightSum) + root.`val`
+    }
+
+    fun maxPathSum(root: TreeNode?): Int {
+        travel(root)
+        return max
+    }
+}
+
+/// 226. 翻转二叉树
+class Solution226 {
+    fun invertTree(root: TreeNode?): TreeNode? {
+        if (root == null) return root
+        root.left = root.right.also { root.right = root.left }
+        invertTree(root.left)
+        invertTree(root.right)
+        return root
+    }
+}
+
+/// 94. 二叉树的中序遍历
+class Solution94 {
+    fun inorderTraversal(root: TreeNode?): List<Int> {
+        val results = mutableListOf<Int>()
+        fun traversal(root: TreeNode?) {
+            if (root == null) return
+            traversal(root.left)
+            results.add(root.`val`)
+            traversal(root.right)
+        }
+        traversal(root)
+        return results
+    }
+}
+
+/// 155. 最小栈
+class MinStack() {
+    class Node(val value: Int, var min: Int)
+
+    val datas = LinkedList<Node>()
+
+    fun push(value: Int) {
+        var min = datas.peekLast()?.min ?: value
+        min = minOf(min, value)
+        datas.offer(Node(value, min))
+    }
+
+    fun pop() {
+        datas.pollLast()
+    }
+
+    fun top(): Int {
+        return datas.peekLast().value
+    }
+
+    fun getMin(): Int {
+        return datas.peekLast()?.min ?: -Int.MIN_VALUE
+    }
+
+}
+
+/// 101. 对称二叉树
+class Solution101 {
+    // 考虑中序遍历，然后检测结果数组是否是对称的
+    fun isSymmetric(root: TreeNode?): Boolean {
+        if (root?.left?.`val` != root?.right?.`val`) return false
+
+        val list = mutableListOf<Int>()
+        fun travel(root: TreeNode?) {
+            if (root == null) return
+
+            if (root.left != null && root.right != null) {
+                travel(root.left)
+                list.add(root.`val`)
+                travel(root.right)
+            } else if (root.left == null && root.right != null) {
+                list.add(Int.MIN_VALUE)
+                list.add(root.`val`)
+                travel(root.right)
+            } else if (root.left != null && root.right == null) {
+                travel(root.left)
+                list.add(root.`val`)
+                list.add(Int.MIN_VALUE)
+            } else {
+                list.add(root.`val`)
+            }
+        }
+        travel(root)
+        var left = 0
+        var right = list.size - 1
+        while (left < right) {
+            if (list[left] != list[right]) {
+                return false
+            }
+            left++
+            right--
+        }
+        return true
+    }
+}
+
+class Solution101_Recursive {
+    fun check(p: TreeNode?, q: TreeNode?): Boolean {
+        if (p == null && q == null) return true
+        if (p == null || q == null) return false
+        return p.`val` == q.`val` && check(p.left, q.right) && check(p.right, q.left)
+    }
+
+    fun isSymmetric(root: TreeNode?): Boolean {
+        return check(root?.left, root?.right)
+        // return check(root, root)
+    }
+}
+
+class Solution101_Iteration {
+    fun isSymmetric(root: TreeNode?): Boolean {
+        if (root == null) return true
+
+        // 左子树 和 右子树 镜像对称
+        val queue = LinkedList<Pair<TreeNode?, TreeNode?>>()
+        queue.offer(Pair(root, root))
+        while (queue.isNotEmpty()) {
+            val (left, right) = queue.poll()
+
+            if (left == null && right == null) continue
+            if (left == null || right == null) return false
+            if (left!!.`val` != right.`val`) return false
+
+            queue.offer(Pair(left!!.left, right!!.right))
+            queue.offer(Pair(left!!.right, right!!.left))
+        }
+
+        return true
+    }
+}
+
+/// 169. 多数元素
+class Solution169 {
+    fun majorityElement(nums: IntArray): Int {
+        var counts = mutableMapOf<Int, Int>()
+
+        for (n in nums) {
+            counts[n] = 0
+        }
+        for (n in nums) {
+            counts[n] = counts[n]!! + 1
+            if (counts[n]!! > nums.size / 2) return n
+        }
+        return Int.MIN_VALUE
+    }
+
+    fun majorityElement_BM(nums: IntArray): Int {
+        var count = 0
+        var candidate: Int? = null
+        for (n in nums) {
+            if (count == 0) candidate = n
+            count += (if (n == candidate) 1 else -1)
+        }
+        return candidate!!
+    }
+}
+
+/// 543. 二叉树的直径
+class Solution543 {
+    fun diameterOfBinaryTree(root: TreeNode?): Int {
+        var max = 0
+        fun dfs(root: TreeNode?): Int {
+            if (root == null) return 0
+
+            val leftmax = dfs(root.left)
+            val rightmax = dfs(root.right)
+
+            max = maxOf(max, leftmax + rightmax + 1)
+            return maxOf(leftmax, rightmax) + 1
+        }
+        dfs(root)
+        return max - 1
+    }
+}
+
+/// 104. 二叉树的最大深度
+class Solution104 {
+    fun maxDepth(root: TreeNode?): Int {
+        var max = 0
+        fun dfs(root: TreeNode?, depth: Int) {
+            if (root == null) {
+                max = maxOf(max, depth)
+                return
+            }
+            dfs(root.left, depth + 1)
+            dfs(root.right, depth + 1)
+        }
+        dfs(root, 0)
+        return max
+    }
+}
+
+/// 76. 最小覆盖子串
+class Solution76 {
+    fun minWindow(s: String, t: String): String {
+        if (t.isEmpty()) return ""
+
+        val need = mutableMapOf<Char, Int>()
+        for (c in t) {
+            need[c] = need.getOrDefault(c, 0) + 1
+        }
+
+        val window = mutableMapOf<Char, Int>()
+        var left = 0
+        var right = 0
+        var valid = 0
+
+        // 结果子串信息
+        var start = 0
+        var len = Int.MAX_VALUE
+
+        while (right < s.length) {
+            val c = s[right]
+            right++
+            if (need.containsKey(c)) {
+                window[c] = window.getOrDefault(c, 0) + 1
+                if (need[c]!! == window[c]!!) {
+                    valid++
+                }
+            }
+
+            while (valid == need.size) {
+                if (right - left < len) {
+                    start = left
+                    len = right - left
+                }
+                val c = s[left]
+                if (need.containsKey(c)) {
+                    if (window[c]!! == need[c]!!) {
+                        valid--
+                    }
+                    // 先做判断，再减去数量
+                    window[c] = window[c]!! - 1
+                }
+                left++
+            }
+        }
+
+        if (len == Int.MAX_VALUE) {
+            return ""
+        }
+        return s.substring(start..(start + len - 1))
+    }
+}
+
+/// 239. 滑动窗口最大值
+class Solution239 {
+    fun maxSlidingWindow_(nums: IntArray, k: Int): IntArray {
+        val n = nums.size
+        val results = IntArray(n - (k - 1))
+        val priorityQueue = PriorityQueue<Int> { n1, n2 -> n2 - n1 }
+
+        for (i in 0 until k - 1) {
+            priorityQueue.add(nums[i])
+        }
+        for (i in k - 1 until n) {
+            priorityQueue.add(nums[i])
+            results[i - (k - 1)] = priorityQueue.peek()
+            priorityQueue.remove(nums[i - (k - 1)])
+        }
+        return results
+    }
+
+    fun maxSlidingWindow_PQ(nums: IntArray, k: Int): IntArray {
+        val n = nums.size
+        val results = IntArray(n - (k - 1))
+        val priorityQueue = PriorityQueue<Pair<Int, Int>> { n1, n2 -> n2.first - n1.first }
+
+        for (i in 0 until k - 1) {
+            priorityQueue.add(Pair(nums[i], i))
+        }
+        for (i in k - 1 until n) {
+            priorityQueue.add(Pair(nums[i], i))
+            while (priorityQueue.peek().second < i - (k - 1)) priorityQueue.poll()
+            // 从 nums 中第 i-(k-1)..i 共 k 个数中选择最大的值
+            results[i - (k - 1)] = priorityQueue.peek()!!.first
+        }
+        return results
+    }
+
+    fun maxSlidingWindow_PQ_OP(nums: IntArray, k: Int): IntArray {
+        val n = nums.size
+        val results = IntArray(n - (k - 1))
+        val queue = LinkedList<Int>()
+
+        for (i in 0 until k - 1) {
+            while (queue.isNotEmpty() && nums[i] >= nums[queue.peekLast()!!]) {
+                queue.pollLast()
+            }
+            queue.offerLast(i)
+        }
+        for (i in k - 1 until n) {
+            while (queue.isNotEmpty() && nums[i] >= nums[queue.peekLast()!!]) {
+                queue.pollLast()
+            }
+            queue.offerLast(i)
+            while (queue.peekFirst() < i - (k - 1)) {
+                queue.pollFirst()
+            }
+            // 从 nums 中第 i-(k-1)..i 共 k 个数中选择最大的值
+            results[i - (k - 1)] = nums[queue.peekFirst()!!]
+        }
+        return results
+    }
+}
+
+/// 929. 独特的电子邮件地址
+class Solution929 {
+    fun numUniqueEmails(emails: Array<String>): Int {
+        val realEmails = mutableSetOf<String>()
+        for (email in emails) {
+            val indexOfAtSign = email.indexOf('@')
+            if (indexOfAtSign != -1) {
+                var prefix = email.substring(0 until indexOfAtSign)
+                var suffix = email.substring(indexOfAtSign)
+                val indexOfPlusSign = prefix.indexOf('+')
+                if (indexOfPlusSign != -1) {
+                    prefix = prefix.substring(0 until indexOfPlusSign)
+                }
+                prefix = prefix.replace(".", "")
+                realEmails.add(prefix + suffix)
+            }
+        }
+        return realEmails.size
+    }
+}
+
+/// 47. 全排列 II
+class Solution47 {
+    fun permuteUnique(nums: IntArray): List<List<Int>> {
+        val results = mutableListOf<List<Int>>()
+        val used = BooleanArray(nums.size)
+        fun dfs(path: LinkedList<Int>) {
+            if (path.size == nums.size) {
+                results.add(path.toList())
+                return
+            }
+            var lastUnused: Int? = null
+            for (i in nums.indices) {
+                if (!used[i]) {
+                    if (nums[i] == lastUnused) {
+                        continue // 本次迭代使用过了 nums[i]
+                    }
+                    lastUnused = nums[i]
+
+                    path.offerLast(nums[i])
+                    used[i] = true
+                    dfs(path)
+                    used[i] = false
+                    path.pollLast()
+                }
+            }
+        }
+        nums.sort()
+        dfs(LinkedList<Int>())
+        return results
+    }
+}
+
+/// 40. 组合总和 II
+class Solution40 {
+    fun combinationSum2(candidates: IntArray, target: Int): List<List<Int>> {
+        if (candidates.sum() < target) return emptyList()
+
+        val n = candidates.size
+        val results = mutableListOf<List<Int>>()
+        fun dfs(selection: LinkedList<Int>, target: Int, from: Int) {
+            for (i in from until n) {
+                if (i > from && candidates[i] == candidates[i - 1]) {
+                    continue
+                }
+                if (target == candidates[i]) {
+                    selection.offerLast(candidates[i])
+                    results.add(selection.toList())
+                    selection.pollLast()
+                    break
+                } else if (target > candidates[i]) {
+                    selection.offerLast(candidates[i])
+                    dfs(selection, target - candidates[i], i + 1)
+                    selection.pollLast()
+                } else {
+                    break
+                }
+            }
+        }
+
+        candidates.sort()
+        dfs(LinkedList<Int>(), target, 0)
+        return results
+    }
+}
+
+/// 312. 戳气球
+class Solution312 {
+    fun maxCoins_Recursive(nums: IntArray): Int {
+        val n = nums.size
+        val values = IntArray(n + 2) { i ->
+            var value = 1
+            if (i >= 1 && i <= n) {
+                value = nums[i - 1]
+            }
+            value
+        }
+
+        val mem = Array(n + 2) { IntArray(n + 2) { -1 } }
+
+        /// 戳破 i 和 j 之间的气球，注意不会戳位置 i 和 j 的气球，i 和 j 仅仅作为一个边界使用。
+        fun poke(i: Int, j: Int): Int {
+            if (i >= j - 1) {
+                return 0
+            }
+            if (mem[i][j] != -1) {
+                return mem[i][j]
+            }
+            for (k in i + 1 until j) {
+                // 戳破区间 (i,j) 内的气球所得金币最大值为：戳破 (i,k) 内气球得到的金币值 + 戳破 (k,j) 内气球得到的金币值 + 戳破气球 k 得到的金币值(因为 i~k 和 k~j 内的气球都被戳破了，
+                // 所以，戳破气球 k 得到的金币值为 values[i] * values[k] * values[j]， 即气球 k 左边为球球 i，右边为气球 j)
+                // !! 这个过程中始终不会去动气球 i 和 j
+                mem[i][j] =
+                    maxOf(mem[i][j], poke(i, k) + poke(k, j) + values[i] * values[k] * values[j])
+            }
+            return mem[i][j]
+        }
+        // 假设按任意顺序去戳破气球，然后统计所有顺序下获得的金币值，取最大保留。
+        //
+        // 假设找到了最大金币值对应的戳气球顺序，在戳破 values 中最后一个气球 k 时，比如已经将 values[1 until k] 和 values[k until n+2] 这两个区间内的所有气球戳破了，对应已经得到了 coinCount[1,k] 和 coinCount[k,n+2],
+        // 再加上戳破气球 k 的金币数 values[0] * values[k] * values[n+1] 即为 coinCount[0,n+1]
+        // 将以上过程递归地应用到开区间 (0, k) 和 (k, n+1) 中.
+        return poke(0, n + 1)
+    }
+
+    fun maxCoins_DP(nums: IntArray): Int {
+        val n = nums.size
+        val values = IntArray(n + 2) { i ->
+            var value = 1
+            if (i >= 1 && i <= n) {
+                value = nums[i - 1]
+            }
+            value
+        }
+
+        // dp[i][j]代表戳破开区间 (i, j) 中所有气球（开区间，所以不包括气球i和j）获得的金币数
+        val dp = Array(n + 2) { IntArray(n + 2) }
+        for (len in 3..(n + 2)) {
+            for (start in 0..(n + 2 - len)) {
+                val end = start + len - 1
+                for (middle in start + 1 until end) {
+                    dp[start][end] = maxOf(
+                        dp[start][end],
+                        dp[start][middle] + dp[middle][end] + values[start] * values[middle] * values[end]
+                    )
+                }
+            }
+        }
+        return dp[0][n + 1]
+    }
+}
+
+/// 1000. 合并石头的最低成本
+class Solution1000 {
+    /// 搓石头
+    fun mergeStones(stones: IntArray, k: Int): Int {
+        val MAX = 99999999
+        val n = stones.size
+        if (n == 1) return 0
+        // 合并 m 次后，m > 0，合并1次石头堆数减少 K-1 堆，最终剩下 n - (K - 1) * m = 1 才能保证最终合并成了1堆
+        // 只要找得到整数 m 则可行。
+        if ((n - 1) % (k - 1) != 0) return -1
+
+        val sum = IntArray(n + 1) // 前缀和
+        for (i in 1..n) {
+            sum[i] = sum[i - 1] + stones[i - 1]
+        }
+
+        // dp[i][j][k] 代表将 stones[i] ~ stones[j] 合并成 k 堆的最小成本
+        val dp = Array(n + 1) { Array(n + 1) { IntArray(k + 1) } }
+        for (i in 1..n) {
+            for (j in i..n) {
+                for (m in 2..k) dp[i][j][m] = MAX
+            }
+            dp[i][i][1] = 0 // 每一堆石头合并成1堆的成本为0
+        }
+
+        for (len in 2..n) { // 枚举区间长度
+            for (i in 1..(n + 1 - len)) { // 枚举区间起点
+                val j = i + len - 1 // 确定区间终点
+                for (m in 2..k) { // 枚举合并堆数
+                    for (p in i until j step k - 1) { // 枚举分界点
+                        // 找到一个分界点 p, 让 dp[i][p][1] + dp[p + 1][j][m - 1]) 最小
+                        // 将 [i..p] 合成 1 堆，然后将 [p+1, j] 合成 k-1 堆
+                        dp[i][j][m] =
+                            minOf(dp[i][j][m], dp[i][p][1] + dp[p + 1][j][m - 1])
+                    }
+                }
+                // dp[i][j][k] 对应 stones[i-1..j-1] 合并成 k 堆的最小成本
+                // sum[j] 为 stones[0..j-1] 的和
+                // sum[i-1] 为 stones[0..i-2] 的和
+                dp[i][j][1] = dp[i][j][k] + sum[j] - sum[i - 1] // 将 K 堆合成 1 堆
+            }
+        }
+        return dp[1][n][1]
+    }
+}
+
+
+/// 1000. 合并石头的最低成本
+class Solution1000_20220605 {
+    /// 搓石头
+    fun mergeStones(stones: IntArray, k: Int): Int {
+        val MAX = 99999999
+        val n = stones.size
+        if (n == 1) return 0
+        // 合并 m 次后，m > 0，合并1次石头堆数减少 K-1 堆，最终剩下 n - (K - 1) * m = 1 才能保证最终合并成了1堆
+        // 只要找得到整数 m 则可行。
+        if ((n - 1) % (k - 1) != 0) return -1
+
+        val sum = IntArray(n + 1) // 前缀和
+        for (i in 1..n) {
+            sum[i] = sum[i - 1] + stones[i - 1]
+        }
+
+        // dp[i][j][k] 代表将 stones[i] ~ stones[j] 合并成 k 堆的最小成本
+        val dp = Array(n + 1) { Array(n + 1) { IntArray(k + 1) } }
+        for (i in 1..n) {
+            for (j in i..n) {
+                for (m in 2..k) dp[i][j][m] = MAX
+            }
+            dp[i][i][1] = 0 // 每一堆石头合并成1堆的成本为0
+        }
+
+        for (len in 2..n) { // 枚举区间长度
+            for (i in 1..(n + 1 - len)) { // 枚举区间起点
+                val j = i + len - 1 // 确定区间终点
+                for (m in 2..k) { // 枚举合并堆数
+                    for (p in i until j step k - 1) { // 枚举分界点
+                        // 找到一个分界点 p, 让 dp[i][p][1] + dp[p + 1][j][m - 1]) 最小
+                        // 将 [i..p] 合成 1 堆，然后将 [p+1, j] 合成 k-1 堆
+                        dp[i][j][m] =
+                            minOf(dp[i][j][m], dp[i][p][1] + dp[p + 1][j][m - 1])
+                    }
+                }
+                // dp[i][j][k] 对应 stones[i-1..j-1] 合并成 k 堆的最小成本
+                // sum[j] 为 stones[0..j-1] 的和
+                // sum[i-1] 为 stones[0..i-2] 的和
+                dp[i][j][1] = dp[i][j][k] + sum[j] - sum[i - 1] // 将 K 堆合成 1 堆
+            }
+        }
+        return dp[1][n][1]
+    }
+
+    fun mergeStones_DP_OP(stones: IntArray, k: Int): Int {
+        val n = stones.size
+        if ((n - 1) % (k - 1) != 0) return -1
+
+        /// 前缀和
+        val sum = IntArray(n + 1)
+        for (i in 1..n) {
+            sum[i] = sum[i - 1] + stones[i - 1]
+        }
+
+        // dp[i][j] 代表将石堆 i 到 j 尽可能多地合并所需的最小成本
+        // dp[i][j] = 0 如果 j-i+1 < k，因为按照题意一次只能将 k 个石堆合成 1 堆。
+        //
+        // dp[i][j] = minOf(dp[i][j], dp[i][p] + dp[p+1][j])，找到一个 p 让取值最小。
+        // dp[i][j] += sum(i, j) 如果 ((j-i+1)-1) % (k - 1) == 0 => (j-i) % (k-1) == 0 即第i~j堆石头可以合并成1堆
+        val dp = Array(n + 1) { IntArray(n + 1)}
+        for (len in k..n) { // 枚举区间长度
+            for (i in 1..(n - (len - 1))) { // 枚举区间起点
+                val j = i + (len - 1) // 枚举区间终点
+                dp[i][j] = Int.MAX_VALUE
+                for (p in i until j step k - 1) {
+                    dp[i][j] = minOf(dp[i][j], dp[i][p] + dp[p + 1][j])
+                }
+                // 此时已经找到将第i~j堆是都合并成1堆和k-1堆的最小成本，如果可以将第i~j堆合并成1堆的话，则直接再进行一次合并
+                if ((j - i) % (k - 1) == 0) {
+                    dp[i][j] += sum[j] - sum[i - 1]
+                }
+            }
+        }
+        return dp[1][n]
+    }
+}
+
+
+
+/// 478. 在圆内随机生成点
+class Solution478(val radius: Double, val x_center: Double, val y_center: Double) {
+
+    var rand = Random()
+
+    fun randPoint(): DoubleArray {
+        while (true) {
+            val x = rand.nextDouble() * 2 * radius - radius
+            val y = rand.nextDouble() * 2 * radius - radius
+            if (x * x + y * y <= radius * radius) {
+                return doubleArrayOf(x_center + x, y_center + y)
+            }
+        }
+    }
+}
+
+/// 79. 单词搜索
+class Solution79 {
+    fun exist(board: Array<CharArray>, word: String): Boolean {
+        val rowCount = board.size
+        val colCount = board[0].size
+
+        val locations = LinkedList<Triple<Int, Int, Int>>()
+        // 找到所有word首字母在board中的位置
+        for (r in 0 until rowCount) {
+            for (c in 0 until colCount) {
+                if (board[r][c] == word[0]) {
+                    locations.offerLast(Triple(r, c, 0))
+                }
+            }
+        }
+
+        // word 只有一个字符
+        if (word.length == 1) return locations.isNotEmpty()
+
+        // word.length > 1
+        val directions = listOf(Pair(1, 0), Pair(-1, 0), Pair(0, 1), Pair(0, -1))
+        val visited = Array(rowCount) { BooleanArray(colCount) }
+
+        fun dfs(row: Int, col: Int, index: Int): Boolean {
+            if (!(row in 0 until rowCount) || !(col in 0 until colCount) || visited[row][col]) return false
+            if (index == word.length - 1) return board[row][col] == word[index]
+            if (board[row][col] != word[index]) return false
+
+            visited[row][col] = true
+            var found = false
+            for ((dr, dc) in directions) {
+                val r = row + dr
+                val c = col + dc
+                if (dfs(r, c, index + 1)) {
+                    found = true
+                    break
+                }
+            }
+            visited[row][col] = false
+            return found
+        }
+
+        while (locations.isNotEmpty()) {
+            val (row, col, index) = locations.pollFirst()
+            visited.forEach { for (i in it.indices) { it[i] = false } }
+            if (dfs(row, col, index)) {
+                return true
+            }
+        }
+
+
+        return false
     }
 }
