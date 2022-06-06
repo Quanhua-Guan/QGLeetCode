@@ -4928,6 +4928,32 @@ class Solution213 {
     }
 }
 
+/// 213. 打家劫舍 II
+class Solution213_20220606 {
+    fun rob(nums: IntArray): Int {
+        fun rob(from: Int, to: Int): Int {
+            val n = to - from + 1
+            if (n == 1) return nums[from]
+
+            // dp[i] 代表打劫第 from 到 i 家可以得到的最大金额
+            // dp[i] = maxOf(dp[i - 2] + nums[i], dp[i - 1])
+            // dp[0] = nums[0]
+            // dp[1] = maxOf(nums[0], nums[1])
+            val dp = IntArray(n)
+            dp[0] = nums[from]
+            if (from + 1 <= to) {
+                dp[1] = maxOf(nums[from], nums[from + 1])
+            }
+            for (i in 2 until n) {
+                dp[i] = maxOf(dp[i - 1], dp[i - 2] + nums[from + i])
+            }
+            return dp[n - 1]
+        }
+        if (nums.size == 1) return nums[0]
+        return maxOf(rob(0, nums.size - 2), rob(1, nums.size - 1))
+    }
+}
+
 //class Solution {
 //    Map<TreeNode, Integer> f = new HashMap<TreeNode, Integer>();
 //    Map<TreeNode, Integer> g = new HashMap<TreeNode, Integer>();
@@ -5747,7 +5773,7 @@ class Solution22_3 {
 class Solution22_20220605 {
     fun generateParenthesis(n: Int): List<String> {
         val results = mutableListOf<String>()
-        fun dfs(left: Int, right: Int, path:String) {
+        fun dfs(left: Int, right: Int, path: String) {
             if (left == 0 && right == 0) {
                 results.add(path)
             }
@@ -10846,7 +10872,7 @@ class Solution1000_20220605 {
         //
         // dp[i][j] = minOf(dp[i][j], dp[i][p] + dp[p+1][j])，找到一个 p 让取值最小。
         // dp[i][j] += sum(i, j) 如果 ((j-i+1)-1) % (k - 1) == 0 => (j-i) % (k-1) == 0 即第i~j堆石头可以合并成1堆
-        val dp = Array(n + 1) { IntArray(n + 1)}
+        val dp = Array(n + 1) { IntArray(n + 1) }
         for (len in k..n) { // 枚举区间长度
             for (i in 1..(n - (len - 1))) { // 枚举区间起点
                 val j = i + (len - 1) // 枚举区间终点
@@ -10863,7 +10889,6 @@ class Solution1000_20220605 {
         return dp[1][n]
     }
 }
-
 
 
 /// 478. 在圆内随机生成点
@@ -10926,7 +10951,11 @@ class Solution79 {
 
         while (locations.isNotEmpty()) {
             val (row, col, index) = locations.pollFirst()
-            visited.forEach { for (i in it.indices) { it[i] = false } }
+            visited.forEach {
+                for (i in it.indices) {
+                    it[i] = false
+                }
+            }
             if (dfs(row, col, index)) {
                 return true
             }
