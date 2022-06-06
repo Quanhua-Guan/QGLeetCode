@@ -7807,6 +7807,20 @@ class Solution55 {
     }
 }
 
+class Solution55_20220606 {
+    fun canJump(nums: IntArray): Boolean {
+        val n = nums.size
+        var maxReachable = nums[0]
+        var i = 1
+        while (i <= minOf(n - 1, maxReachable)) {
+            maxReachable = maxOf(maxReachable, i + nums[i])
+            if (maxReachable >= n - 1) return true
+            i++
+        }
+        return maxReachable >= n - 1
+    }
+}
+
 /// 48. 旋转图像
 class Solution48 {
     /// 顺时针旋转, 以顶边为暂存, 依次 顶=>右, 右=>下, 下=>左
