@@ -11018,3 +11018,41 @@ class MyCalendarThree732() {
      * var param_1 = obj.book(start,end)
      */
 }
+
+/// 1229. 安排会议日程
+class Solution1229 {
+    fun minAvailableDuration(slots1: Array<IntArray>, slots2: Array<IntArray>, duration: Int): List<Int> {
+        val n1 = slots1.size
+        val n2 = slots2.size
+        slots1.sortBy { a -> a[0] }
+        slots2.sortBy { a -> a[0] }
+        var i1 = 0
+        var i2 = 0
+        while (i1 < n1 && i2 < n2) {
+            val start1 = slots1[i1][0]
+            val end1 = slots1[i1][1]
+            val start2 = slots2[i2][0]
+            val end2 = slots2[i2][1]
+
+            // 判断是否相交，判断相交时长是否符合要求
+            if (start1 <= end2 && end1 >= start2) {
+                val start = maxOf(start1, start2)
+                val end = minOf(end1, end2)
+                val interval = end - start
+                if (interval >= duration) {
+                    return listOf(start, start + duration)
+                }
+            }
+
+            if (end1 == end2) {
+                i1 += 1
+                i2 += 1
+            } else if (end2 < end1) {
+                i2 += 1
+            } else {
+                i1 += 1
+            }
+        }
+        return emptyList()
+    }
+}
