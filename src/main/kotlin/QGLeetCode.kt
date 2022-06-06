@@ -10965,3 +10965,56 @@ class Solution79 {
         return false
     }
 }
+
+/// 731. 我的日程安排表 II
+class MyCalendarTwo731() {
+    val calendar = TreeMap<Int, Int>()
+
+    fun book(start: Int, end: Int): Boolean {
+        calendar[start] = calendar.getOrDefault(start, 0) + 1
+        calendar[end] = calendar.getOrDefault(end, 0) - 1
+
+        var count = 0
+        for (entry in calendar.entries) {
+            count += entry.value
+            if (count >= 3) {
+                calendar[start] = calendar[start]!! - 1
+                calendar[end] = calendar[end]!! + 1
+                if (calendar[start] == 0) {
+                    calendar.remove(start)
+                }
+                return false
+            }
+        }
+        return true
+    }
+    /**
+     * Your MyCalendarTwo object will be instantiated and called as such:
+     * var obj = MyCalendarTwo()
+     * var param_1 = obj.book(start,end)
+     */
+}
+
+/// 732. 我的日程安排表 III
+class MyCalendarThree732() {
+    val calendar = TreeMap<Int, Int>()
+
+    fun book(start: Int, end: Int): Int {
+        calendar[start] = calendar.getOrDefault(start, 0) + 1
+        calendar[end] = calendar.getOrDefault(end, 0) - 1
+
+        var maxCount = 0
+        var count = 0
+        for (entry in calendar.entries) {
+            count += entry.value
+            maxCount = maxOf(maxCount, count)
+        }
+
+        return maxCount
+    }
+    /**
+     * Your MyCalendarThree object will be instantiated and called as such:
+     * var obj = MyCalendarThree()
+     * var param_1 = obj.book(start,end)
+     */
+}
