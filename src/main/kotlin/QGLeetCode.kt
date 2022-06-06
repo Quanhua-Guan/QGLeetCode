@@ -11056,3 +11056,43 @@ class Solution1229 {
         return emptyList()
     }
 }
+
+/// 875. 爱吃香蕉的珂珂
+class Solution875 {
+    fun minEatingSpeed(piles: IntArray, h: Int): Int {
+        piles.sort()
+        val n = piles.size
+
+        var min = 1
+        var max = piles[n - 1]
+        var speed = 0
+        var hours = 0
+
+        while (min <= max) {
+            speed = (min + max) ushr 1
+
+            hours = 0
+            for (pile in piles) {
+                hours += Math.ceil(pile * 1.0 / speed).toInt()
+            }
+
+            if (hours <= h) {
+                var hours1 = 0
+                for (pile in piles) {
+                    hours1 += Math.ceil(pile * 1.0 / (speed - 1)).toInt()
+                }
+                if (hours1 > h) {
+                    break
+                }
+                // hours1 <= h
+                // 速度太快
+                max = speed - 1
+            } else { // hours > h
+                // 速度太慢
+                min = speed + 1
+            }
+        }
+
+        return speed
+    }
+}
