@@ -5647,6 +5647,27 @@ class Solution20 {
     }
 }
 
+class Solution22_20220607 {
+    fun isValid(s: String): Boolean {
+        if (s.length and 1 == 1) return false
+
+        val stack = Stack<Char>()
+        for (c in s) {
+            when (c) {
+                '(' -> stack.push(')')
+                '{' -> stack.push('}')
+                '[' -> stack.push(']')
+                else -> {
+                    if (stack.isEmpty() || stack.pop() != c) {
+                        return false
+                    }
+                }
+            }
+        }
+        return stack.isEmpty()
+    }
+}
+
 /// 22. 括号生成
 class Solution22 {
     fun generateParenthesis(n: Int): List<String> {
