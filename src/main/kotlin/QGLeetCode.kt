@@ -11117,3 +11117,45 @@ class Solution875 {
         return speed
     }
 }
+
+/// 45. 跳跃游戏 II
+class Solution45 {
+    fun jump(nums: IntArray): Int {
+        val n = nums.size
+        var position = n - 1
+        var jumpCount = 0
+        while (position > 0) {
+            for (i in 0 until position) {
+                if (i + nums[i] >= position) {
+                    position = i
+                    jumpCount++
+                    break
+                }
+            }
+        }
+        return jumpCount
+    }
+
+    fun jump_Forward(nums: IntArray): Int {
+        val n = nums.size
+        var from = 0
+        var to = 0
+        var jumpCount = 0
+        while (to < n - 1) {
+            jumpCount++
+
+            var maxReachable = to
+            for (i in from..to) {
+                if (i + nums[i] > maxReachable) {
+                    maxReachable = i + nums[i]
+                    if (maxReachable >= n - 1) {
+                        return jumpCount
+                    }
+                }
+            }
+            from = to + 1
+            to = maxReachable
+        }
+        return jumpCount
+    }
+}
