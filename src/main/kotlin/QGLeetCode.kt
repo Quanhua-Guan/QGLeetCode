@@ -11193,3 +11193,21 @@ class Solution413 {
         return count
     }
 }
+
+/// 1037. 有效的回旋镖
+class Solution1037 {
+    fun isBoomerang(points: Array<IntArray>): Boolean {
+        if (points.size != 3) return false
+
+        // 斜率 = (y0 - y1) / (x0 - x1) = (y2 - y1) / (x2 - x1)
+
+        val x0 = points[0][0]
+        val y0 = points[0][1]
+        val x1 = points[1][0]
+        val y1 = points[1][1]
+        val x2 = points[2][0]
+        val y2 = points[2][1]
+
+        return (x0 - x1) * (y2 - y1) != (y0 - y1) * (x2 - x1)
+    }
+}
