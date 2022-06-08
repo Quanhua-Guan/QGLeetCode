@@ -11042,7 +11042,11 @@ class MyCalendarThree732() {
 
 /// 1229. 安排会议日程
 class Solution1229 {
-    fun minAvailableDuration(slots1: Array<IntArray>, slots2: Array<IntArray>, duration: Int): List<Int> {
+    fun minAvailableDuration(
+        slots1: Array<IntArray>,
+        slots2: Array<IntArray>,
+        duration: Int
+    ): List<Int> {
         val n1 = slots1.size
         val n2 = slots2.size
         slots1.sortBy { a -> a[0] }
@@ -11157,5 +11161,35 @@ class Solution45 {
             to = maxReachable
         }
         return jumpCount
+    }
+}
+
+/// 413. 等差数列划分
+class Solution413 {
+    fun numberOfArithmeticSlices(nums: IntArray): Int {
+        if (nums.size < 3) return 0
+        var left = 0
+        var right = 0
+        var count = 0
+        while (right <= nums.size) {
+            val size = right - left + 1
+            if (size < 3) {
+                ++right
+            } else {
+                val d = nums[left + 1] - nums[left]
+                if (d != nums.getOrElse(right) { 9999 } - nums[right - 1]) {
+                    val size = right - left
+                    /*if (d == 0) {
+                        count += size - 2
+                    } else {*/
+                    count += (size - 2) * (size - 1) / 2
+                    //}
+                    left = right - 1
+                } else {
+                    ++right
+                }
+            }
+        }
+        return count
     }
 }
