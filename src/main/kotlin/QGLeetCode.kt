@@ -8029,6 +8029,43 @@ class Solution34 {
     }
 }
 
+/// 34. 在排序数组中查找元素的第一个和最后一个位置
+class Solution34_20220608 {
+    fun bsfirst(nums: IntArray, target: Int): Int {
+        var l = 0
+        var r = nums.size - 1
+        while (l <= r) {
+            val m = (l + r) ushr 1
+            if (nums[m] == target && (m == 0 || nums[m - 1] != target)) return m
+            else if (target <= nums[m]) {
+                r = m - 1
+            } else {
+                l = m + 1
+            }
+        }
+        return -1
+    }
+
+    fun bslast(nums: IntArray, target: Int): Int {
+        var l = 0
+        var r = nums.size - 1
+        while (l <= r) {
+            val m = (l + r) ushr 1
+            if (nums[m] == target && (m == nums.size - 1 || nums[m + 1] != target)) return m
+            else if (target < nums[m]) {
+                r = m - 1
+            } else {
+                l = m + 1
+            }
+        }
+        return -1
+    }
+
+    fun searchRange(nums: IntArray, target: Int): IntArray {
+        return intArrayOf(bsfirst(nums, target), bslast(nums, target))
+    }
+}
+
 /// 33. 搜索旋转排序数组
 class Solution33 {
     fun bsearch(nums: IntArray, target: Int, from: Int = 0, to: Int = nums.size - 1): Int {
@@ -11194,6 +11231,28 @@ class Solution413 {
     }
 }
 
+/// 413. 等差数列划分
+class Solution413_20220609 {
+    fun numberOfArithmeticSlices(nums: IntArray): Int {
+        val n = nums.size
+        if (n < 3) return 0
+
+        var d = nums[0] - nums[1]
+        var count = 0
+        var sum = 0
+        for (i in 2 until n) {
+            if (nums[i - 1] - nums[i] == d) {
+                count += 1
+            } else {
+                count = 0
+                d = nums[i - 1] - nums[i]
+            }
+            sum += count
+        }
+        return sum
+    }
+}
+
 /// 1037. 有效的回旋镖
 class Solution1037 {
     fun isBoomerang(points: Array<IntArray>): Boolean {
@@ -11267,4 +11326,126 @@ class Solution497(val rects: Array<IntArray>) {
      * var obj = Solution(rects)
      * var param_1 = obj.pick()
      */
+}
+
+/// 91. 解码方法
+class Solution91 {
+    fun check(c: Char): Boolean {
+        val n = c - '0'
+        return 0 < n && n <= 26
+    }
+    fun check(c: Char, d: Char): Boolean {
+        if (c == '0') return false
+        val n = (c - '0') * 10 + (d - '0')
+        return 0 < n && n <= 26
+    }
+    fun numDecodings(s: String): Int {
+        // dp[i]代表字符串s前i个字符组词的子串的解码方法数
+        val dp = IntArray(s.length + 1)
+        dp[0] = 1
+        dp[1] = if (check(s[0])) 1 else 0
+        for (count in 2 until s.length + 1) {
+            var d = s[count - 1]
+            if (check(d)) {
+                dp[count] += dp[count - 1]
+            }
+            var c = s[count - 2]
+            if (check(c, d)) {
+                dp[count] += dp[count - 2]
+            }
+        }
+        return dp[s.length]
+    }
+}
+
+/// 497. 非重叠矩形中的随机点
+class Solution497(val rects: Array<IntArray>) {
+
+    val rand = Random()
+    var areas = mutableListOf<Long>()
+    var areasSum:Long = 0
+
+    init {
+        for (rect in rects) {
+            val x0 = rect[0].toLong()
+            val y0 = rect[1].toLong()
+            val x1 = rect[2].toLong()
+            val y1 = rect[3].toLong()
+            val area = (x1 - x0 + 1) * (y1 - y0 + 1) // 计算在矩形内的整数点数
+            areas.add(area)
+            areasSum += area
+        }
+    }
+
+    fun check(point: IntArray): Boolean {
+        for (rect in rects) {
+            if (rect[0] <= point[0] && point[0] <= rect[2] && rect[1] <= point[1] && point[1] <= rect[3]) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun randomPointInRect(rect: IntArray): IntArray {
+        val x0 = rect[0]
+        val y0 = rect[1]
+        val x1 = rect[2]
+        val y1 = rect[3]
+        return intArrayOf(x0 + rand.nextInt(x1 - x0 + 1), y0 + rand.nextInt(y1 - y0 + 1))
+    }
+
+    fun pick(): IntArray {
+        val targetSum = (rand.nextDouble() * areasSum).toLong()
+        var sum: Long = 0
+        var targetRectIndex = 0
+        for (i in areas.indices) {
+            val low = sum
+            sum += areas[i]
+            if (low <= targetSum && targetSum < sum) {
+                targetRectIndex = i
+            }
+        }
+        return randomPointInRect(rects[targetRectIndex])
+    }
+
+    /**
+     * Your Solution object will be instantiated and called as such:
+     * var obj = Solution(rects)
+     * var param_1 = obj.pick()
+     */
+}
+
+/// 139. 单词拆分
+class Solution139 {
+    fun wordBreak_(s: String, wordDict: List<String>): Boolean {
+        val wordSet = wordDict.toSet()
+        // 我们定义 dp[i] 表示字符串 s 前 i 个字符组成的字符串 s[0..i-1] 是否能被空格拆分成若干个字典中出现的单词。
+        val dp = BooleanArray(s.length + 1)
+        dp[0] = true
+        for (i in 1..s.length) {
+            for (j in 0 until i) {
+                if (dp[j] && wordSet.contains(s.substring(j, i))) {
+                    dp[i] = true
+                    break
+                }
+            }
+        }
+        return dp[s.length]
+    }
+
+    fun wordBreak(s: String, wordDict: List<String>): Boolean {
+        val wordSet = wordDict.toSet()
+        // dp[i]代表字符串s中前i个字符是否能用字典中的单词组成
+        val dp = BooleanArray(s.length + 1)
+        dp[0] = true // 空字符串可以用字典中的"空"组成
+        for (i in 1 until s.length + 1) {
+            for (j in 0 until i) {
+                if (dp[j] && wordSet.contains(s.substring(j, i))) {
+                    dp[i] = true
+                    break
+                }
+            }
+        }
+        return dp[s.length]
+    }
 }
