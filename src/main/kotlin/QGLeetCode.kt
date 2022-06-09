@@ -11211,3 +11211,60 @@ class Solution1037 {
         return (x0 - x1) * (y2 - y1) != (y0 - y1) * (x2 - x1)
     }
 }
+
+/// 497. 非重叠矩形中的随机点
+class Solution497(val rects: Array<IntArray>) {
+
+    val rand = Random()
+    var areas = mutableListOf<Long>()
+    var areasSum:Long = 0
+
+    init {
+        for (rect in rects) {
+            val x0 = rect[0].toLong()
+            val y0 = rect[1].toLong()
+            val x1 = rect[2].toLong()
+            val y1 = rect[3].toLong()
+            val area = (x1 - x0 + 1) * (y1 - y0 + 1) // 计算在矩形内的整数点数
+            areas.add(area)
+            areasSum += area
+        }
+    }
+
+    fun check(point: IntArray): Boolean {
+        for (rect in rects) {
+            if (rect[0] <= point[0] && point[0] <= rect[2] && rect[1] <= point[1] && point[1] <= rect[3]) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun randomPointInRect(rect: IntArray): IntArray {
+        val x0 = rect[0]
+        val y0 = rect[1]
+        val x1 = rect[2]
+        val y1 = rect[3]
+        return intArrayOf(x0 + rand.nextInt(x1 - x0 + 1), y0 + rand.nextInt(y1 - y0 + 1))
+    }
+
+    fun pick(): IntArray {
+        val targetSum = (rand.nextDouble() * areasSum).toLong()
+        var sum: Long = 0
+        var targetRectIndex = 0
+        for (i in areas.indices) {
+            val low = sum
+            sum += areas[i]
+            if (low <= targetSum && targetSum < sum) {
+                targetRectIndex = i
+            }
+        }
+        return randomPointInRect(rects[targetRectIndex])
+    }
+
+    /**
+     * Your Solution object will be instantiated and called as such:
+     * var obj = Solution(rects)
+     * var param_1 = obj.pick()
+     */
+}
