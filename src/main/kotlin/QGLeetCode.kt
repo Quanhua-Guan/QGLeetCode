@@ -11362,7 +11362,7 @@ class Solution91 {
 }
 
 /// 497. 非重叠矩形中的随机点
-class Solution497(val rects: Array<IntArray>) {
+class Solution497_(val rects: Array<IntArray>) {
 
     val rand = Random()
     var areas = mutableListOf<Long>()
