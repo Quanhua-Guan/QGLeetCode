@@ -5,6 +5,7 @@ import java.math.BigInteger
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.collections.ArrayList
+import kotlin.math.ceil
 
 
 /// 二分查找
@@ -8944,20 +8945,22 @@ class SolutionBag01 {
     /// 求最大价值
     fun knapsack01Plus(weight: IntArray, value: IntArray, w: Int): Int {
         val n = weight.size
+        // states[i][j] 代表使用 weight[0..i] 若干个装入且刚好重量为 j 时的价值. -1代表不存在这种情况, >= 0 代表存在.
         val states = Array(n) { IntArray(w + 1) { -1 } }
         states[0][0] = 0
         if (weight[0] < w) {
             states[0][weight[0]] = value[0]
         }
 
-        for (i in 1 until n) {
+        for (i in 1 until n) { // 目标更新 states[i][x]
             for (j in 0..w) {
                 if (states[i - 1][j] >= 0) states[i][j] = states[i - 1][j]
             }
             for (j in 0..(w - weight[i])) {
+                /// states[i - 1][j] >= 0 代表从 weight[0..i-1]中存在若干个物品组成一组其总重量刚好为j, 它们的总价值为 states[i-1][j].
                 if (states[i - 1][j] >= 0) {
-                    val v = states[i - 1][j] + value[i]
-                    if (v > states[i - 1][j + weight[i]]) states[i - 1][j + weight[i]] = v
+                    val v = states[i - 1][j] + value[i] // 装入物品j后的更新的总价值
+                    if (v > states[i - 1][j + weight[i]]) states[i - 1][j + weight[i]] = v // 选择更高的价值
                 }
             }
         }
