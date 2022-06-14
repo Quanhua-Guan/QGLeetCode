@@ -8607,7 +8607,7 @@ class Solution300 {
         min[1] = nums[0]
         var len = 1
 
-        for (i in 1 until nums.size) {
+        for (i in 1 until nums.size) { // 遍历严格递增子序列长度
             if (nums[i] > min[len]) {
                 min[++len] = nums[i]
             } else {
@@ -8632,6 +8632,29 @@ class Solution300 {
             }
         }
         return len
+    }
+}
+
+/// 300. 最长递增子序列
+class Solution300_20220610 {
+    fun lengthOfLIS(nums: IntArray): Int {
+        val n = nums.size
+        // dp[i] 代表 nums[0..i] 中以 nums[i] 结尾的最长严格递增子序列的长度
+        // dp[0] = 1
+        // dp[i] = if (nums[i] > nums[i - 1]) dp[i - 1] + 1 else 0
+        val dp = IntArray(n)
+        dp[0] = 1
+        var max = dp[0]
+        for (i in 1 until n) {
+            dp[i] = 1
+            for (j in 0 until i) {
+                if (nums[i] > nums[j]) {
+                    dp[i] = maxOf(dp[i], dp[j] + 1)
+                }
+            }
+            max = maxOf(max, dp[i])
+        }
+        return max
     }
 }
 
@@ -11447,5 +11470,49 @@ class Solution139 {
             }
         }
         return dp[s.length]
+    }
+}
+
+/// 730. 统计不同回文子序列
+class Solution730 {
+    fun countPalindromicSubsequences(s: String): Int {
+        // val m = (1e9+7).toInt()
+        val m = 1000000007
+        val n = s.length
+        // dp[x][i][j] 代表在s[i..j]中以字符c开头和结尾的回文子序列个数
+        val dp = Array(4) { Array(n) { IntArray(n) }}
+        for (i in 0 until n) {
+            dp[s[i]-'a'][i][i] = 1
+        }
+
+        for (i in n-2 downTo 0) {
+            for (j in i+1 until n) {
+                for (x in 0 until 4) {
+                    val c = ('a' + x).toChar()
+                    val iIsC = s[i] == c
+                    val jIsC = s[j] == c
+                    if (iIsC && jIsC) {
+                        dp[x][i][j] = 2
+                        for (xx in 0 until 4) {
+                            dp[x][i][j] = (dp[x][i][j] + dp[xx][i + 1][j - 1]) % m
+                        }
+                    } else if (iIsC && !jIsC) {
+                        dp[x][i][j] = dp[x][i][j - 1]
+                    } else if (!iIsC && jIsC) {
+                        dp[x][i][j] = dp[x][i + 1][j]
+                    } else {
+                        dp[x][i][j] = dp[x][i + 1][j - 1]
+                    }
+                }
+            }
+        }
+
+        var sum = 0
+        for (x in 0 until 4) {
+            sum += dp[x][0][n - 1]
+            sum %= m
+        }
+
+        return sum
     }
 }
