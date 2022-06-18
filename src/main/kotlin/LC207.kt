@@ -16,7 +16,7 @@ fun main() {
 
 class LC207 {
     // 207. 课程表
-    class Solution {
+    class Solution_1 {
         fun canFinish(numCourses: Int, prerequisites: Array<IntArray>): Boolean {
             val n = numCourses;
             val indegrees = Array(n) { mutableSetOf<Int>() }
@@ -62,6 +62,38 @@ class LC207 {
             }
 
             return nonzeroins.isEmpty()
+        }
+    }
+
+    class Solution {
+        fun canFinish(n: Int, tofroms: Array<IntArray>): Boolean {
+            val indegrees = IntArray(n)
+            val graph = Array(n) { arrayListOf<Int>() }
+            tofroms.forEach {
+                val from = it[1]
+                val to = it[0]
+                indegrees[to] += 1
+                graph[from].add(to)
+            }
+
+            val zeroIndegreeNodes = LinkedList<Int>()
+            indegrees.forEachIndexed { index, indegree ->
+                if (indegree == 0) zeroIndegreeNodes.offer(index)
+            }
+
+            var unreachableCount = n
+            while (zeroIndegreeNodes.isNotEmpty()) {
+                val from = zeroIndegreeNodes.poll()
+                unreachableCount--
+                for (to in graph[from]) {
+                    indegrees[to]--
+                    if (indegrees[to] == 0) {
+                        zeroIndegreeNodes.offer(to)
+                    }
+                }
+            }
+
+            return unreachableCount == 0
         }
     }
 }
