@@ -1,6 +1,116 @@
 import java.util.*
 
 class LC715 {
+    class RangeModule_1() {
+        // 保证每个区间不互相重合且递增排序
+        val treeMap = TreeMap<Int, Int>()
+
+        fun addRange(left: Int, right: Int) {
+            var left = left
+            var right = right
+
+            var entry = treeMap.higherEntry(left)
+            if (entry == null) {
+                val start = treeMap.lastEntry()
+                if (start == null) {
+                    treeMap[left] = right
+                } else {
+                    // start.key <= left < right
+                    if (start.value < left) {
+                        treeMap[left] = right
+                    } else if (start.value < right) {
+                        // start.key <= left <= start.value < right
+                        treeMap[start.key] = right
+                    } else {
+                        // start.key <= left < right <= start.value
+                        // do nothing
+                    }
+                }
+            } else {
+                val start = treeMap.lowerEntry(entry.key)
+                // start.key <= left < right
+                // left < entry.key
+                if (start == null) {
+                    // do nothing here
+                } else {
+                    if (start.value < left) {
+                        // do nothing here
+                    } else if (start.value < right) {
+                        // start.key <= left <= start.value < right
+                        left = start.key
+                        treeMap.remove(start.key)
+                    } else { // start.value >= right
+                        // start.key <= left < right <= start.value
+                        return
+                    }
+                }
+                while (entry != null && entry.key <= right) {
+                    right = maxOf(right, entry.value)
+                    treeMap.remove(entry.key)
+                    entry = treeMap.higherEntry(entry.key)
+                }
+                treeMap[left] = right
+            }
+        }
+
+        fun queryRange(left: Int, right: Int): Boolean {
+            val entry = treeMap.higherEntry(left)
+            val start = if (entry == null) treeMap.lastEntry() else treeMap.lowerEntry(entry.key)
+            return start != null && start.value >= right
+        }
+
+
+        fun removeRange(left: Int, right: Int) {
+            var entry = treeMap.higherEntry(left)
+            if (entry == null) {
+                val start = treeMap.lastEntry()
+                if (start == null) {
+                    return
+                } else {
+                    // start != null
+                    // start.key <= left < right
+                    if (start.value <= left) {
+                        // do nothing here
+                    } else if (start.value <= right) {
+                        // start.key <= left < start.value <= right
+                        treeMap[start.key] = left
+                    } else {
+                        // start.value <= left < right < start.value
+                        treeMap[start.key] = left
+                        treeMap[right] = start.value
+                    }
+                }
+            } else {
+                // entry != null
+                val start = treeMap.lowerEntry(entry.key)
+                if (start == null) {
+                    // do nothing
+                } else {
+                    // start != null
+                    // start.key <= left < right
+                    if (start.value <= left) {
+                        // do nothing
+                    } else if (start.value <= right) {
+                        // start.value <= left < start.value <= right
+                        treeMap[start.key] = left
+                    } else { // right < start.value
+                        treeMap[start.key] = left
+                        treeMap[right] = start.value
+                    }
+                }
+
+                // start.key <= left < entry.key
+                while (entry != null && entry.key < right) { // right < entry.value or right >= entry.value
+                    treeMap.remove(entry.key)
+                    if (right < entry.value) {
+                        treeMap[right] = entry.value
+                    }
+                    entry = treeMap.higherEntry(entry.key)
+                }
+            }
+        }
+    }
+
     /// 715. Range 模块
     class RangeModule() {
 
