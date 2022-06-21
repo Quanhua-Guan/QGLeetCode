@@ -186,11 +186,97 @@ class LC715 {
 
     }
 
-    /**
-     * Your RangeModule object will be instantiated and called as such:
-     * var obj = RangeModule()
-     * obj.addRange(left,right)
-     * var param_2 = obj.queryRange(left,right)
-     * obj.removeRange(left,right)
-     */
+    class RangeModule_20220621() {
+
+        val tm = TreeMap<Int, Int>()
+
+        fun addRange(left: Int, right: Int) {
+            var left = left
+            var right = right
+            var entry = tm.higherEntry(left)
+            if (entry == null) {
+                val start = tm.lastEntry()
+                if (start == null) {
+                    tm[left] = right
+                } else {
+                    if (start.value < left) {
+                        tm[left] = right
+                    } else if (start.value < right) {
+                        tm[start.key] = right
+                    } else { // start.key <= left < right <= start.value
+                        // do nothing
+                    }
+                }
+            } else {
+                // entry != null
+                val start = tm.lowerEntry(entry.key)
+                if (start != null) {
+                    // start.key <= left < right
+                    if (start.value < left) {
+
+                    } else if (start.value <= right) {
+                        tm.remove(start.key)
+                        left = start.key
+                    } else { // start.key <= left < right <= start.value
+                        return
+                    }
+                }
+                while (entry != null && entry.key <= right) {
+                    right = maxOf(right, entry.value)
+                    tm.remove(entry.key)
+                    entry = tm.higherEntry(entry.key)
+                }
+                tm[left] = right
+            }
+        }
+
+        fun queryRange(left: Int, right: Int): Boolean {
+            val entry = tm.higherEntry(left)
+            val start = if (entry == null) tm.lastEntry() else tm.lowerEntry(entry.key)
+            return start != null && start.value >= right
+        }
+
+        fun removeRange(left: Int, right: Int) {
+            var entry = tm.higherEntry(left)
+            if (entry == null) {
+                val start = tm.lastEntry()
+                if (start == null) {
+                    return
+                } else {
+                    // start.key <= left < right
+                    if (start.value < left) {
+                        return
+                    } else if (start.value <= right) {
+                        tm[start.key] = left
+                    } else {
+                        tm[start.key] = left
+                        tm[right] = start.value
+                    }
+                }
+            } else {
+                // entry != null
+                val start = tm.lowerEntry(entry.key)
+                if (start != null) {
+                    // start.key <= left < right
+                    if (start.value < left) {
+
+                    } else if (start.value <= right) {
+                        tm[start.key] = left
+                    } else { // start.key <= left < right < start.value
+                        tm[start.key] = left
+                        tm[right] = start.value
+                    }
+                }
+                // left < entry.key < entry.value
+                while (entry != null && entry.key < right) {
+                    tm.remove(entry.key)
+                    if (entry.value > right) {
+                        tm[right] = entry.value
+                    }
+                    entry = tm.higherEntry(entry.key)
+                }
+            }
+        }
+
+    }
 }
