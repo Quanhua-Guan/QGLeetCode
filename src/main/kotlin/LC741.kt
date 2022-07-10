@@ -23,7 +23,7 @@ fun main() {
 
 class LC741 {
     /// 741. 摘樱桃
-    class Solution {
+    class Solution_1 {
         fun cherryPickup(grid: Array<IntArray>): Int {
             val n = grid.size
 
@@ -65,6 +65,47 @@ class LC741 {
                 }
             }
             return maxOf(0, f[2 * n - 2][n - 1][n - 1])
+        }
+    }
+
+    class Solution {
+        fun cherryPickup(grid: Array<IntArray>): Int {
+            val n = grid.size
+            val maxK = 2 * n - 1 // 总共走 maxK 步
+
+            val c = Array(n) { IntArray(n) { Int.MIN_VALUE } }
+            c[0][0] = grid[0][0]
+
+            for (k in 1 until maxK) {
+                for (x1 in minOf(k, n - 1) downTo maxOf(0, k - (n - 1))) {
+                    for (x2 in minOf(k, n - 1) downTo x1) {
+                        val y1 = k - x1
+                        val y2 = k - x2
+                        if (grid[x1][y1] == -1 || grid[x2][y2] == -1) {
+                            c[x1][x2] = Int.MIN_VALUE
+                            continue
+                        }
+
+                        var res = c[x1][x2]
+                        if (x1 > 0) {
+                            res = maxOf(res, c[x1 - 1][x2])
+                        }
+                        if (x2 > 0) {
+                            res = maxOf(res, c[x1][x2 - 1])
+                        }
+                        if (x1 > 0 && x2 > 0) {
+                            res = maxOf(res, c[x1 - 1][x2 - 1])
+                        }
+                        res += grid[x1][y1]
+                        if (x1 != x2) {
+                            res += grid[x2][y2]
+                        }
+                        c[x1][x2] = res
+                    }
+                }
+            }
+
+            return maxOf(0, c[n - 1][n - 1])
         }
     }
 }
