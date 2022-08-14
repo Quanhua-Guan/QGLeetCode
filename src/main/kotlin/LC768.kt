@@ -1,7 +1,27 @@
+import java.util.*
+
 class LC768 {
     /// 768. 最多能完成排序的块 II
     class Solution {
-        fun maxChunksToSorted(arr: IntArray): Int {
+        fun maxChunksToSorted_stack(nums: IntArray): Int {
+            val stack = Stack<Int>()
+
+            for (n in nums) {
+                if (stack.isEmpty() || stack.peek() <= n) {
+                    stack.push(n)
+                } else {
+                    val top = stack.pop()
+                    while (stack.isNotEmpty() && stack.peek() > n) {
+                        stack.pop()
+                    }
+                    stack.push(top)
+                }
+            }
+
+            return stack.size
+        }
+
+        fun maxChunksToSorted_1(arr: IntArray): Int {
             var list = arr.mapIndexed { index, it -> Pair(it, index) }.sortedBy { it.first }
 
             // arr 重新编码, 元素取值范围 0 ~ n-1
