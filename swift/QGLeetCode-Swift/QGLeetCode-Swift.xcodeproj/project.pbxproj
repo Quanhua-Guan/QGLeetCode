@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EA73061E28BA8C0800D948A6 /* LC172.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA73061D28BA8C0800D948A6 /* LC172.swift */; };
+		EA73062028BA92BE00D948A6 /* LC793.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA73061F28BA92BE00D948A6 /* LC793.swift */; };
 		EA9BD0EE28B9A6E000970472 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9BD0ED28B9A6E000970472 /* main.swift */; };
 		EA9BD0FA28B9A74E00970472 /* LC658.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9BD0F828B9A74E00970472 /* LC658.swift */; };
 		EA9BD0FB28B9A74E00970472 /* LC782.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9BD0F928B9A74E00970472 /* LC782.swift */; };
@@ -26,6 +28,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		EA73061D28BA8C0800D948A6 /* LC172.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LC172.swift; sourceTree = "<group>"; };
+		EA73061F28BA92BE00D948A6 /* LC793.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LC793.swift; sourceTree = "<group>"; };
 		EA9BD0EA28B9A6E000970472 /* QGLeetCode-Swift */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "QGLeetCode-Swift"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EA9BD0ED28B9A6E000970472 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		EA9BD0F828B9A74E00970472 /* LC658.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LC658.swift; sourceTree = "<group>"; };
@@ -67,6 +71,8 @@
 				EA9BD0F828B9A74E00970472 /* LC658.swift */,
 				EA9BD0F928B9A74E00970472 /* LC782.swift */,
 				EA9BD0FC28B9A9E200970472 /* LC662.swift */,
+				EA73061D28BA8C0800D948A6 /* LC172.swift */,
+				EA73061F28BA92BE00D948A6 /* LC793.swift */,
 			);
 			path = "QGLeetCode-Swift";
 			sourceTree = "<group>";
@@ -133,6 +139,8 @@
 				EA9BD0FB28B9A74E00970472 /* LC782.swift in Sources */,
 				EA9BD0EE28B9A6E000970472 /* main.swift in Sources */,
 				EA9BD0FD28B9A9E200970472 /* LC662.swift in Sources */,
+				EA73062028BA92BE00D948A6 /* LC793.swift in Sources */,
+				EA73061E28BA8C0800D948A6 /* LC172.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
