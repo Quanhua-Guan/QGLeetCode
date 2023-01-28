@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C6C323E52946AC040032D5B1 /* LC1781.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6C323E42946AC040032D5B1 /* LC1781.swift */; };
+		C6CE345D2984C3930007F8F4 /* LC36.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6CE345C2984C3930007F8F4 /* LC36.swift */; };
 		EA40301228C5770D00EEC6FC /* LC652.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA40301128C5770D00EEC6FC /* LC652.swift */; };
 		EA73061E28BA8C0800D948A6 /* LC172.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA73061D28BA8C0800D948A6 /* LC172.swift */; };
 		EA73062028BA92BE00D948A6 /* LC793.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA73061F28BA92BE00D948A6 /* LC793.swift */; };
@@ -33,6 +34,7 @@
 
 /* Begin PBXFileReference section */
 		C6C323E42946AC040032D5B1 /* LC1781.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LC1781.swift; sourceTree = "<group>"; };
+		C6CE345C2984C3930007F8F4 /* LC36.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LC36.swift; sourceTree = "<group>"; };
 		EA40301128C5770D00EEC6FC /* LC652.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LC652.swift; sourceTree = "<group>"; };
 		EA73061D28BA8C0800D948A6 /* LC172.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LC172.swift; sourceTree = "<group>"; };
 		EA73061F28BA92BE00D948A6 /* LC793.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LC793.swift; sourceTree = "<group>"; };
@@ -85,6 +87,7 @@
 				EAE8F8B428CC1F1300D6E933 /* LC669.swift */,
 				EAA7C42C28D4AA5E0033039E /* LC850.swift */,
 				C6C323E42946AC040032D5B1 /* LC1781.swift */,
+				C6CE345C2984C3930007F8F4 /* LC36.swift */,
 			);
 			path = "QGLeetCode-Swift";
 			sourceTree = "<group>";
@@ -157,6 +160,7 @@
 				EA40301228C5770D00EEC6FC /* LC652.swift in Sources */,
 				EA73062028BA92BE00D948A6 /* LC793.swift in Sources */,
 				EA73061E28BA8C0800D948A6 /* LC172.swift in Sources */,
+				C6CE345D2984C3930007F8F4 /* LC36.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
