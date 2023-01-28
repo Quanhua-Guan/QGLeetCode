@@ -1,75 +1,69 @@
-.DS_Store
-.idea/shelf
-/confluence/target
-/dependencies/repo
-/android.tests.dependencies
-/dependencies/android.tests.dependencies
-/dist
-/local
-/gh-pages
-/ideaSDK
-/clionSDK
-/android-studio/sdk
-out/
-/tmp
-/intellij
-workspace.xml
-*.versionsBackup
-/idea/testData/debugger/tinyApp/classes*
-/jps-plugin/testData/kannotator
-/js/js.translator/testData/out/
-/js/js.translator/testData/out-min/
-/js/js.translator/testData/out-pir/
-.gradle/
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## User settings
+xcuserdata/
+
+## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
+*.xcscmblueprint
+*.xccheckout
+
+## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
 build/
-!**/src/**/build
-!**/test/**/build
-*.iml
-!**/testData/**/*.iml
-.idea/remote-targets.xml
-.idea/libraries/Gradle*.xml
-.idea/libraries/Maven*.xml
-.idea/artifacts/PILL_*.xml
-.idea/artifacts/KotlinPlugin.xml
-.idea/modules
-.idea/runConfigurations/JPS_*.xml
-.idea/runConfigurations/PILL_*.xml
-.idea/runConfigurations/_FP_*.xml
-.idea/runConfigurations/_MT_*.xml
-.idea/libraries
-.idea/modules.xml
-.idea/gradle.xml
-.idea/compiler.xml
-.idea/inspectionProfiles/profiles_settings.xml
-.idea/.name
-.idea/artifacts/dist_auto_*
-.idea/artifacts/dist.xml
-.idea/artifacts/ideaPlugin.xml
-.idea/artifacts/kotlinc.xml
-.idea/artifacts/kotlin_compiler_jar.xml
-.idea/artifacts/kotlin_plugin_jar.xml
-.idea/artifacts/kotlin_jps_plugin_jar.xml
-.idea/artifacts/kotlin_daemon_client_jar.xml
-.idea/artifacts/kotlin_imports_dumper_compiler_plugin_jar.xml
-.idea/artifacts/kotlin_main_kts_jar.xml
-.idea/artifacts/kotlin_compiler_client_embeddable_jar.xml
-.idea/artifacts/kotlin_reflect_jar.xml
-.idea/artifacts/kotlin_stdlib_js_ir_*
-.idea/artifacts/kotlin_test_js_ir_*
-.idea/artifacts/kotlin_stdlib_wasm_*
-.idea/artifacts/kotlinx_atomicfu_runtime_*
-.idea/artifacts/kotlinx_cli_jvm_*
-.idea/jarRepositories.xml
-.idea/csv-plugin.xml
-.idea/libraries-with-intellij-classes.xml
-.idea/misc.xml
-node_modules/
-.rpt2_cache/
-libraries/tools/kotlin-test-js-runner/lib/
-local.properties
-buildSrcTmp/
-distTmp/
-outTmp/
-/test.output
-/kotlin-native/dist
-kotlin-ide/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+## Obj-C/Swift specific
+*.hmap
+
+## App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods
+#
+# We recommend against adding the Pods directory to your .gitignore. However
+# you should judge for yourself, the pros and cons are mentioned at:
+# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
+#
+Pods/
+#
+# Add this line if you want to avoid checking in source code from the Xcode workspace
+# *.xcworkspace
+
+# Carthage
+#
+# Add this line if you want to avoid checking in source code from Carthage dependencies.
+# Carthage/Checkouts
+
+Carthage/Build/
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo.
+# Instead, use fastlane to re-generate the screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/#source-control
+
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Code Injection
+#
+# After new code Injection tools there's a generated folder /iOSInjectionProject
+# https://github.com/johnno1962/injectionforxcode
+
+iOSInjectionProject/
+.DS_Store
